@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0BAA99F9-87DF-4F32-A569-B7D1E6189A76}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XAS.Rest</RootNamespace>
+    <AssemblyName>XAS.Rest</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CsQuery, Version=1.3.3.249, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CsQuery.1.3.4\lib\net40\CsQuery.dll</HintPath>
+    </Reference>
+    <Reference Include="FluentValidation, Version=7.0.0.0, Culture=neutral, PublicKeyToken=7de548da2fbae0f0, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FluentValidation.7.6.104\lib\net45\FluentValidation.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Nancy.1.4.4\lib\net40\Nancy.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Authentication.Basic, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Nancy.Authentication.Basic.1.4.1\lib\net40\Nancy.Authentication.Basic.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Hal, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Nancy.Hal.1.3.0\lib\net45\Nancy.Hal.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Hosting.Self, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Nancy.Hosting.Self.1.4.1\lib\net40\Nancy.Hosting.Self.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Testing, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Nancy.Testing.1.4.1\lib\net40\Nancy.Testing.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Validation.FluentValidation, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Nancy.Validation.FluentValidation.1.4.1\lib\net40\Nancy.Validation.FluentValidation.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=106.3.1.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\RestSharp.106.3.1\lib\net452\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ComponentModel.Annotations.4.5.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.ComponentModel.Primitives, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ComponentModel.Primitives.4.3.0\lib\net45\System.ComponentModel.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tavis.UriTemplates, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Tavis.UriTemplates.1.1.1\lib\Net45\Tavis.UriTemplates.dll</HintPath>
+    </Reference>
+    <Reference Include="XAS.Core">
+      <HintPath>..\..\Core\trunk\bin\Debug\XAS.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Client\Client.cs" />
+    <Compile Include="Client\Errors\ServiceErrorModel.cs" />
+    <Compile Include="Client\Exceptions\ApplicationProblemException.cs" />
+    <Compile Include="Client\Exceptions\ResponseException.cs" />
+    <Compile Include="Client\Serializers\ApplicationHALDeserializer.cs" />
+    <Compile Include="Client\Serializers\ApplicationProblemDeserializer.cs" />
+    <Compile Include="Client\Serializers\Lib\HalParser.cs" />
+    <Compile Include="Client\Serializers\Lib\HalResponse.cs" />
+    <Compile Include="Client\Serializers\Lib\JsonResponse.cs" />
+    <Compile Include="Client\Serializers\Lib\LinkObject.cs" />
+    <Compile Include="Client\Serializers\Lib\StateValue.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\AppRootPath.cs" />
+    <Compile Include="Server\BootStrapper.cs" />
+    <Compile Include="Server\Errors\CustomErrorHandler.cs" />
+    <Compile Include="Server\Errors\Exceptions\GeneralServiceErrorException.cs" />
+    <Compile Include="Server\Errors\Exceptions\InternalServerErrorException.cs" />
+    <Compile Include="Server\Errors\Exceptions\InvalidTokenErrorException.cs" />
+    <Compile Include="Server\Errors\Exceptions\NotFoundErrorException.cs" />
+    <Compile Include="Server\Errors\Exceptions\NotProccesableErrorException.cs" />
+    <Compile Include="Server\Errors\IHasServiceError.cs" />
+    <Compile Include="Server\Errors\ServiceErrorCode.cs" />
+    <Compile Include="Server\Errors\ServiceErrorDefinition.cs" />
+    <Compile Include="Server\Errors\ServiceErrorExtensions.cs" />
+    <Compile Include="Server\Errors\ServiceErrorModel.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler400.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler401.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler403.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler404.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler406.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler411.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler422.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler500.cs" />
+    <Compile Include="Server\Errors\StatusCodeHandler503.cs" />
+    <Compile Include="Server\Model\Action.cs" />
+    <Compile Include="Server\Model\Field.cs" />
+    <Compile Include="Server\Model\Mapping.cs" />
+    <Compile Include="Server\Model\Parameter.cs" />
+    <Compile Include="Server\Model\Property.cs" />
+    <Compile Include="Server\Model\Resource.cs" />
+    <Compile Include="Server\Model\Template.cs" />
+    <Compile Include="Server\Modules\Base.cs" />
+    <Compile Include="Server\Modules\RootModule.cs" />
+    <Compile Include="Server\NancyExtension.cs" />
+    <Compile Include="Server\Repository\HalLinks.cs" />
+    <Compile Include="Server\Repository\IResourceConfiguration.cs" />
+    <Compile Include="Server\Repository\ResourceConfiguration.cs" />
+    <Compile Include="Server\Server.cs" />
+    <Compile Include="Server\UserValidator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Model\Model.csproj">
+      <Project>{773E8FF6-01A7-42D4-93F1-9091A67D212C}</Project>
+      <Name>Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
