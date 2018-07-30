@@ -37,6 +37,10 @@ a FTP client and a DNS client.
 
 Client and server classes for building and interacting with REST based services.
 
+## Demos
+
+There are various demo projects that will hopefully show you how to use this code.
+
 ## Open Source
 
 This code is not stand alone. It make use of other Open Source projects. A grateful thanks to those authors for providing their modules
