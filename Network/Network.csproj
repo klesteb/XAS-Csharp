@@ -53,7 +53,7 @@
     <Compile Include="DNS\DataStructures.cs" />
     <Compile Include="DNS\ip4Addresses.cs" />
     <Compile Include="DNS\Resolver.cs" />
-    <Compile Include="DNS\Clent.cs" />
+    <Compile Include="DNS\Client.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="FTP\Client.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
