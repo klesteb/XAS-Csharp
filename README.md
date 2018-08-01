@@ -2,9 +2,9 @@
 
 This is a partial implementation of the XAS Perl modules in C#. In some ways, Perl is a much easier language to program in. 
 You can build wonderfully complex data structures without any thought and morph the object model in new and interesting ways. 
-Not so in C#. Where you are much more concerned with variableness, program structure. 
+Not so in C#. Where you are much more concerned with variableness and program structure. 
 
-Which I believe is a hindrance to good programing. But this is not what they tech in CS classes. Of course you can always 
+Which I believe is a hindrance to good programing. But this is not what they teach in CS classes. Of course you can always 
 memorize the C# language guide and live on Stackexchange, and maybe you will produce good code. Who knows, stranger things 
 have happened. Remember, we went to the moon with 64K of memory, now we can barely load an OS and a word processor is 64GB 
 of memory. I guess that is progress. 
