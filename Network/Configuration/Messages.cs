@@ -1,16 +1,21 @@
 ﻿
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Messages;
 
 namespace XAS.Network.Configuration {
 
-    public static class ConfigurationExtensions {
+    /// <summary>
+    /// Load the messages for Network.
+    /// </summary>
+    /// 
+    public class Messages: IMessages {
 
         /// <summary>
-        /// Populate the Messages section of the configuration, with Network specific messages.
+        /// Load messages.
         /// </summary>
         /// <param name="config">An IConfiguration object.</param>
         /// 
-        public static void LoadNetworkMessages(this IConfiguration config) {
+        public void Load(IConfiguration config) {
 
             var key = config.Key;
             var section = config.Section;
@@ -21,7 +26,7 @@ namespace XAS.Network.Configuration {
             config.AddKey(section.Messages(), key.StompSubscribeException(), "A SUBSCRIBE must have an id defined.");
             config.AddKey(section.Messages(), key.StompNackSubscrptionExecption(), "A NACK must have a subscription.");
             config.AddKey(section.Messages(), key.StompUnsubscribeException(), "An UNSUBSCRIBE must have a destination or id, or both.");
-   
+  
         }
 
     }

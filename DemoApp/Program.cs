@@ -33,9 +33,7 @@ namespace DemoApp {
             // build the configuration
 
             var config = new XAS.Core.Configuration.Configuration(section, key);
-
             config.Build();
-            config.LoadApplicationMessages();
 
             // build the locker
 

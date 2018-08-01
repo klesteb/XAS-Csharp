@@ -30,9 +30,7 @@ namespace DemoShell {
             // build the configuration
 
             var config = new Configuration(section, key);
-
             config.Build();
-            config.LoadApplicationMessages();
 
             // build the locker
 

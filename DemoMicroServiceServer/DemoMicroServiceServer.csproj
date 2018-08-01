@@ -65,6 +65,9 @@
     <Reference Include="Nancy.Validation.FluentValidation">
       <HintPath>..\..\packages\Nancy.Validation.FluentValidation.1.4.1\lib\net40\Nancy.Validation.FluentValidation.dll</HintPath>
     </Reference>
+    <Reference Include="Polly">
+      <HintPath>..\packages\Polly.6.1.0\lib\netstandard2.0\Polly.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceProcess" />
@@ -77,8 +80,9 @@
     <Reference Include="XAS.App">
       <HintPath>..\..\Application\trunk\bin\Debug\XAS.App.dll</HintPath>
     </Reference>
-    <Reference Include="XAS.Core">
-      <HintPath>..\..\Core\trunk\bin\Debug\XAS.Core.dll</HintPath>
+    <Reference Include="XAS.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Core\bin\Debug\XAS.Core.dll</HintPath>
     </Reference>
     <Reference Include="XAS.Model">
       <HintPath>..\..\Model\trunk\bin\Debug\XAS.Model.dll</HintPath>
@@ -88,9 +92,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\ConfigurationExtensions.cs" />
     <Compile Include="Configuration\KeyExtensions.cs" />
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
+    <Compile Include="Configuration\Messages.cs" />
     <Compile Include="Configuration\SectionExtensions.cs" />
     <Compile Include="Model\Schema\Dinosaur.cs" />
     <Compile Include="Model\Repository\DinosaurRepository.cs" />

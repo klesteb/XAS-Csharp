@@ -43,13 +43,14 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="XAS.Core">
-      <HintPath>..\..\Core\trunk\bin\Debug\XAS.Core.dll</HintPath>
+    <Reference Include="XAS.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Core\bin\Debug\XAS.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\ConfigurationExtensions.cs" />
     <Compile Include="Configuration\KeyExtensions.cs" />
+    <Compile Include="Configuration\Messages.cs" />
     <Compile Include="DNS\DataStructures.cs" />
     <Compile Include="DNS\ip4Addresses.cs" />
     <Compile Include="DNS\Resolver.cs" />

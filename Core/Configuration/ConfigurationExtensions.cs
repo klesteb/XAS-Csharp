@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Diagnostics;
 
 using XAS.Core.Locking;
+using XAS.Core.Configuration.Messages;
 
 namespace XAS.Core.Configuration {
     
@@ -222,16 +224,22 @@ namespace XAS.Core.Configuration {
             config.AddKey(section.Environment(), key.Trace(), false.ToString());
             config.AddKey(section.Environment(), key.LockDriver(), LockDriver.Mutex.ToString());
 
-            // messages
+            // find and load messages
+            // taken from https://stackoverflow.com/questions/5120647/instantiate-all-classes-implementing-a-specific-interface
+            // with modifications
 
-            config.AddKey(section.Messages(), key.StartRun(), "Start run");
-            config.AddKey(section.Messages(), key.StopRun(), "Stop run");
-            config.AddKey(section.Messages(), key.StartUp(), "Starting up");
-            config.AddKey(section.Messages(), key.ShutDown(), "Shutting down");
-            config.AddKey(section.Messages(), key.ArgumentIsNull(), "The requested argument is null: \"{0}\"");
-            config.AddKey(section.Messages(), key.InvalidMimeType(), "Requested mime type is not valid: \"{0}\"");
-            config.AddKey(section.Messages(), key.MimeTypeNotRegistered(), "Requested mime type is not registered: \"{0}\"");
-            config.AddKey(section.Messages(), key.FileMissing(), "{0} is missing");
+            var interfaceType = typeof(IMessages);
+            var loaders = AppDomain.CurrentDomain.GetAssemblies()
+              .SelectMany(x => x.GetTypes())
+              .Where(x => interfaceType.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
+              .Select(x => Activator.CreateInstance(x));
+
+            foreach (var loader in loaders) {
+
+                var messages = loader as IMessages;
+                messages.Load(config);
+
+            }
 
         }
 

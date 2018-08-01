@@ -1,11 +1,21 @@
 ﻿
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Messages;
 
 namespace DemoDatabase.Configuration {
 
-    public static class ConfigurationExtensions {
+    /// <summary>
+    /// Load messages for DemoDatabase.
+    /// </summary>
+    /// 
+    public class Messages: IMessages {
 
-        public static void LoadDemoDatabaseMessages(this IConfiguration config) {
+        /// <summary>
+        /// Load Messages.
+        /// </summary>
+        /// <param name="config">An IConfiguration object.</param>
+        /// 
+        public void Load(IConfiguration config) {
 
             var key = config.Key;
             var section = config.Section;

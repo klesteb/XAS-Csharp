@@ -42,17 +42,18 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="XAS.Core">
-      <HintPath>..\..\Core\trunk\bin\Debug\XAS.Core.dll</HintPath>
+    <Reference Include="XAS.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Core\bin\Debug\XAS.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base.cs" />
     <Compile Include="CommandHandler.cs" />
     <Compile Include="CommandOptions.cs" />
-    <Compile Include="Configuration\ConfigurationExtensions.cs" />
     <Compile Include="Configuration\KeyExtensions.cs" />
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
+    <Compile Include="Configuration\Messages.cs" />
     <Compile Include="Console.cs" />
     <Compile Include="Exceptions\ConfFileMissingException.cs" />
     <Compile Include="Exceptions\ConfigFileMissingException.cs" />
@@ -77,12 +78,6 @@
     </Compile>
     <Compile Include="Services\ServiceImplementaion.cs" />
     <Compile Include="Shell.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj">
-      <Project>{C23A3167-6EB1-44F9-AC8A-FE65C94300C9}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,12 +1,13 @@
 ﻿using System.IO;
 
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Messages;
 
 namespace DemoMicroServiceServer.Configuration {
 
-    public static class ConfigurationExtensions {
+    public class Messages: IMessages {
 
-        public static void LoadDemoMicroServiceServer(this IConfiguration config) {
+        public void Load(IConfiguration config) {
 
             var key = config.Key;
             var section = config.Section;

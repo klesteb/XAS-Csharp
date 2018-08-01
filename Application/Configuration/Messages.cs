@@ -1,22 +1,21 @@
 ﻿
-using System.IO;
-
-using XAS.Core.Logging;
-using XAS.Core.Exceptions;
-using XAS.Core.Extensions;
 using XAS.Core.Configuration;
-using XAS.Core.Configuration.Loaders;
+using XAS.Core.Configuration.Messages;
 
 namespace XAS.App.Configuration {
 
-    public static class ConfigurationExtensions {
+    /// <summary>
+    /// Load default messages for applications.
+    /// </summary>
+    /// 
+    public class Messages: IMessages {
 
         /// <summary>
-        /// Populate the Messages section of the configuration, with Application specific messages.
+        /// Load messages.
         /// </summary>
         /// <param name="config">An IConfiguration object.</param>
         /// 
-        public static void LoadApplicationMessages(this IConfiguration config) {
+        public void Load(IConfiguration config) {
 
             var key = config.Key;
             var section = config.Section;

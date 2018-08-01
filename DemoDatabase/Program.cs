@@ -37,11 +37,7 @@ namespace DemoDatabase {
             // build the configuration
 
             var config = new XAS.Core.Configuration.Configuration(section, key);
-
             config.Build();
-            config.LoadApplicationMessages();
-            config.LoadModelMessages();
-            config.LoadDemoDatabaseMessages();
 
             // build the locker
 
@@ -100,6 +96,7 @@ namespace DemoDatabase {
             this.log = logFactory.Create(typeof(App));
 
         }
+
 
         public void PrintGroup(GroupDTO dto) {
 

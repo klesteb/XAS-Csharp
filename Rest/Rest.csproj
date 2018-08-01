@@ -82,8 +82,9 @@
     <Reference Include="Tavis.UriTemplates, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Tavis.UriTemplates.1.1.1\lib\Net45\Tavis.UriTemplates.dll</HintPath>
     </Reference>
-    <Reference Include="XAS.Core">
-      <HintPath>..\..\Core\trunk\bin\Debug\XAS.Core.dll</HintPath>
+    <Reference Include="XAS.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Core\bin\Debug\XAS.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
