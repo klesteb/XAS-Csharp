@@ -48,7 +48,7 @@ There are various demo projects that will hopefully show you how to use this cod
 
 ## Open Source
 
-This code is not stand alone. It makes use of other Open Source projects. A grateful thanks to those authors for providing their modules
+This code is not stand alone. It makes use of other Open Source projects. A grateful thanks to those authors for providing their code
 for others to use. 
 
 Kevin
