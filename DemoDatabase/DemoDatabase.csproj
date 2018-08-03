@@ -52,19 +52,14 @@
     <StartupObject>DemoDatabase.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DemoModel">
+      <HintPath>..\DemoModel\bin\Debug\DemoModel.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="FluentFTP">
-      <HintPath>..\..\..\..\..\..\..\WPM\lib\FluentFTP.dll</HintPath>
-    </Reference>
-    <Reference Include="Interop.TaskScheduler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=af7adf8325578811, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>U:\My Documents\Visual Studio 2015\Projects\WPM\trunk\WPM-Core\bin\Release\Interop.TaskScheduler.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>D:\RM\lib\log4net.dll</HintPath>
@@ -98,30 +93,6 @@
   <ItemGroup>
     <Compile Include="Configuration\KeyExtensions.cs" />
     <Compile Include="Configuration\Messages.cs" />
-    <Compile Include="Model\Context.cs" />
-    <Compile Include="Model\Database\Attributes.cs" />
-    <Compile Include="Model\Database\Authentication.cs" />
-    <Compile Include="Model\Database\Groups.cs" />
-    <Compile Include="Model\Database\Servers.cs" />
-    <Compile Include="Model\Database\GroupsTargets.cs" />
-    <Compile Include="Model\Database\TargetsServers.cs" />
-    <Compile Include="Model\Database\ServersAttributes.cs" />
-    <Compile Include="Model\Database\Targets.cs" />
-    <Compile Include="Model\DBM.cs" />
-    <Compile Include="Model\Repository\AttributesRepository.cs" />
-    <Compile Include="Model\Repository\AuthenticationRepository.cs" />
-    <Compile Include="Model\Repository\GroupsRepository.cs" />
-    <Compile Include="Model\Repository\ServersAttributesRepository.cs" />
-    <Compile Include="Model\Repository\ServersRepository.cs" />
-    <Compile Include="Model\Repository\GroupsTargetsRepository.cs" />
-    <Compile Include="Model\Repository\TargetsServersRepository.cs" />
-    <Compile Include="Model\Repository\TargetsRepository.cs" />
-    <Compile Include="Model\Repositories.cs" />
-    <Compile Include="Model\Service\AttributeDTO.cs" />
-    <Compile Include="Model\Service\GroupDTO.cs" />
-    <Compile Include="Model\Service\ServerDTO.cs" />
-    <Compile Include="Model\Service\Services.cs" />
-    <Compile Include="Model\Service\TargetDTO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -145,6 +116,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

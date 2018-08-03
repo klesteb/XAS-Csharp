@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 using XAS.App;
 using XAS.App.Exceptions;
-using XAS.App.Configuration;
 using XAS.App.Services.Framework;
 using XAS.App.Configuration.Loaders;
 

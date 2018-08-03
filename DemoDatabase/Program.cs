@@ -16,8 +16,7 @@ using XAS.Core.Configuration;
 using XAS.Model;
 using XAS.Model.Configuration;
 
-using DemoDatabase.Model;
-using DemoDatabase.Model.Service;
+using DemoModel;
 using DemoDatabase.Configuration;
 
 namespace DemoDatabase {
@@ -61,8 +60,8 @@ namespace DemoDatabase {
 
             var dbm = new DBM(config, handler, logFactory);
             var initializer = new Initializer(dbm);
-            var context = new DemoDatabase.Model.Context(initializer, model);
-            var repository = new DemoDatabase.Model.Repositories(config, handler, logFactory, context);
+            var context = new DemoModel.Context(initializer, model);
+            var repository = new DemoModel.Repositories(config, handler, logFactory, context);
             var manager = new Manager(context, repository);
 
             // run the application
@@ -74,226 +73,16 @@ namespace DemoDatabase {
 
     }
 
-    public class App: XAS.App.Console {
+    public class App: XAS.App.Shell {
 
         private readonly ILogger log = null;
         private readonly IManager manager = null;
 
-        public string Site { get; set; }
-        public string Group { get; set; }
-        public bool Groups { get; set; }
-        public string Target { get; set; }
-        public bool Targets { get; set; }
-        public string Server { get; set; }
-
         public App(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISecurity secure, IManager manager):
             base(config, handler, logFactory, secure) {
 
-            this.Groups = false;
-            this.Targets = false;
-
             this.manager = manager;
             this.log = logFactory.Create(typeof(App));
-
-        }
-
-
-        public void PrintGroup(GroupDTO dto) {
-
-            System.Console.WriteLine("------------------------------------------------");
-            System.Console.WriteLine("Group: {0}", dto.Name);
-
-            foreach (var target in dto.Targets) {
-
-                System.Console.WriteLine("    Target: {0}", target.Name);
-
-            }
-
-        }
-
-        public void PrintServer(ServerDTO dto) {
-
-            System.Console.WriteLine("------------------------------------------------");
-            System.Console.WriteLine("Server: {0}", dto.Name);
-
-            foreach (var attribute in dto.Attributes) {
-
-                System.Console.WriteLine("    Type: {0}, Name: {1}, Value: {2}",
-                    attribute.Type,
-                    attribute.Name,
-                    (attribute.StrValue != null)
-                            ? attribute.StrValue
-                            : attribute.NumValue.ToString()
-                );
-
-            }
-
-        }
-
-        public void GetServer() {
-
-            using (var repo = manager.Repository as Model.Repositories) {
-
-                var dto = Services.GetServer(repo, this.Server);
-                PrintServer(dto);
-
-            }
-
-        }
-
-        public void GetServersByGroup() {
-
-            using (var repo = manager.Repository as Model.Repositories) {
-
-                var dtos = Services.GetServers(repo, this.Group);
-
-                foreach (var dto in dtos) {
-
-                    PrintServer(dto);
-
-                }
-
-            }
-
-        }
-
-        public void GetServers() {
-
-            using (var repo = manager.Repository as Model.Repositories) {
-
-                var dtos = Services.GetServers(repo, this.Group, this.Target);
-
-                foreach (var dto in dtos) {
-
-                    PrintServer(dto);
-
-                }
-
-            }
-
-        }
-
-        public void GetSites() {
-
-            using (var repo = manager.Repository as Model.Repositories) {
-
-                var dto = Services.GetSite(repo, this.Site);
-                PrintServer(dto);
-
-            }
-
-        }
-
-        public void GetGroups() {
-
-            using (var repo = manager.Repository as Model.Repositories) {
-
-                var dtos = Services.GetGroups(repo);
-
-                foreach (var dto in dtos) {
-
-                    PrintGroup(dto);
-
-                }
-
-            }
-
-        }
-
-        public void Setup() {
-
-            // initialize the database, if needed
-
-            var repo = manager.Repository as Model.Repositories;
-            var count = repo.Servers.Count();
-
-            // check the arguments
-
-            if (!String.IsNullOrEmpty(Site)) {
-
-                if (!String.IsNullOrEmpty(Group) || !String.IsNullOrEmpty(Target) ) { 
-
-                    throw new ArgumentException("You can not specify --site along with --group or --target");
-
-                }
-
-                if (!String.IsNullOrEmpty(Server)) {
-
-                    throw new ArgumentException("You can not specify --site along with --server");
-
-                }
-
-                if (Groups) {
-
-                    throw new ArgumentException("You can not specify --groups along with --server");
-
-                }
-
-                return;
-
-            }
-
-            if (!String.IsNullOrEmpty(Server)) {
-
-                if (!String.IsNullOrEmpty(Group) || !String.IsNullOrEmpty(Target)) {
-
-                    throw new ArgumentException("You can not specify --server along with --group or --target");
-
-                }
-
-                if (!String.IsNullOrEmpty(Site)) {
-
-                    throw new ArgumentException("You can not specify --server along with --site");
-
-                }
-
-                if (Groups) {
-
-                    throw new ArgumentException("You can not specify --groups along with --site");
-
-                }
-
-                return;
-
-            }
-
-            if (Groups) {
-
-                if (!String.IsNullOrEmpty(Group) || !String.IsNullOrEmpty(Target)) {
-
-                    throw new ArgumentException("You can not specify --groups along with --group or --target");
-
-                }
-
-                if (!String.IsNullOrEmpty(Site)) {
-
-                    throw new ArgumentException("You can not specify --server along with --groups");
-
-                }
-
-                if (!String.IsNullOrEmpty(Server)) {
-
-                    throw new ArgumentException("You can not specify --server along with --groups");
-
-                }
-                
-                return;
-
-            }
-
-            //if ((String.IsNullOrEmpty(Group) && !String.IsNullOrEmpty(Target)) ||
-            //    (!String.IsNullOrEmpty(Group) && String.IsNullOrEmpty(Target))) {
-
-            //    throw new ArgumentException("You must specify both --group and --target");
-
-            //}
-
-            if (String.IsNullOrEmpty(Site) && String.IsNullOrEmpty(Server) &&
-                String.IsNullOrWhiteSpace(Group) && String.IsNullOrWhiteSpace(Target)) {
-
-                DisplayUsage();
-
-            }
 
         }
 
@@ -301,59 +90,8 @@ namespace DemoDatabase {
 
             Int32 rc = 0;
 
-            Setup();
-
-            if (!String.IsNullOrEmpty(Site)) {
-
-                GetSites();
-
-            } else if (!String.IsNullOrEmpty(Server)) {
-
-                GetServer();
-
-            } else if (!String.IsNullOrEmpty(Group) && String.IsNullOrEmpty(Target)) {
-
-                GetServersByGroup();
-
-            } else if (this.Groups) {
-
-                GetGroups();
-
-            } else {
-
-                GetServers();
-
-            }
 
             return rc;
-
-        }
-
-        public override Options GetOptions() {
-
-            Options options = base.GetOptions();
-
-            options.Add("site=", "the site to connect too", (v) => {
-                this.Site = v;
-            });
-
-            options.Add("group=", "the group to use for server selection", (v) => {
-                this.Group = v;
-            });
-
-            options.Add("target=", "the target to use for server selection", (v) => {
-                this.Target = v;
-            });
-
-            options.Add("server=", "the server to use", (v) => {
-                this.Server = v;
-            });
-
-            options.Add("groups", "list the avaliable groups", (v) => {
-                this.Groups = true;
-            });
-
-            return options;
 
         }
 

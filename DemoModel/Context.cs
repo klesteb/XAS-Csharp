@@ -1,9 +1,9 @@
 ﻿using System.Data.Entity;
 
 using XAS.Model;
-using DemoDatabase.Model.Database;
+using DemoModel.Schema;
 
-namespace DemoDatabase.Model {
+namespace DemoModel {
 
     public class Context: XAS.Model.Context {
 
@@ -19,14 +19,7 @@ namespace DemoDatabase.Model {
         // Add a DbSet for each entity type that you want to include in your model. For more information 
         // on configuring and using a Code First model, see http://go.microsoft.com/fwlink/?LinkId=390109.
 
-        public virtual DbSet<Groups> Groups { get; set; }
-        public virtual DbSet<Servers> Servers { get; set; }
-        public virtual DbSet<Targets> Targets { get; set; }
-        public virtual DbSet<Attributes> Attributes { get; set; }
-        public virtual DbSet<GroupsTargets> GroupsTargets { get; set; }
-        public virtual DbSet<TargetsServers> TargetsServers { get; set; }
-        public virtual DbSet<Authentication> Authentication { get; set; }
-        public virtual DbSet<ServersAttributes> ServersAttributes { get; set; }
+        public virtual DbSet<Dinosaurs> Dinosaurs { get; set; }
 
     }
 
