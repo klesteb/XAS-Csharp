@@ -88,10 +88,16 @@ namespace DemoDatabase {
 
         public override Int32 RunApp(String[] args) {
 
-            Int32 rc = 0;
+            var handler = new Commands(config, logFactory);
+            this.Commands = new CommandOptions(config, logFactory);
 
+            this.Commands.Add("set", "set global settings", handler.Set);
+            this.Commands.Add("show", "show global settings", handler.Show);
+            this.Commands.Add("add", "add a new dinosaur", handler.Add);
+            this.Commands.Add("remove", "remove a dinosaur", handler.Remove);
+            this.Commands.Add("update", "update a dinosaur", handler.Update);
 
-            return rc;
+            return base.RunApp(args);
 
         }
 
@@ -119,18 +125,10 @@ namespace DemoDatabase {
             text.Add("");
             text.Add("DESCRIPTION");
             text.Add("");
-            text.Add("    This program will initialze and test a database schema.");
-            text.Add("");
-            text.Add("    The current models are:");
-            text.Add("");
-            text.Add("        Master");
-            text.Add("");
-            text.Add("     Where \"Master\" is the default.");
+            text.Add("    Manipulate dinosaurs.");
             text.Add("");
             text.Add("OPTIONS and ARGUMENTS");
             text.Add("");
-            text.Add("    Arguments:");
-            text.Add("    Options:");
 
             foreach (var line in options) {
 
@@ -152,7 +150,7 @@ namespace DemoDatabase {
             text.Add("");
             text.Add("COPYRIGHT AND LICENSE");
             text.Add("");
-            text.Add("    Copyright (c) 2017 Kevin L. Esteb");
+            text.Add("    Copyright (c) 2018 Kevin L. Esteb");
             text.Add("");
 
             return text.ToArray();
