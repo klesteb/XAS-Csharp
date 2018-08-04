@@ -95,11 +95,11 @@ namespace DemoDatabase {
                 displayHelp = true;
             });
 
-            options.Add("dino=", "show a dinosaur", (v) => {
+            options.Add("get-dino=", "show a dinosaur", (v) => {
                 dinoShow = true;
             });
 
-            options.Add("dinos", "list dinosaurs", (v) => {
+            options.Add("list-dinos", "list dinosaurs", (v) => {
                 dinoList = true;
             });
 
@@ -143,6 +143,7 @@ namespace DemoDatabase {
                     var dtos = dino.List();
                     string padding = "                               ";
 
+                    System.Console.WriteLine("");
                     System.Console.WriteLine("  Id         Name            Status       Height");
                     System.Console.WriteLine("------+----------------+----------------+--------+");
 
@@ -376,29 +377,9 @@ namespace DemoDatabase {
 
             System.Console.WriteLine("Basic command usage:");
             System.Console.WriteLine("");
-            System.Console.WriteLine("  To display a single record, do the following:");
+            System.Console.WriteLine("  To add a new dinosaur do the following:");
             System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id]");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To list the existing records, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute -list");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To add a new record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute -create -category <category> -name <name> -type <type> -value <value>");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  This will display the id of the new record.");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To update an existing record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id] -update -category <category> -name <name> -type <type> -value <value>");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  This will display the id of the updated record. All options are optional.");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To delete an existing record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id] -delete");
+            System.Console.WriteLine("    add -name <name> -status <status> -height <height>");
             System.Console.WriteLine("");
 
         }
@@ -409,29 +390,9 @@ namespace DemoDatabase {
 
             System.Console.WriteLine("Basic command usage:");
             System.Console.WriteLine("");
-            System.Console.WriteLine("  To display a single record, do the following:");
+            System.Console.WriteLine("  To remove a single record, do the following:");
             System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id]");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To list the existing records, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute -list");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To add a new record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute -create -category <category> -name <name> -type <type> -value <value>");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  This will display the id of the new record.");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To update an existing record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id] -update -category <category> -name <name> -type <type> -value <value>");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  This will display the id of the updated record. All options are optional.");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To delete an existing record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id] -delete");
+            System.Console.WriteLine("    remove [id]");
             System.Console.WriteLine("");
 
         }
@@ -442,29 +403,9 @@ namespace DemoDatabase {
 
             System.Console.WriteLine("Basic command usage:");
             System.Console.WriteLine("");
-            System.Console.WriteLine("  To display a single record, do the following:");
+            System.Console.WriteLine("  To update a single record, do the following:");
             System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id]");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To list the existing records, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute -list");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To add a new record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute -create -category <category> -name <name> -type <type> -value <value>");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  This will display the id of the new record.");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To update an existing record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id] -update -category <category> -name <name> -type <type> -value <value>");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  This will display the id of the updated record. All options are optional.");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("  To delete an existing record, do the following:");
-            System.Console.WriteLine("");
-            System.Console.WriteLine("    attribute [id] -delete");
+            System.Console.WriteLine("    update [id] -name <name> -status <status> -height <height>");
             System.Console.WriteLine("");
 
         }
