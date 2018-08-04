@@ -14,7 +14,7 @@ namespace XAS.Model {
     /// </summary>
     /// <typeparam name="T">A database entity object.</typeparam>
     /// 
-    public abstract class Repository<T>: IRespository<T> where T: class, new() {
+    public abstract class Repository<T>: Respository<T> where T: class, new() {
 
         /// <summary>
         /// Get/Set the DbContext.

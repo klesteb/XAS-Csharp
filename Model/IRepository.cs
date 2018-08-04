@@ -20,7 +20,7 @@ namespace XAS.Model {
     /// </remarks>
     /// <typeparam name="T">A DbContext object.</typeparam>
     /// 
-    public interface IRespository<T> where T: class {
+    public interface Respository<T> where T: class {
 
         /// <summary>
         /// A generic search method. A null predicate returns all entities.
