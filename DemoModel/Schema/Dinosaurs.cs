@@ -8,7 +8,7 @@ namespace DemoModel.Schema {
 
         public String Name { get; set; }
         public String Status { get; set; }
-        public Int32 HeightInFeet { get; set; }
+        public Int32 Height { get; set; }
 
     }
 
@@ -21,7 +21,7 @@ namespace DemoModel.Schema {
             Property(t => t.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
             Property(t => t.Name).IsRequired().HasMaxLength(32);
             Property(t => t.Status).IsRequired().HasMaxLength(32);
-            Property(t => t.HeightInFeet).IsRequired();
+            Property(t => t.Height).IsRequired();
             Property(t => t.Revision).IsRowVersion();
 
             ToTable("Dinosaurs");

@@ -1,37 +1,21 @@
 ﻿using System;
+using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
 
 using XAS.Model;
+using XAS.Model.Paging;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
 using DemoModel.Schema;
-using XAS.Model.Paging;
-using System.Linq;
+using DemoModelCommon.DataStructures;
 
 namespace DemoModel.Service {
 
     public class DinosaursPagedCriteria: PagedCriteria { }
     public class DinosaursCriteria: Criteria<Dinosaurs> { }
-
-    public class DinosaurDTO {
-
-        public Int32 Id { get;set; }
-        public String Name { get; set; }
-        public String Status { get; set; }
-        public Int32 HeightInFeet { get; set; }
-
-    }
-
-    public class DinosaurDTI {
-    
-        public String Name { get; set; }
-        public String Status { get; set; }
-        public String HeightInFeet { get; set; }
-
-    }
 
     public class Dinosaur {
 
@@ -94,7 +78,7 @@ namespace DemoModel.Service {
 
             using (var repo = manager.Repository as Repositories) {
 
-                foreach (var record = repo.Dinosaurs.Search()) {
+                foreach (var record in repo.Dinosaurs.Search()) {
 
                     dtos.Add(NewDTO(repo, record));
 
@@ -222,7 +206,7 @@ namespace DemoModel.Service {
                 Id = dino.Id,
                 Name = dino.Name,
                 Status = dino.Status,
-                HeightInFeet = dino.HeightInFeet
+                Height = dino.Height
             };
 
         }
@@ -232,26 +216,26 @@ namespace DemoModel.Service {
             return new Dinosaurs {
                 Name = dino.Name,
                 Status = dino.Status,
-                HeightInFeet = Convert.ToInt32(dino.HeightInFeet)
+                Height = Convert.ToInt32(dino.Height)
             };
 
         }
 
         private Dinosaurs MergeDTI(Repositories repo, Dinosaurs record, DinosaurDTI dti) {
 
-            Int32 heightInFeet = Convert.ToInt32(dti.HeightInFeet);
+            Int32 height = Convert.ToInt32(dti.Height);
 
             record.Name = (record.Name != dti.Name)
                 ? dti.Name
                 : record.Name;
 
-            record.Status = (record.Status != dit.Status)
+            record.Status = (record.Status != dti.Status)
                 ? dti.Status
                 : record.Status;
 
-            record.HeightInFeet = (record.HeightInFeet != heightInFeet)
-                ? heightInFeet
-                : record.HeightInFeet;
+            record.Height = (record.Height != height)
+                ? height
+                : record.Height;
 
             return record;
 

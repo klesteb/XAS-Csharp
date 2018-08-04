@@ -88,14 +88,14 @@ namespace DemoDatabase {
 
         public override Int32 RunApp(String[] args) {
 
-            var handler = new Commands(config, logFactory);
+            var command = new Commands(config, handler, logFactory, manager);
             this.Commands = new CommandOptions(config, logFactory);
 
-            this.Commands.Add("set", "set global settings", handler.Set);
-            this.Commands.Add("show", "show global settings", handler.Show);
-            this.Commands.Add("add", "add a new dinosaur", handler.Add);
-            this.Commands.Add("remove", "remove a dinosaur", handler.Remove);
-            this.Commands.Add("update", "update a dinosaur", handler.Update);
+            this.Commands.Add("set", "set global settings", command.Set);
+            this.Commands.Add("show", "show global settings", command.Show);
+            this.Commands.Add("add", "add a new dinosaur", command.Add);
+            this.Commands.Add("remove", "remove a dinosaur", command.Remove);
+            this.Commands.Add("update", "update a dinosaur", command.Update);
 
             return base.RunApp(args);
 
