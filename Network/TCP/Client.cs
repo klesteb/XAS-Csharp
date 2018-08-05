@@ -6,11 +6,11 @@ using System.Text.RegularExpressions;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
-using XAS.Network.Configuration;
-
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
+using XAS.Network.Configuration.Extensions;
 
 namespace XAS.Network.TCP {
 

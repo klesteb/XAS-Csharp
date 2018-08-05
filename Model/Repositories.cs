@@ -6,8 +6,8 @@ using System.Data.Entity.Infrastructure;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
-
-using XAS.Model.Configuration;
+using XAS.Core.Configuration.Extensions;
+using XAS.Model.Configuration.Extension;
 
 namespace XAS.Model {
 

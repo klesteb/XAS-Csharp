@@ -3,6 +3,7 @@
 using XAS.Core.Spooling;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Core.Logging {
 

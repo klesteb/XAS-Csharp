@@ -5,7 +5,8 @@ using System.Text.RegularExpressions;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
-using XAS.Network.Configuration;
+using XAS.Core.Configuration.Extensions;
+using XAS.Network.Configuration.Extensions;
 
 namespace XAS.Network.STOMP {
 

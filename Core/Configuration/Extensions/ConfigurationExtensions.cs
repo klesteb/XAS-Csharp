@@ -6,7 +6,7 @@ using System.Diagnostics;
 using XAS.Core.Locking;
 using XAS.Core.Configuration.Messages;
 
-namespace XAS.Core.Configuration {
+namespace XAS.Core.Configuration.Extensions {
     
     /// <summary>
     /// Extension class for configuration.
@@ -236,6 +236,7 @@ namespace XAS.Core.Configuration {
 
             foreach (var loader in loaders) {
 
+                //System.Console.WriteLine("found: {0}", loader);
                 var messages = loader as IMessages;
                 messages.Load(config);
 

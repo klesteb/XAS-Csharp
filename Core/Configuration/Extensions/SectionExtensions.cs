@@ -1,7 +1,11 @@
 ﻿using System;
 
-namespace XAS.Core.Configuration {
+namespace XAS.Core.Configuration.Extensions {
 
+    /// <summary>
+    /// Sections extensions.
+    /// </summary>
+    /// 
     public static class SectionExtensions {
 
         /// <summary>

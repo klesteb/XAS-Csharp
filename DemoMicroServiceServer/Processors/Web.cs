@@ -2,15 +2,15 @@
 
 using Nancy.Hosting.Self;
 
-using XAS.Core;
 using XAS.Rest.Server;
 using XAS.Core.Logging;
 using XAS.Core.Security;
 using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
-using DemoMicroServiceServer.Configuration;
+using DemoMicroServiceServer.Configuration.Extensions;
 
 namespace DemoMicroServiceServer.Processors {
 

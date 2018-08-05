@@ -85,6 +85,7 @@ namespace DemoDatabase {
         /// 
         public Boolean Show(params String[] args) {
 
+            Int32 id = 0;
             bool dinoShow = false;
             bool dinoList = false;
             bool displayHelp = false;
@@ -96,6 +97,7 @@ namespace DemoDatabase {
             });
 
             options.Add("get-dino=", "show a dinosaur", (v) => {
+                id = Convert.ToInt32(v);
                 dinoShow = true;
             });
 
@@ -113,28 +115,19 @@ namespace DemoDatabase {
 
                 } else if (dinoShow) {
 
-                    if (parameters.Count() > 0) {
+                    var dto = dino.Get(id);
 
-                        int id = Convert.ToInt32(parameters[0]);
-                        var dto = dino.Get(id);
+                    if (dto != null) {
 
-                        if (dto != null) {
-
-                            System.Console.WriteLine("Id    : {0}", dto.Id);
-                            System.Console.WriteLine("Name  : {0}", dto.Name);
-                            System.Console.WriteLine("Status: {0}", dto.Status);
-                            System.Console.WriteLine("Height: {0}", dto.Height);
-                            System.Console.WriteLine("");
-
-                        } else {
-
-                            log.Error(String.Format("Unable to find {0}", id));
-
-                        }
+                        System.Console.WriteLine("Id    : {0}", dto.Id);
+                        System.Console.WriteLine("Name  : {0}", dto.Name);
+                        System.Console.WriteLine("Status: {0}", dto.Status);
+                        System.Console.WriteLine("Height: {0}", dto.Height);
+                        System.Console.WriteLine("");
 
                     } else {
 
-                        log.Error("Invalid parameters, please use \"show -help\" for correct usage");
+                        log.Error(String.Format("Unable to find {0}", id));
 
                     }
 
@@ -390,7 +383,7 @@ namespace DemoDatabase {
 
             System.Console.WriteLine("Basic command usage:");
             System.Console.WriteLine("");
-            System.Console.WriteLine("  To remove a single record, do the following:");
+            System.Console.WriteLine("  To remove a dinosaur, do the following:");
             System.Console.WriteLine("");
             System.Console.WriteLine("    remove [id]");
             System.Console.WriteLine("");
@@ -403,7 +396,7 @@ namespace DemoDatabase {
 
             System.Console.WriteLine("Basic command usage:");
             System.Console.WriteLine("");
-            System.Console.WriteLine("  To update a single record, do the following:");
+            System.Console.WriteLine("  To update a dinosaur, do the following:");
             System.Console.WriteLine("");
             System.Console.WriteLine("    update [id] -name <name> -status <status> -height <height>");
             System.Console.WriteLine("");

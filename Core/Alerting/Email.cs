@@ -5,6 +5,7 @@ using System.Net.Mail;
 using XAS.Core.Mime;
 using XAS.Core.Logging;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Core.Alerting {
 

@@ -1,14 +1,23 @@
 ﻿
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Messages;
+using XAS.Core.Configuration.Extensions;
 
-namespace DemoDatabase.Configuration {
+using DemoDatabase.Configuration.Extensions;
+
+namespace DemoDatabase.Configuration.Messages {
 
     /// <summary>
     /// Load messages for DemoDatabase.
     /// </summary>
     /// 
     public class Messages: IMessages {
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// 
+        public Messages() { }
 
         /// <summary>
         /// Load Messages.

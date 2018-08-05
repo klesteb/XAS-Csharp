@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Network.DNS {
 

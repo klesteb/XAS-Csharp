@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Core.Mime {
 

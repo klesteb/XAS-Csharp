@@ -5,6 +5,7 @@ using Polly;
 using Polly.Retry;
 using XAS.Core.Locking;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Core.Spooling {
 

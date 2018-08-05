@@ -2,7 +2,7 @@
 
 using XAS.Core.Configuration;
 
-namespace XAS.Network.Configuration {
+namespace XAS.Network.Configuration.Extensions {
 
     /// <summary>
     /// Configuration Key extensions for Network.

@@ -2,11 +2,29 @@
 
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Messages;
+using XAS.Core.Configuration.Extensions;
 
-namespace DemoMicroServiceServer.Configuration {
+using DemoMicroServiceServer.Configuration.Extensions;
 
+namespace DemoMicroServiceServer.Configuration.Messages {
+
+    /// <summary>
+    /// Load messages for the DemoMicroServiceSErver.
+    /// </summary>
+    /// 
     public class Messages: IMessages {
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// 
+        public Messages() { }
+
+        /// <summary>
+        /// Load messages.
+        /// </summary>
+        /// <param name="config">An IConfiguration object.</param>
+        /// 
         public void Load(IConfiguration config) {
 
             var key = config.Key;

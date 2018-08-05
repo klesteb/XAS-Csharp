@@ -2,7 +2,7 @@
 
 using XAS.Core.Configuration;
 
-namespace XAS.Model.Configuration {
+namespace XAS.Model.Configuration.Extension {
 
     /// <summary>
     /// Configuration Key extensions for Model.

@@ -3,18 +3,17 @@ using System.IO;
 using System.Collections.Generic;
 
 using XAS.App;
-using XAS.App.Exceptions;
-using XAS.App.Configuration;
-using XAS.App.Configuration.Loaders;
-
 using XAS.Core.Logging;
 using XAS.Core.Alerting;
 using XAS.Core.Security;
 using XAS.Core.Spooling;
+using XAS.App.Exceptions;
 using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
+using XAS.App.Configuration.Loaders;
 using XAS.Core.Configuration.Loaders;
+using XAS.Core.Configuration.Extensions;
 
 namespace DemoApp {
 

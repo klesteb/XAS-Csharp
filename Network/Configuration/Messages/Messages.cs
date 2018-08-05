@@ -1,14 +1,22 @@
 ﻿
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Messages;
+using XAS.Core.Configuration.Extensions;
+using XAS.Network.Configuration.Extensions;
 
-namespace XAS.Network.Configuration {
+namespace XAS.Network.Configuration.Messages {
 
     /// <summary>
     /// Load the messages for Network.
     /// </summary>
     /// 
     public class Messages: IMessages {
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// 
+        public Messages() { }
 
         /// <summary>
         /// Load messages.

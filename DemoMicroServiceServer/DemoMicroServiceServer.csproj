@@ -92,10 +92,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\KeyExtensions.cs" />
+    <Compile Include="Configuration\Extensions\KeyExtensions.cs" />
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
-    <Compile Include="Configuration\Messages.cs" />
-    <Compile Include="Configuration\SectionExtensions.cs" />
+    <Compile Include="Configuration\Messages\Messages.cs" />
+    <Compile Include="Configuration\Extensions\SectionExtensions.cs" />
     <Compile Include="Model\Schema\Dinosaur.cs" />
     <Compile Include="Model\Repository\DinosaurRepository.cs" />
     <Compile Include="Processors\Web.cs" />

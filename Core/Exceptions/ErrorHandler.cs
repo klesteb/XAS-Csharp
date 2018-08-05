@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using XAS.Core.Logging;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Core.Exceptions {
 

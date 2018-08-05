@@ -6,11 +6,11 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-using XAS.App.Configuration;
-
 using XAS.Core;
 using XAS.Core.Logging;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
+using XAS.App.Configuration.Extensions;
 
 namespace XAS.App {
 

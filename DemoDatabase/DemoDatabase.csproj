@@ -82,21 +82,23 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="XAS.App">
-      <HintPath>..\..\Application\trunk\bin\Debug\XAS.App.dll</HintPath>
+    <Reference Include="XAS.App, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Application\bin\Debug\XAS.App.dll</HintPath>
     </Reference>
     <Reference Include="XAS.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Core\bin\Debug\XAS.Core.dll</HintPath>
     </Reference>
-    <Reference Include="XAS.Model">
-      <HintPath>..\..\Model\trunk\bin\Debug\XAS.Model.dll</HintPath>
+    <Reference Include="XAS.Model, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Model\bin\Debug\XAS.Model.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
-    <Compile Include="Configuration\KeyExtensions.cs" />
-    <Compile Include="Configuration\Messages.cs" />
+    <Compile Include="Configuration\Extensions\KeyExtensions.cs" />
+    <Compile Include="Configuration\Messages\Messages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

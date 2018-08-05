@@ -51,9 +51,9 @@
     <Compile Include="Base.cs" />
     <Compile Include="CommandHandler.cs" />
     <Compile Include="CommandOptions.cs" />
-    <Compile Include="Configuration\KeyExtensions.cs" />
+    <Compile Include="Configuration\Extensions\KeyExtensions.cs" />
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
-    <Compile Include="Configuration\Messages.cs" />
+    <Compile Include="Configuration\Messages\Messages.cs" />
     <Compile Include="Console.cs" />
     <Compile Include="Exceptions\ConfFileMissingException.cs" />
     <Compile Include="Exceptions\ConfigFileMissingException.cs" />

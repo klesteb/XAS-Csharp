@@ -49,8 +49,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\KeyExtensions.cs" />
-    <Compile Include="Configuration\Messages.cs" />
+    <Compile Include="Configuration\Extensions\KeyExtensions.cs" />
+    <Compile Include="Configuration\Messages\Messages.cs" />
     <Compile Include="DNS\DataStructures.cs" />
     <Compile Include="DNS\ip4Addresses.cs" />
     <Compile Include="DNS\Resolver.cs" />

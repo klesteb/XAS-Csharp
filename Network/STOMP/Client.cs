@@ -4,8 +4,9 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
 using XAS.Core.Logging;
-using XAS.Core.Configuration;
 using XAS.Core.Exceptions;
+using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Network.STOMP {
 

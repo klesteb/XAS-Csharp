@@ -7,6 +7,7 @@ using log4net.Ext.XAS;
 
 using XAS.Core.Spooling;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Core.Logging {
 

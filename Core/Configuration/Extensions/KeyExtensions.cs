@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XAS.Core.Configuration {
+namespace XAS.Core.Configuration.Extensions {
 
     /// <summary>
     /// Key extensions.

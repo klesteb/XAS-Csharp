@@ -1,14 +1,22 @@
 ﻿
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Messages;
+using XAS.Core.Configuration.Extensions;
+using XAS.Model.Configuration.Extension;
 
-namespace XAS.Model.Configuration {
+namespace XAS.Model.Configuration.Messages {
 
     /// <summary>
     /// Load default messages for Model.
     /// </summary>
     /// 
     public class Messages: IMessages {
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// 
+        public Messages() { }
 
         /// <summary>
         /// Load messages.

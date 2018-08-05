@@ -119,8 +119,9 @@ using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 
 using XAS.App.Exceptions;
-using XAS.App.Configuration;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
+using XAS.App.Configuration.Extensions;
 
 namespace XAS.App {
 

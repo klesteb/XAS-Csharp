@@ -2,7 +2,7 @@
 
 using XAS.Core.Configuration;
 
-namespace DemoMicroServiceServer.Configuration {
+namespace DemoMicroServiceServer.Configuration.Extensions {
 
     /// <summary>
     /// Section extension for DemoMicroServiceServer.

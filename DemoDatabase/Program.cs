@@ -3,8 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 
 using XAS.App;
-using XAS.App.Configuration;
-
+using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Alerting;
 using XAS.Core.Security;
@@ -12,12 +11,9 @@ using XAS.Core.Spooling;
 using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
-
-using XAS.Model;
-using XAS.Model.Configuration;
+using XAS.Core.Configuration.Extensions;
 
 using DemoModel;
-using DemoDatabase.Configuration;
 
 namespace DemoDatabase {
 
@@ -88,6 +84,7 @@ namespace DemoDatabase {
 
         public override Int32 RunApp(String[] args) {
 
+            bool debug = config.GetValue(config.Section.Environment(), config.Key.Debug()).ToBoolean();
             var command = new Commands(config, handler, logFactory, manager);
             this.Commands = new CommandOptions(config, logFactory);
 
@@ -96,6 +93,12 @@ namespace DemoDatabase {
             this.Commands.Add("add", "add a new dinosaur", command.Add);
             this.Commands.Add("remove", "remove a dinosaur", command.Remove);
             this.Commands.Add("update", "update a dinosaur", command.Update);
+
+            if (debug) {
+
+                config.Dump();
+
+            }
 
             return base.RunApp(args);
 

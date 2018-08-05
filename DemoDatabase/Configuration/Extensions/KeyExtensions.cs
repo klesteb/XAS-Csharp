@@ -2,7 +2,7 @@
 
 using XAS.Core.Configuration;
 
-namespace DemoDatabase.Configuration {
+namespace DemoDatabase.Configuration.Extensions {
 
     public static class KeyExtensions {
 

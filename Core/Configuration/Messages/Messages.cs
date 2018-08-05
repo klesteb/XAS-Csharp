@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Core.Configuration.Messages {
     
@@ -11,6 +9,12 @@ namespace XAS.Core.Configuration.Messages {
     /// </summary>
     /// 
     public class Messages: IMessages {
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// 
+        public Messages() { }
 
         /// <summary>
         /// Load the messages.
