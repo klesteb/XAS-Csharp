@@ -20,32 +20,25 @@ namespace DemoModel.Service {
     public class Dinosaur {
 
         private readonly ILogger log = null;
-        private readonly IManager manager = null;
         private readonly IErrorHandler handler = null;
         private readonly IConfiguration config = null;
 
-
-        public Dinosaur(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
+        public Dinosaur(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
             this.config = config;
             this.handler = handler;
-            this.manager = manager;
             this.log = logFactory.Create(typeof(Dinosaur));
 
         }
 
-        public DinosaurDTO Get(String name) {
+        public DinosaurDTO Get(Repositories repo, String name) {
 
             Dinosaurs dino = null;
             DinosaurDTO dto = null;
 
-            using (var repo = manager.Repository as Repositories) {
+            if ((dino = repo.Dinosaurs.Find(r => (r.Name == name))) != null) {
 
-                if ((dino = repo.Dinosaurs.Find(r => (r.Name == name))) != null) {
-
-                    dto = NewDTO(repo, dino);
-
-                }
+                dto = NewDTO(repo, dino);
 
             }
 
@@ -53,18 +46,14 @@ namespace DemoModel.Service {
 
         }
 
-        public DinosaurDTO Get(Int32 id) {
+        public DinosaurDTO Get(Repositories repo, Int32 id) {
 
             Dinosaurs dino = null;
             DinosaurDTO dto = null;
 
-            using (var repo = manager.Repository as Repositories) {
+            if ((dino = repo.Dinosaurs.Find(r => (r.Id == id))) != null) {
 
-                if ((dino = repo.Dinosaurs.Find(r => (r.Id == id))) != null) {
-
-                    dto = NewDTO(repo, dino);
-
-                }
+                dto = NewDTO(repo, dino);
 
             }
 
@@ -72,17 +61,13 @@ namespace DemoModel.Service {
 
         }
 
-        public List<DinosaurDTO> List() {
+        public List<DinosaurDTO> List(Repositories repo) {
 
             var dtos = new List<DinosaurDTO>();
 
-            using (var repo = manager.Repository as Repositories) {
+            foreach (var record in repo.Dinosaurs.Search()) {
 
-                foreach (var record in repo.Dinosaurs.Search()) {
-
-                    dtos.Add(NewDTO(repo, record));
-
-                }
+                dtos.Add(NewDTO(repo, record));
 
             }
 
@@ -90,31 +75,35 @@ namespace DemoModel.Service {
 
         }
 
-        public Int32 Create(DinosaurDTI dti) {
+        public Int32 Create(Repositories repo, DinosaurDTI dti) {
 
-            Int32 id = 0;
+            var record = MoveDTI(repo, dti);
+            repo.Dinosaurs.Create(record);
+            repo.Save();
 
-            using (var repo = manager.Repository as Repositories) {
-
-                var record = MoveDTI(repo, dti);
-                repo.Dinosaurs.Create(record);
-                repo.Save();
-
-                id = record.Id;
-
-            }
-
-            return id;
+            return record.Id;
 
         }
 
-        public Boolean Delete(Int32 id) {
+        public Boolean Delete(Repositories repo, Int32 id) {
+
+            repo.Dinosaurs.Delete(id);
+            repo.Save();
+
+            return true;
+
+        }
+
+        public Boolean Update(Repositories repo, Int32 id, DinosaurDTI dti) {
 
             bool stat = false;
+            Dinosaurs dino = null;
 
-            using (var repo = manager.Repository as Repositories) {
+            if ((dino = repo.Dinosaurs.Find(r => (r.Id == id))) != null) {
 
-                repo.Dinosaurs.Delete(id);
+                var record = MergeDTI(repo, dino, dti);
+
+                repo.Dinosaurs.Update(record);
                 repo.Save();
 
                 stat = true;
@@ -125,31 +114,7 @@ namespace DemoModel.Service {
 
         }
 
-        public Boolean Update(Int32 id, DinosaurDTI dti) {
-
-            bool stat = false;
-            Dinosaurs dino = null;
-
-            using (var repo = manager.Repository as Repositories) {
-
-                if ((dino = repo.Dinosaurs.Find(r => (r.Id == id))) != null) {
-
-                    var record = MergeDTI(repo, dino, dti);
-
-                    repo.Dinosaurs.Update(record);
-                    repo.Save();
-
-                    stat = true;
-
-                }
-
-            }
-
-            return stat;
-
-        }
-
-        public IPagedList<DinosaurDTO> Paged(DinosaursPagedCriteria criteria) {
+        public IPagedList<DinosaurDTO> Paged(Repositories repo, DinosaursPagedCriteria criteria) {
 
             PagedList<DinosaurDTO> paged = null;
             Dictionary<String, ListSortDirection> sortDir = new Dictionary<String, ListSortDirection>();
@@ -179,20 +144,16 @@ namespace DemoModel.Service {
                 SortDir = sortDir
             };
 
-            using (var repo = manager.Repository as Repositories) {
+            var page = repo.Dinosaurs.Page(dbCriteria);
 
-                var page = repo.Dinosaurs.Page(dbCriteria);
-
-                paged = new PagedList<DinosaurDTO>(
-                    page.PageNumber,
-                    page.PageSize,
-                    page.TotalResults,
-                    criteria.SortBy,
-                    dbCriteria.SortDir,
-                    page.Data.Select(rec => Get(rec.Id)).ToList()
-                );
-
-            }
+            paged = new PagedList<DinosaurDTO>(
+                page.PageNumber,
+                page.PageSize,
+                page.TotalResults,
+                criteria.SortBy,
+                dbCriteria.SortDir,
+                page.Data.Select(rec => Get(repo, rec.Id)).ToList()
+            );
 
             return paged;
 

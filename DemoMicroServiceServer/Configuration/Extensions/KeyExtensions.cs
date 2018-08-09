@@ -10,6 +10,8 @@ namespace DemoMicroServiceServer.Configuration.Extensions {
     /// 
     public static class KeyExtensions {
 
+        // messages
+
         public static String GET(this Key junk) {
             return "Processing GET(/{0}) for {1}";
         }
@@ -26,6 +28,8 @@ namespace DemoMicroServiceServer.Configuration.Extensions {
             return "Processing OPTIONS(/{0}) for {1}";
         }
 
+        // config file
+
         public static String Address(this Key junk) {
             return "Address";
         }
@@ -36,6 +40,10 @@ namespace DemoMicroServiceServer.Configuration.Extensions {
 
         public static String WebRootPath(this Key junk) {
             return "WebRootPath";
+        }
+
+        public static String DatabaseModel(this Key junk) {
+            return "model";
         }
 
     }

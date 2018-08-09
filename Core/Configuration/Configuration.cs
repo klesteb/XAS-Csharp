@@ -326,6 +326,17 @@ namespace XAS.Core.Configuration {
 
                     }
 
+                } else {
+
+                    var values = contents[section];
+                    var keyValues = new KeyValues {
+                        Key = key,
+                        Value = value
+                    };
+
+                    values.Add(keyValues);
+                    contents[section] = values;
+
                 }
 
             }

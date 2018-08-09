@@ -3,17 +3,19 @@ using System.IO;
 using System.Collections.Generic;
 
 using XAS.App;
-using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Alerting;
 using XAS.Core.Security;
 using XAS.Core.Spooling;
+using XAS.App.Exceptions;
 using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
+using XAS.Core.Configuration.Loaders;
 using XAS.Core.Configuration.Extensions;
 
-using DemoModel;
+using DemoDatabase.Configuration.Loaders;
+using DemoDatabase.Configuration.Extensions;
 
 namespace DemoDatabase {
 
@@ -21,7 +23,7 @@ namespace DemoDatabase {
 
         static Int32 Main(string[] args) {
 
-            string model = "DemoDatabase";
+            ILoader loader = null;
 
             // poormans DI
 
@@ -52,17 +54,21 @@ namespace DemoDatabase {
             var handler = new ErrorHandler(config, logFactory);
             handler.SendMessage += new SendMessage(alerter.Send);
 
-            // build the database access
+            // load the optional config file
 
-            var dbm = new DBM(config, handler, logFactory);
-            var initializer = new Initializer(dbm);
-            var context = new DemoModel.Context(initializer, model);
-            var repository = new DemoModel.Repositories(config, handler, logFactory, context);
-            var manager = new Manager(context, repository);
+            string configFile = config.GetValue(section.Environment(), key.CfgFile());
+
+            if (File.Exists(configFile)) {
+
+                var iniFile = new IniFile(configFile);
+                loader = new ConfigFile(handler, logFactory, iniFile);
+                loader.Load(config);
+
+            }
 
             // run the application
 
-            var app = new App(config, handler, logFactory, secure, manager);
+            var app = new App(config, handler, logFactory, secure, loader);
             return app.Run(args);
 
         }
@@ -71,21 +77,31 @@ namespace DemoDatabase {
 
     public class App: XAS.App.Shell {
 
+        private ILoader configFile = null;
         private readonly ILogger log = null;
-        private readonly IManager manager = null;
 
-        public App(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISecurity secure, IManager manager):
+        public App(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISecurity secure, ILoader loader):
             base(config, handler, logFactory, secure) {
 
-            this.manager = manager;
+            this.configFile = loader;
             this.log = logFactory.Create(typeof(App));
 
         }
 
         public override Int32 RunApp(String[] args) {
 
+            var key = config.Key;
+            var section = config.Section;
+
+            // get our model name, used for selecting the database access in app.config.
+            // defaulting to "DemoDatabase".
+
+            string model = config.GetValue(section.Database(), key.DatabaseModel(), "DemoDatabase");
+
+            // build the command handler
+
             bool debug = config.GetValue(config.Section.Environment(), config.Key.Debug()).ToBoolean();
-            var command = new Commands(config, handler, logFactory, manager);
+            var command = new Commands(config, handler, logFactory, model);
             this.Commands = new CommandOptions(config, logFactory);
 
             this.Commands.Add("set", "set global settings", command.Set);
@@ -101,6 +117,37 @@ namespace DemoDatabase {
             }
 
             return base.RunApp(args);
+
+        }
+
+        public override Options GetOptions() {
+
+            var key = config.Key;
+            var section = config.Section;
+            var options = base.GetOptions();
+
+            string helpText = String.Format(
+                 "use an alternative configuration file, default: \"{0}\"",
+                 config.GetValue(section.Environment(), key.CfgFile())
+             );
+
+            options.Add("cfg-file=", helpText, (v) => {
+                if (File.Exists(v)) {
+                    config.UpdateKey(section.Environment(), key.CfgFile(), v);
+                    if (configFile != null) {
+                        configFile.Load(config);
+                    } else {
+                        var iniFile = new IniFile(v);
+                        configFile = new ConfigFile(handler, logFactory, iniFile);
+                        configFile.Load(config);
+                    }
+                } else {
+                    string format = config.GetValue(section.Messages(), key.FileMissing());
+                    throw new ConfigFileMissingException(String.Format(format, v));
+                }
+            });
+
+            return options;
 
         }
 
@@ -163,4 +210,3 @@ namespace DemoDatabase {
     }
 
 }
-

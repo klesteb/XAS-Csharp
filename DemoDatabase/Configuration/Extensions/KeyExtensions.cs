@@ -6,6 +6,8 @@ namespace DemoDatabase.Configuration.Extensions {
 
     public static class KeyExtensions {
 
+        // messages
+
         public static String Created(this Key junk) {
             return "Created";
         }
@@ -20,6 +22,12 @@ namespace DemoDatabase.Configuration.Extensions {
 
         public static String AddedTable(this Key junk) {
             return "AddedTable";
+        }
+
+        // config file
+
+        public static String DatabaseModel(this Key junk) {
+            return "model";
         }
 
     }

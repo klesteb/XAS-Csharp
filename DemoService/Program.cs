@@ -62,6 +62,7 @@ namespace DemoService {
 
                 var iniFile = new IniFile(configFile);
                 loader = new ConfigFile(errorHandler, logFactory, iniFile);
+                loader.Load(config);
 
             }
 

@@ -5,9 +5,6 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
-using XAS.Core.Logging;
-using XAS.Core.Exceptions;
-using XAS.Core.Configuration;
 
 namespace XAS.Model {
 
@@ -22,7 +19,7 @@ namespace XAS.Model {
         // If you wish to target a different database and/or database provider, modify the 'Model' 
         // connection string in the application configuration file.
 
-        public Context(Initializer initializer, String model): base(model) {
+        public Context(Initializer initializer, String model) : base(model) {
 
             this.initializer = initializer;
 
@@ -57,8 +54,6 @@ namespace XAS.Model {
                 System.Data.Entity.Database.SetInitializer(initializer);
 
             }
-
-            //var initializer = new Initializer(config, handler, logFactory, modelBuilder);
 
             base.OnModelCreating(modelBuilder);
 
