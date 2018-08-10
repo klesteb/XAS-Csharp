@@ -109,7 +109,7 @@ namespace DemoDatabase {
                 dinoShow = true;
             });
 
-            options.Add("list", "list dinosaurs", (v) => {
+            options.Add("list-dinos", "list dinosaurs", (v) => {
                 dinoList = true;
             });
 
@@ -333,15 +333,15 @@ namespace DemoDatabase {
                 displayHelp = true;
             });
 
-            options.Add("name", "the dinosaurs name", (v) => {
+            options.Add("name=", "the dinosaurs name", (v) => {
                 name = v;
             });
 
-            options.Add("status", "the dinosaurs status", (v) => {
+            options.Add("status=", "the dinosaurs status", (v) => {
                 status = v;
             });
 
-            options.Add("height", "the dinosaurs height", (v) => {
+            options.Add("height=", "the dinosaurs height", (v) => {
                 height = v;
             });
 

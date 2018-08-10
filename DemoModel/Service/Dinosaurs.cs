@@ -186,15 +186,15 @@ namespace DemoModel.Service {
 
             Int32 height = Convert.ToInt32(dti.Height);
 
-            record.Name = (record.Name != dti.Name)
+            record.Name = (dti.Name != "")
                 ? dti.Name
                 : record.Name;
 
-            record.Status = (record.Status != dti.Status)
+            record.Status = (dti.Status != "")
                 ? dti.Status
                 : record.Status;
 
-            record.Height = (record.Height != height)
+            record.Height = (height != 0)
                 ? height
                 : record.Height;
 
