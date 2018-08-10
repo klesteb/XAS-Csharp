@@ -100,8 +100,9 @@
     <Reference Include="XAS.Model">
       <HintPath>..\..\Model\trunk\bin\Debug\XAS.Model.dll</HintPath>
     </Reference>
-    <Reference Include="XAS.Rest">
-      <HintPath>..\..\Rest\trunk\bin\Debug\XAS.Rest.dll</HintPath>
+    <Reference Include="XAS.Rest, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Rest\bin\Debug\XAS.Rest.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -116,6 +117,9 @@
     <Compile Include="Web\BootStrapper.cs" />
     <Compile Include="Web\Configure.cs" />
     <Compile Include="Web\Modules\DinosaurModule.cs" />
+    <Compile Include="Web\Requests\Dinosaurs.cs" />
+    <Compile Include="Web\Services\DinoService.cs" />
+    <Compile Include="Web\Services\IDinoService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -133,8 +137,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Web\Services\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

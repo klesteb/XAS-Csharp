@@ -11,6 +11,7 @@ using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Rest.Server.Repository;
 
+using DemoMicroServiceServer.Web.Services;
 
 namespace DemoMicroServiceServer.Web {
 
@@ -29,7 +30,7 @@ namespace DemoMicroServiceServer.Web {
 
             base.ConfigureApplicationContainer(container);
 
-            container.Register<IDinosaurService, DinosaurService>();
+            container.Register<IDinoService, DinoService>();
             container.Register(typeof(IResourceConfiguration), Configure.ResourceConfiguration());
             container.Register(typeof(IProvideHalTypeConfiguration), Configure.HypermediaConfiguration());
 

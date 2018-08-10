@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="DataStructures\DinosaurDTI.cs" />
     <Compile Include="DataStructures\DinosaurDTO.cs" />
+    <Compile Include="DataStructures\DinosaurPost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

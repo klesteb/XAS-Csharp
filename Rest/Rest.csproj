@@ -137,6 +137,7 @@
     <Compile Include="Server\Repository\ResourceConfiguration.cs" />
     <Compile Include="Server\Server.cs" />
     <Compile Include="Server\UserValidator.cs" />
+    <Compile Include="Server\Extensions\ValidatorExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Model\Model.csproj">

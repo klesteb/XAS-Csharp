@@ -1,5 +1,4 @@
 ﻿
-using System;
 using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -7,13 +6,12 @@ using System.Collections.Generic;
 using Nancy.Hal.Configuration;
 
 using XAS.Model.Paging;
-
 using XAS.Rest.Server.Model;
 using XAS.Rest.Server.Modules;
 using XAS.Rest.Server.Repository;
 
+using DemoModelCommon.DataStructures;
 using DemoMicroServiceServer.Web.Modules;
-using DemoMicroServiceServer.Web.Requests;
 
 namespace DemoMicroServiceServer.Web {
 

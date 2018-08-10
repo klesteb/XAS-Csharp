@@ -14,6 +14,7 @@ using XAS.Rest.Server.Modules;
 
 using DemoModel.Service;
 using DemoModelCommon.DataStructures;
+using DemoMicroServiceServer.Web.Services;
 
 namespace DemoMicroServiceServer.Web.Modules {
 
@@ -30,7 +31,7 @@ namespace DemoMicroServiceServer.Web.Modules {
 
         public const string root = "dinosaurs";
 
-        public DinosaurModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IDinosaurService dinoService): base(root) {
+        public DinosaurModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IDinoService dinoService): base(root) {
 
             this.RequiresAuthentication();
 
@@ -42,7 +43,7 @@ namespace DemoMicroServiceServer.Web.Modules {
 
                 var criteria = this.Bind<DinosaursPagedCriteria>();
                 return Negotiate
-                    .WithModel(dinoService.GetPage(criteria));
+                    .WithModel(dinoService.Paged(criteria));
 
             };
 
@@ -52,7 +53,7 @@ namespace DemoMicroServiceServer.Web.Modules {
 
                 DinosaurDTO dino = null;
 
-                if ((dino = dinoService.GetDinosaur(p.id)) == null) {
+                if ((dino = dinoService.Get(p.id)) == null) {
 
                     return Negotiate
                         .WithStatusCode(HttpStatusCode.NotFound);
@@ -68,12 +69,12 @@ namespace DemoMicroServiceServer.Web.Modules {
 
                 log.Debug(String.Format("Processing POST(/) for {0}", this.Context.CurrentUser.UserName));
 
-                var binding = this.Bind<DinosaurDTI>();
+                var binding = this.Bind<DinosaurPost>();
                 var results = this.Validate(binding);
 
                 if (results.IsValid) {
 
-                    var dino = dinoService.CreateDinosaur(binding);
+                    var dino = dinoService.Create(binding);
 
                     return Negotiate
                         .WithModel(dino)
@@ -98,12 +99,12 @@ namespace DemoMicroServiceServer.Web.Modules {
                 log.Debug(String.Format("Processing PUT(/{0}) for {1}", p.id, this.Context.CurrentUser.UserName));
 
                 Int32 id = p.id;
-                var binding = this.Bind<DinosaurDTI>();
+                var binding = this.Bind<DinosaurUpdate>();
                 var results = this.Validate(binding);
 
                 if (results.IsValid) {
 
-                    var dino = dinoService.UpdateDinosaur(id, binding);
+                    var dino = dinoService.Update(id, binding);
 
                     return Negotiate
                          .WithModel(dino)
@@ -125,9 +126,11 @@ namespace DemoMicroServiceServer.Web.Modules {
 
             Delete["/{id:int}"] = p => {
 
-                log.Debug(String.Format("Processing DELETE(/{0}) for {1}", p.id, this.Context.CurrentUser.UserName));
+                Int32 id = p.id;
 
-                var id = dinoService.DeleteDinosaur(p.id);
+                log.Debug(String.Format("Processing DELETE(/{0}) for {1}", id, this.Context.CurrentUser.UserName));
+
+                dinoService.Delete(id);
 
                 return Negotiate
                     .WithStatusCode(HttpStatusCode.NoContent);
