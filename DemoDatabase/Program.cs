@@ -159,8 +159,11 @@ namespace DemoDatabase {
 
         public override String[] GetManual() {
 
+            var key = config.Key;
+            var section = config.Section;
             List<string> text = new List<string>();
             List<string> options = GetOptionsText();
+            string cfgFile = config.GetValue(section.Environment(), key.CfgFile());
 
             text.Add("");
             text.Add("NAME");
@@ -186,6 +189,30 @@ namespace DemoDatabase {
 
             }
 
+            text.Add("");
+            text.Add("CONFIGURATION");
+            text.Add("");
+            text.Add("    The default configuration file is " + cfgFile + ", and contains the following stanzas:");
+            text.Add("");
+            text.Add("        [application]");
+            text.Add("        alerts = true");
+            text.Add("        facility = systems");
+            text.Add("        priority = low");
+            text.Add("        trace = false");
+            text.Add("        debug = false");
+            text.Add("        log-type = file");
+            text.Add("        log-file = " + config.GetValue(section.Environment(), key.LogFile()));
+            text.Add("        log-conf = " + config.GetValue(section.Environment(), key.LogConf()));
+            text.Add("");
+            text.Add("    This is the basic options that every program has, they can be overridden on the command line.");
+            text.Add("    The above are the defaults and this stanza is not really needed. But it does allow you to easily");
+            text.Add("    configure a service.");
+            text.Add("");
+            text.Add("        [database]");
+            text.Add("        model = DemoDatabase");
+            text.Add("");
+            text.Add("    This stanza is optional and can be used to select the database model to use. There must be a");
+            text.Add("    corresponding \"connectionStrings\" entry in the app.config for this to work correctrly.");
             text.Add("");
             text.Add("EXIT CODES");
             text.Add("");

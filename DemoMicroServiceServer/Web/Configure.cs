@@ -20,7 +20,7 @@ namespace DemoMicroServiceServer.Web {
     /// <summary>
     /// Configure the HAL links and resources.
     /// </summary>
-
+    ///
     public static class Configure {
 
         /// <summary>

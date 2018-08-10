@@ -12,9 +12,8 @@ using XAS.Core.Configuration;
 using XAS.Rest.Server.Errors;
 using XAS.Rest.Server.Modules;
 
-using DemoMicroServiceServer.Web.Services;
-using DemoMicroServiceServer.Web.Requests;
-using DemoMicroServiceServer.Model.Services;
+using DemoModel.Service;
+using DemoModelCommon.DataStructures;
 
 namespace DemoMicroServiceServer.Web.Modules {
 
@@ -41,7 +40,7 @@ namespace DemoMicroServiceServer.Web.Modules {
 
                 log.Debug(String.Format("Processing GET(/) for {0}", this.Context.CurrentUser.UserName));
 
-                var criteria = this.Bind<DinosaurPagedCriteria>();
+                var criteria = this.Bind<DinosaursPagedCriteria>();
                 return Negotiate
                     .WithModel(dinoService.GetPage(criteria));
 
@@ -69,7 +68,7 @@ namespace DemoMicroServiceServer.Web.Modules {
 
                 log.Debug(String.Format("Processing POST(/) for {0}", this.Context.CurrentUser.UserName));
 
-                var binding = this.Bind<DinosaurFMI>();
+                var binding = this.Bind<DinosaurDTI>();
                 var results = this.Validate(binding);
 
                 if (results.IsValid) {
@@ -99,7 +98,7 @@ namespace DemoMicroServiceServer.Web.Modules {
                 log.Debug(String.Format("Processing PUT(/{0}) for {1}", p.id, this.Context.CurrentUser.UserName));
 
                 Int32 id = p.id;
-                var binding = this.Bind<DinosaurFMI>();
+                var binding = this.Bind<DinosaurDTI>();
                 var results = this.Validate(binding);
 
                 if (results.IsValid) {

@@ -47,6 +47,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DemoModel">
+      <HintPath>..\DemoModel\bin\Debug\DemoModel.dll</HintPath>
+    </Reference>
+    <Reference Include="DemoModelCommon">
+      <HintPath>..\DemoModelCommon\bin\Debug\DemoModelCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="FluentValidation">
       <HintPath>..\..\packages\FluentValidation.7.6.104\lib\net45\FluentValidation.dll</HintPath>
     </Reference>
@@ -69,6 +81,7 @@
       <HintPath>..\packages\Polly.6.1.0\lib\netstandard2.0\Polly.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
@@ -96,8 +109,6 @@
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
     <Compile Include="Configuration\Messages\Messages.cs" />
     <Compile Include="Configuration\Extensions\SectionExtensions.cs" />
-    <Compile Include="Model\Schema\Dinosaur.cs" />
-    <Compile Include="Model\Repository\DinosaurRepository.cs" />
     <Compile Include="Processors\Web.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -105,11 +116,6 @@
     <Compile Include="Web\BootStrapper.cs" />
     <Compile Include="Web\Configure.cs" />
     <Compile Include="Web\Modules\DinosaurModule.cs" />
-    <Compile Include="Web\Requests\DinosaurDTO.cs" />
-    <Compile Include="Web\Requests\DinosaurFMI.cs" />
-    <Compile Include="Web\Requests\DinosaurPagedCriteria.cs" />
-    <Compile Include="Web\Services\DinosaurService.cs" />
-    <Compile Include="Web\Services\IDinosaurService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -126,6 +132,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Web\Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

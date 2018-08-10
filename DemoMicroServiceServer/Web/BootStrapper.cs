@@ -11,8 +11,6 @@ using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Rest.Server.Repository;
 
-using DemoMicroServiceServer.Web.Services;
-using DemoMicroServiceServer.Model.Services;
 
 namespace DemoMicroServiceServer.Web {
 

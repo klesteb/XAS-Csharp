@@ -3,7 +3,6 @@ using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
 
-using XAS.Model;
 using XAS.Model.Paging;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;

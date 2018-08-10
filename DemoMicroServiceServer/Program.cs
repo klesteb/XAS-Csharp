@@ -66,6 +66,7 @@ namespace DemoMicroServiceServer {
 
                 var iniFile = new IniFile(configFile);
                 loader = new ConfigFile(errorHandler, logFactory, iniFile);
+                loader.Load(config);
 
             }
 
@@ -187,6 +188,13 @@ namespace DemoMicroServiceServer {
             text.Add("");
             text.Add("    This stanza tells the internal web server on what port to listen on, weither to accept client ssl");
             text.Add("    certificates and the root path for html templates.");
+            text.Add("");
+            text.Add("        [database]");
+            text.Add("        model = DemoDatabase");
+            text.Add("");
+            text.Add("    This stanza is optional and can be used to select the database model to use. There must be a");
+            text.Add("    corresponding \"connectionStrings\" entry in the app.config for this to work correctrly. By default");
+            text.Add("    this is \"DemoDatabase\".");
             text.Add("");
             text.Add("EXIT CODES");
             text.Add("");
