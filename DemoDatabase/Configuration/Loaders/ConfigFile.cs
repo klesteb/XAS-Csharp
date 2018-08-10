@@ -1,4 +1,5 @@
 ﻿
+using XAS.Core;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -20,6 +21,8 @@ namespace DemoDatabase.Configuration.Loaders {
 
         public override void Load(IConfiguration config) {
 
+            log.Trace("Entering Load()");
+
             base.Load(config);
 
             var key = config.Key;
@@ -30,6 +33,8 @@ namespace DemoDatabase.Configuration.Loaders {
             if (iniFile.DoesSectionExist(section.Database())) {
 
                 string[] keys = iniFile.GetSectionKeys(section.Database());
+
+                log.Debug(string.Format("keys: {0}", Utils.Dump(keys)));
 
                 foreach (string item in keys) {
 
@@ -45,6 +50,8 @@ namespace DemoDatabase.Configuration.Loaders {
                 }
 
             }
+
+            log.Trace("Leaving Load()");
 
         }
 

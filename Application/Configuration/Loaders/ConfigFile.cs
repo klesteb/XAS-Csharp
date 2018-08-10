@@ -1,5 +1,6 @@
 ﻿using System.IO;
 
+using XAS.Core;
 using XAS.Core.Logging;
 using XAS.App.Exceptions;
 using XAS.Core.Extensions;
@@ -67,6 +68,8 @@ namespace XAS.App.Configuration.Loaders {
         /// 
         public virtual void Load(IConfiguration config) {
 
+            log.Trace("Entering Load()");
+
             var key = config.Key;
             var section = config.Section;
 
@@ -77,6 +80,8 @@ namespace XAS.App.Configuration.Loaders {
             if (iniFile.DoesSectionExist(section.Application())) {
 
                 string[] keys = iniFile.GetSectionKeys(section.Application());
+
+                log.Debug(string.Format("Keys: {0}", Utils.Dump(keys)));
 
                 foreach (string item in keys) {
 
@@ -144,6 +149,8 @@ namespace XAS.App.Configuration.Loaders {
                 }
 
             }
+
+            log.Trace("Leaving Load()");
 
         }
 

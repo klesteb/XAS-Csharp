@@ -324,18 +324,17 @@ namespace XAS.Core.Configuration {
                         contents[section] = values;
                         stat = true;
 
+                    } else {
+
+                        var keyValues = new KeyValues {
+                            Key = key,
+                            Value = value
+                        };
+
+                        values.Add(keyValues);
+                        contents[section] = values;
+
                     }
-
-                } else {
-
-                    var values = contents[section];
-                    var keyValues = new KeyValues {
-                        Key = key,
-                        Value = value
-                    };
-
-                    values.Add(keyValues);
-                    contents[section] = values;
 
                 }
 

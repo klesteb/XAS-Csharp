@@ -104,7 +104,7 @@ namespace DemoDatabase {
                 displayHelp = true;
             });
 
-            options.Add("get=", "get a dinosaur", (v) => {
+            options.Add("dino=", "get a dinosaur", (v) => {
                 id = Convert.ToInt32(v);
                 dinoShow = true;
             });
@@ -153,17 +153,18 @@ namespace DemoDatabase {
                         string padding = "                               ";
 
                         System.Console.WriteLine("");
-                        System.Console.WriteLine("  Id         Name            Status       Height");
-                        System.Console.WriteLine("------+----------------+----------------+--------+");
+                        System.Console.WriteLine("  Id          Name             Status        Height");
+                        System.Console.WriteLine("-------+-----------------+-----------------+--------+");
 
                         foreach (var dto in dtos) {
 
+                            string xid = dto.Id.ToString() + padding;
                             string name = dto.Name + padding;
                             string status = dto.Status + padding;
 
                             string output = String.Format(
-                                "  {0}      {1}      {2}      {3}",
-                                dto.Id,
+                                "  {0}  {1}  {2}  {3}",
+                                xid.Substring(0, 5),
                                 name.Substring(0, 16),
                                 status.Substring(0, 16),
                                 dto.Height
@@ -173,9 +174,9 @@ namespace DemoDatabase {
 
                         }
                     
-                    }
+                        System.Console.WriteLine("");
 
-                    System.Console.WriteLine("");
+                    }
 
                 }
 
@@ -203,15 +204,15 @@ namespace DemoDatabase {
                 displayHelp = true;
             });
 
-            options.Add("name", "the dinosaurs name", (v) => {
+            options.Add("name=", "the dinosaurs name", (v) => {
                 name = v;
             });
 
-            options.Add("status", "the dinosaurs status", (v) => {
+            options.Add("status=", "the dinosaurs status", (v) => {
                 status = v;
             });
 
-            options.Add("height", "the dinosaurs height", (v) => {
+            options.Add("height=", "the dinosaurs height", (v) => {
                 height = v;
             });
 
