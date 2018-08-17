@@ -89,7 +89,14 @@ namespace DemoMicroServiceServer {
 
             this.secure = secure;
             this.configFile = loader;
+
+        }
+
+        public override Int32 RunApp(String[] args) {
+
             this.WindowsService = new Service(config, handler, logFactory, secure);
+
+            return base.RunApp(args);
 
         }
 

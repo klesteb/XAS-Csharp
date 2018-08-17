@@ -16,6 +16,7 @@ using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Loaders;
+using XAS.Core.Configuration.Extensions;
 
 namespace DemoService {
 
@@ -76,12 +77,21 @@ namespace DemoService {
         public class App: XAS.App.Service {
 
             private ILoader configFile = null;
+            private readonly ISecurity secure = null;
 
             public App(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure, ILoader loader) :
                 base(config, errorHandler, logFactory, secure) {
 
+                this.secure = secure;
                 this.configFile = loader;
-                this.WindowsService = new MyService(config, errorHandler, logFactory, secure);
+
+            }
+
+            public override Int32 RunApp(String[] args) {
+
+                this.WindowsService = new MyService(config, handler, logFactory, secure);
+
+                return base.RunApp(args);
 
             }
 

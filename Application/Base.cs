@@ -64,8 +64,9 @@ namespace XAS.App {
             AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs args) {
 
                 Exception ex = args.ExceptionObject as Exception;
+                int rc = handler.Exit(ex);
 
-                handler.Exceptions(ex);
+                Environment.Exit(rc);
 
             };
 
