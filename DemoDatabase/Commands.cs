@@ -405,9 +405,7 @@ namespace DemoDatabase {
 
             // build the database access
 
-            var dbm = new DBM(config, handler, logFactory);
-            var initializer = new Initializer(dbm);
-            var context = new DemoModel.Context(initializer, model);
+            var context = new DemoModel.Context(null, model);
             var repository = new DemoModel.Repositories(config, handler, logFactory, context);
 
             // store the context
