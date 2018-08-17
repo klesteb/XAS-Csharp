@@ -27,37 +27,19 @@ namespace DemoMicroServiceServer.Processors {
 
         public Web(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
+            var key = config.Key;
+            var section = config.Section;
+
             this.config = config;
             this.handler = handler;
             this.log = logFactory.Create(typeof(Web));
-
-            var key = config.Key;
-            var section = config.Section;
 
             Uri uri = new Uri(config.GetValue(section.Web(), key.Address()));
             string domain = config.GetValue(section.Environment(), key.Domain());
             string rootPath = config.GetValue(section.Web(), key.WebRootPath());
             bool enableClientCertificates = config.GetValue(section.Web(), key.EnableClientCertificates()).ToBoolean();
 
-            var hostConfig = new HostConfiguration {
-                UrlReservations = new UrlReservations {
-                    CreateAutomatically = true,
-                    User = "Everyone"
-                },
-                RewriteLocalhost = true,
-                AllowChunkedEncoding = false,
-                EnableClientCertificates = enableClientCertificates,
-                UnhandledExceptionCallback = e => {
-                    handler.Exceptions(e);
-                }
-            };
-
-            var authenticate = new Authenticate();
-            var userValidator = new UserValidator(authenticate, domain);
-            var appRootProvider = new AppRootPathProvider { RootPath = rootPath };
-            var bootStrapper = new BootStrapper(config, handler, logFactory, userValidator, appRootProvider, null);
-
-            server = new Server(logFactory, bootStrapper, hostConfig, uri);
+            server = new Server(config, handler, logFactory, uri, domain, rootPath, enableClientCertificates);
 
         }
 

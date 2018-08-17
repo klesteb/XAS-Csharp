@@ -83,19 +83,9 @@ namespace XAS.Rest.Server {
         /// 
         protected override void ConfigureApplicationContainer(TinyIoCContainer container) {
 
+            log.Trace("Entering ConfigureApplicationContainer()");
+
             base.ConfigureApplicationContainer(container);
-
-            var key = config.Key;
-            var section = config.Section;
-
-            // force the loading of Nancy.Validation.FluentValidation. otherwise it
-            // dosen't resolve correctly.
-
-            string libsDir = config.GetValue(section.Environment(), key.LibDir());
-            var assemblyFile = "Nancy.Validation.FluentValidation.dll";
-            string targetPath = Path.Combine(libsDir, assemblyFile);
-
-            Assembly.LoadFile(targetPath);
 
             // configuration
 
@@ -105,6 +95,7 @@ namespace XAS.Rest.Server {
             container.Register(typeof(ILoggerFactory), logFactory);
             container.Register(typeof(IUserValidator), userValidator);
 
+            log.Trace("Leaving ConfigureApplicationContainer()");
 
         }
 
@@ -126,7 +117,13 @@ namespace XAS.Rest.Server {
         /// 
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines) {
 
+            log.Trace("Entering ApplicationStartup()");
+
+            // call the base
+
             base.ApplicationStartup(container, pipelines);
+
+            // enable basic authentication
 
             var userValidator = container.Resolve<IUserValidator>();
 
@@ -137,6 +134,8 @@ namespace XAS.Rest.Server {
                     UserPromptBehaviour.Always
                 )
             );
+
+            log.Trace("Leaving ApplicationStartup()");
 
         }
 

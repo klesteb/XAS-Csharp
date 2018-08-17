@@ -27,7 +27,8 @@ namespace XAS.App {
         /// Initialize the class.
         /// </summary>
         /// 
-        public Service(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISecurity security) : base(config, handler, logFactory, security) {
+        public Service(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISecurity security): 
+            base(config, handler, logFactory, security) {
 
             this.log = logFactory.Create(typeof(Service));
 

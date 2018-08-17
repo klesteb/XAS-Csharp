@@ -58,8 +58,18 @@ namespace XAS.App {
 
             var key = config.Key;
             var section = config.Section;
+         
+            // default unhanlded exception handler
 
-            // Load a assemply from a different path, then the applications directory or sub directory thereof.
+            AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs args) {
+
+                Exception ex = args.ExceptionObject as Exception;
+
+                handler.Exceptions(ex);
+
+            };
+
+            // Load an assembly from a different path, then the applications directory or a sub directory thereof.
 
             AppDomain.CurrentDomain.AssemblyResolve += delegate(object sender, ResolveEventArgs args) {
 
@@ -79,13 +89,9 @@ namespace XAS.App {
                 string targetPath = Path.Combine(path, assemblyFile);
                 log.Debug(String.Format("loading: {0}", targetPath));
 
-                try {
-            
-                    assembly = Assembly.LoadFile(targetPath);
+                if (File.Exists(targetPath)) {
 
-                } catch (Exception ex) {
-
-                    handler.Exceptions(ex);
+                    assembly = Assembly.LoadFrom(targetPath);
 
                 }
 
