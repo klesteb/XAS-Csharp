@@ -46,7 +46,7 @@ namespace DemoMicroServiceServer.Web {
                                 Accept = "application/hal+json",
                                 Properties = new List<Property> {
                                     new Property { Id = "name", Name = "name", Type = "text" },
-                                    new Property { Id = "heightInFeet", Name = "heightInFeet", Type = "number", Default = "1"},
+                                    new Property { Id = "height", Name = "height", Type = "number", Default = "1"},
                                     new Property { Id = "status", Name = "status", Type = "text" }
                                 }
                             },
@@ -57,13 +57,13 @@ namespace DemoMicroServiceServer.Web {
                                 Parameters = new List<Parameter> {
                                     new Parameter { Name = "page", Type = "number", Default = "1" },
                                     new Parameter { Name = "pageSize", Type = "number", Default = "25", },
-                                    new Parameter { Name = "keywords", Type = "list" , Possible = "Name,HeightInFeet,Status" },
-                                    new Parameter { Name = "sortBy", Type = "list", Possible = "Name,HeightInFeet,Status" },
+                                    new Parameter { Name = "keywords", Type = "list" , Possible = "Name,Height,Status" },
+                                    new Parameter { Name = "sortBy", Type = "list", Possible = "Name,Height,Status" },
                                     new Parameter { Name = "sortDir", Type = "string", Default = "asc", Possible = "asc,desc" }
                                 },
                                 Fields = new List<Field> {
                                     new Field { Name = "name", Type = "text" },
-                                    new Field { Name = "heightInFeet", Type = "number" },
+                                    new Field { Name = "height", Type = "number" },
                                     new Field { Name = "status", Type = "text" }
                                 }
                             },
@@ -76,7 +76,7 @@ namespace DemoMicroServiceServer.Web {
                                 },
                                 Fields = new List<Field> {
                                     new Field { Name = "name", Type = "text" },
-                                    new Field { Name = "heightInFeet", Type = "number" },
+                                    new Field { Name = "height", Type = "number" },
                                     new Field { Name = "status", Type = "text" }
                                 }
                             }
@@ -111,7 +111,7 @@ namespace DemoMicroServiceServer.Web {
                                 },
                                 Fields = new List<Field> {
                                     new Field { Name = "name", Type = "text" },
-                                    new Field { Name = "heightInFeet", Type = "number" },
+                                    new Field { Name = "height", Type = "number" },
                                     new Field { Name = "status", Type = "text" }
                                 }
                             },
@@ -125,7 +125,7 @@ namespace DemoMicroServiceServer.Web {
                                 },
                                 Properties = new List<Property> {
                                     new Property { Id = "name", Name = "name", Type = "text" },
-                                    new Property { Id = "heightInFeet", Name = "heightInFeet", Type = "number", Default = "1"},
+                                    new Property { Id = "height", Name = "height", Type = "number", Default = "1"},
                                     new Property { Id = "status", Name = "status", Type = "text" }
                                 }
                             }

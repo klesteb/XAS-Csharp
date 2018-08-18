@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Linq;
 
-namespace XAS.Rest.Server {
+namespace XAS.Rest.Server.Extensions {
 
+    /// <summary>
+    /// Extesnsions for Nancy.
+    /// </summary>
+    /// 
     public static class NancyExtension {
 
         // taken from: https://stackoverflow.com/questions/15658627/is-it-possible-to-enable-cors-using-nancyfx

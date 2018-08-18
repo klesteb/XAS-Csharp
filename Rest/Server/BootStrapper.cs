@@ -14,7 +14,6 @@ using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Rest.Server.Errors;
-using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Rest.Server {
 
@@ -77,7 +76,7 @@ namespace XAS.Rest.Server {
         }
 
         /// <summary>
-        /// For the loading of Nancy.Validation.FluentValidation
+        /// For the configuring the application container.
         /// </summary>
         /// <param name="container">A container object.</param>
         /// 

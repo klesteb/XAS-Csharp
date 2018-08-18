@@ -3,13 +3,13 @@
 using XAS.Model;
 using XAS.Rest.Server;
 using XAS.Core.Logging;
+using XAS.Core.Security;
 using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 
 using DemoMicroServiceServer.Configuration.Extensions;
-using XAS.Core.Security;
 
 namespace DemoMicroServiceServer.Processors {
 
@@ -59,7 +59,7 @@ namespace DemoMicroServiceServer.Processors {
             var authenticate = new Authenticate();
             var userValidator = new UserValidator(authenticate, domain);
             var appRootProvider = new AppRootPathProvider { RootPath = rootPath };
-            var bootStrapper = new BootStrapper(config, handler, logFactory, userValidator, appRootProvider, manager);
+            var bootStrapper = new DemoMicroServiceServer.Web.BootStrapper(config, handler, logFactory, userValidator, appRootProvider, manager);
 
             // launch the server
 

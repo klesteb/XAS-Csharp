@@ -32,11 +32,12 @@ namespace DemoMicroServiceServer.Web.Modules {
 
         public DinosaurModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IDinoService dinoService): base(root) {
 
-            this.RequiresAuthentication();
 
             log = logFactory.Create(typeof(DinosaurModule));
 
             Get["/"] = _ => {
+
+                this.RequiresAuthentication();
 
                 log.Debug(String.Format("Processing GET(/) for {0}", this.Context.CurrentUser.UserName));
 
@@ -47,6 +48,8 @@ namespace DemoMicroServiceServer.Web.Modules {
             };
 
             Get["/{id:int}"] = p => {
+
+                this.RequiresAuthentication();
 
                 log.Debug(String.Format("Processing GET(/{0}) for {1}", p.id, this.Context.CurrentUser.UserName));
 
@@ -65,6 +68,8 @@ namespace DemoMicroServiceServer.Web.Modules {
             };
 
             Post["/"] = _ => {
+
+                this.RequiresAuthentication();
 
                 log.Debug(String.Format("Processing POST(/) for {0}", this.Context.CurrentUser.UserName));
 
@@ -94,6 +99,8 @@ namespace DemoMicroServiceServer.Web.Modules {
             };
 
             Put["/{id:int}"] = p => {
+
+                this.RequiresAuthentication();
 
                 log.Debug(String.Format("Processing PUT(/{0}) for {1}", p.id, this.Context.CurrentUser.UserName));
 
@@ -125,6 +132,8 @@ namespace DemoMicroServiceServer.Web.Modules {
 
             Delete["/{id:int}"] = p => {
 
+                this.RequiresAuthentication();
+
                 Int32 id = p.id;
 
                 log.Debug(String.Format("Processing DELETE(/{0}) for {1}", id, this.Context.CurrentUser.UserName));
@@ -138,7 +147,7 @@ namespace DemoMicroServiceServer.Web.Modules {
 
             Options["/"] = p => {
 
-                log.Debug(String.Format("Processing OPTIONS(/) for {0}", this.Context.CurrentUser.UserName));
+                log.Debug(String.Format("Processing OPTIONS(/) for {0}", "anonymous"));
 
                 return Negotiate
                     .WithHeader("Allow", "GET, POST, OPTIONS")
@@ -150,7 +159,7 @@ namespace DemoMicroServiceServer.Web.Modules {
 
             Options["/{id:int}"] = p => {
 
-                log.Debug(String.Format("Processing OPTIONS(/{0}) for {1}", p.id, this.Context.CurrentUser.UserName));
+                log.Debug(String.Format("Processing OPTIONS(/{0}) for {1}", p.id, "anonymous"));
 
                 return Negotiate
                     .WithHeader("Allow", "GET, DELETE, PUT, OPTIONS")
