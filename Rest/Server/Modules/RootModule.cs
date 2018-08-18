@@ -1,6 +1,6 @@
 ﻿using Nancy;
 using Nancy.Hal;
-using Nancy.Responses.Negotiation;
+
 using XAS.Core.Logging;
 using XAS.Rest.Server.Repository;
 
@@ -10,7 +10,7 @@ namespace XAS.Rest.Server.Modules {
     /// A class for creating the default HAL root.
     /// </summary>
     /// 
-    public class RootModule: Base {
+    public class RootModule: NancyModule {
 
         private readonly ILogger log = null;
 
@@ -42,7 +42,6 @@ namespace XAS.Rest.Server.Modules {
                 log.Debug("Processing GET(/)");
 
                 return Negotiate
-                    .WithView("index")
                     .WithModel(ResourceConfiguration)
                     .WithHeader("Access-Control-Allow-Origin", "*")
                     .WithHeader("Access-Control-Allow-Headers", "*");

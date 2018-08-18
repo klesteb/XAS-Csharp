@@ -10,7 +10,6 @@ using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Rest.Server.Errors;
-using XAS.Rest.Server.Modules;
 
 using DemoModel.Service;
 using DemoModelCommon.DataStructures;
@@ -18,7 +17,7 @@ using DemoMicroServiceServer.Web.Services;
 
 namespace DemoMicroServiceServer.Web.Modules {
 
-    public class DinosaurModule: Base {
+    public class DinosaurModule: NancyModule {
 
         private readonly ILogger log = null;
 

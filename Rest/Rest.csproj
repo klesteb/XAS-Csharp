@@ -129,7 +129,6 @@
     <Compile Include="Server\Model\Property.cs" />
     <Compile Include="Server\Model\Resource.cs" />
     <Compile Include="Server\Model\Template.cs" />
-    <Compile Include="Server\Modules\Base.cs" />
     <Compile Include="Server\Modules\RootModule.cs" />
     <Compile Include="Server\NancyExtension.cs" />
     <Compile Include="Server\Repository\HalLinks.cs" />

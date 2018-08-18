@@ -35,7 +35,7 @@ namespace DemoMicroServiceServer.Configuration.Extensions {
         }
 
         public static String EnableClientCertificates(this Key junk) {
-            return "EnableClentCertificates";
+            return "EnableClientCertificates";
         }
 
         public static String WebRootPath(this Key junk) {

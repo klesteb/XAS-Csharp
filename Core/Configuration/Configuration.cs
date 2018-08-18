@@ -402,6 +402,12 @@ namespace XAS.Core.Configuration {
 
                         value = found.Value;
 
+                        if (String.IsNullOrEmpty(value)) {
+
+                            value = xdefault;
+
+                        }
+
                     }
 
                 }

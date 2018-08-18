@@ -1,10 +1,9 @@
 ﻿using System;
 
-using Nancy;
 using Nancy.Hosting.Self;
+using Nancy.Bootstrapper;
 
 using XAS.Core.Logging;
-using XAS.Core.Security;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Rest.Server.Errors.Exceptions;
@@ -63,7 +62,7 @@ namespace XAS.Rest.Server {
         /// <param name="hostConfig">A HostConfiguration object. </param>
         /// <param name="uri">An Url object.</param>
         /// 
-        public Server(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, Uri uri, String domain, String rootPath, Boolean enableClientCertificates) {
+        public Server(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, Uri uri, String domain, String rootPath, Boolean enableClientCertificates, INancyBootstrapper bootStrapper) {
 
             this.log = logFactory.Create(typeof(Server));
 
@@ -79,11 +78,6 @@ namespace XAS.Rest.Server {
                     handler.Exceptions(e);
                 }
             };
-
-            var authenticate = new Authenticate();
-            var userValidator = new UserValidator(authenticate, domain);
-            var appRootProvider = new AppRootPathProvider { RootPath = rootPath };
-            var bootStrapper = new BootStrapper(config, handler, logFactory, userValidator, appRootProvider, null);
 
             // initialize nancy
 
