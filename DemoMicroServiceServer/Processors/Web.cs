@@ -45,21 +45,14 @@ namespace DemoMicroServiceServer.Processors {
             Uri uri = new Uri(config.GetValue(section.Web(), key.Address()));
             string rootPath = config.GetValue(section.Web(), key.WebRootPath());
             string domain = config.GetValue(section.Environment(), key.Domain());
-            string model = config.GetValue(section.Database(), key.DatabaseModel(), "DemoDatabase");
             bool enableClientCertificates = config.GetValue(section.Web(), key.EnableClientCertificates()).ToBoolean();
-
-            // build the database access
-
-            var context = new DemoModel.Context(null, model);
-            var repository = new DemoModel.Repositories(config, handler, logFactory, context);
-            var manager = new Manager(context, repository);
 
             // build the bootstrapper
 
             var authenticate = new Authenticate();
             var userValidator = new UserValidator(authenticate, domain);
             var appRootProvider = new AppRootPathProvider { RootPath = rootPath };
-            var bootStrapper = new DemoMicroServiceServer.Web.BootStrapper(config, handler, logFactory, userValidator, appRootProvider, manager);
+            var bootStrapper = new DemoMicroServiceServer.Web.BootStrapper(config, handler, logFactory, userValidator, appRootProvider);
 
             // launch the server
 

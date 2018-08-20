@@ -5,7 +5,6 @@ using Nancy.Bootstrapper;
 using Nancy.Hal.Configuration;
 using Nancy.Authentication.Basic;
 
-using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -24,8 +23,8 @@ namespace DemoMicroServiceServer.Web {
 
         private readonly ILogger log = null;
 
-        public BootStrapper(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IUserValidator userValidator, IRootPathProvider rootPathProvider, IManager manager): 
-            base(config, handler, logFactory, userValidator, rootPathProvider, manager) {
+        public BootStrapper(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IUserValidator userValidator, IRootPathProvider rootPathProvider): 
+            base(config, handler, logFactory, userValidator, rootPathProvider) {
 
             this.log = logFactory.Create(typeof(BootStrapper));
 
@@ -64,7 +63,7 @@ namespace DemoMicroServiceServer.Web {
 
             base.ConfigureApplicationContainer(container);
 
-            container.Register<IDinoService, DinoService>();
+            container.Register<IDinoService, DinoService>().AsMultiInstance();
             container.Register(typeof(IResourceConfiguration), Configure.ResourceConfiguration());
             container.Register(typeof(IProvideHalTypeConfiguration), Configure.HypermediaConfiguration());
 

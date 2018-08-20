@@ -9,6 +9,7 @@ using XAS.Core.Configuration;
 
 using DemoModel.Service;
 using DemoModelCommon.DataStructures;
+using DemoMicroServiceServer.Configuration.Extensions;
 
 namespace DemoMicroServiceServer.Web.Services {
 
@@ -31,18 +32,26 @@ namespace DemoMicroServiceServer.Web.Services {
         /// <param name="config">An IConfiguration object.</param>
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
-        /// <param name="manager">Am IManager object.</param>
         /// 
-        public DinoService(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
+        public DinoService(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
             _critical = new Object();
 
             this.config = config;
             this.handler = handler;
-            this.manager = manager;
 
+            var key = config.Key;
+            var section = config.Section;
+            string model = config.GetValue(section.Database(), key.Model(), "DemoDatabase");
+           
+            var context = new DemoModel.Context(null, model);
+            var repository = new DemoModel.Repositories(config, handler, logFactory, context);
+
+            this.manager = new Manager(context, repository);
             this.dino = new DemoModel.Service.Dinosaur(config, handler, logFactory);
             this.log = logFactory.Create(typeof(DinoService));
+
+            log.Trace("Initialized DinoService()");
 
         }
 

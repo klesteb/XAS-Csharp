@@ -65,7 +65,7 @@ namespace DemoMicroServiceServer.Configuration.Loaders {
 
                     switch (item.ToLower()) {
                         case "model":
-                            config.UpdateKey(section.Database(), key.DatabaseModel(), value);
+                            config.UpdateKey(section.Database(), key.Model(), value);
                             break;
 
                     }

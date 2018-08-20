@@ -42,7 +42,7 @@ namespace DemoMicroServiceServer.Configuration.Extensions {
             return "WebRootPath";
         }
 
-        public static String DatabaseModel(this Key junk) {
+        public static String Model(this Key junk) {
             return "model";
         }
 

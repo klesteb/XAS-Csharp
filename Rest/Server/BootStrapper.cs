@@ -52,7 +52,6 @@ namespace XAS.Rest.Server {
     public class BootStrapper: DefaultNancyBootstrapper {
 
         private readonly ILogger log = null;
-        private readonly IManager manager = null;
         private readonly IErrorHandler handler = null;
         private readonly IConfiguration config = null;
         private readonly ILoggerFactory logFactory = null;
@@ -63,10 +62,9 @@ namespace XAS.Rest.Server {
         /// Constructor.
         /// </summary>
         /// 
-        public BootStrapper(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IUserValidator userValidator, IRootPathProvider rootPathProvider, IManager manager): base() {
+        public BootStrapper(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IUserValidator userValidator, IRootPathProvider rootPathProvider): base() {
 
             this.config = config;
-            this.manager = manager;
             this.handler = handler;
             this.logFactory = logFactory;
             this.userValidator = userValidator;
@@ -76,9 +74,9 @@ namespace XAS.Rest.Server {
         }
 
         /// <summary>
-        /// For the configuring the application container.
+        /// For configuring the application container.
         /// </summary>
-        /// <param name="container">A container object.</param>
+        /// <param name="container">A TinyIocContainer object.</param>
         /// 
         protected override void ConfigureApplicationContainer(TinyIoCContainer container) {
 
@@ -88,7 +86,6 @@ namespace XAS.Rest.Server {
 
             // configuration
 
-            container.Register(typeof(IManager), manager);
             container.Register(typeof(IConfiguration), config);
             container.Register(typeof(IErrorHandler), handler);
             container.Register(typeof(ILoggerFactory), logFactory);
@@ -111,8 +108,8 @@ namespace XAS.Rest.Server {
         /// <summary>
         /// Defaults for application startup.
         /// </summary>
-        /// <param name="container">A TinyIoc container.</param>
-        /// <param name="pipelines">The Nancy pipelines.</param>
+        /// <param name="container">A TinyIocContainer object.</param>
+        /// <param name="pipelines">A Nancy IPipelines object.</param>
         /// 
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines) {
 
@@ -124,7 +121,7 @@ namespace XAS.Rest.Server {
 
             // enable basic authentication
 
-            var userValidator = container.Resolve<IUserValidator>();
+           var userValidator = container.Resolve<IUserValidator>();
 
             pipelines.EnableBasicAuthentication(
                 new BasicAuthenticationConfiguration(

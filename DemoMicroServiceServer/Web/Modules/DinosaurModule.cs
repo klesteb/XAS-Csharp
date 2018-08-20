@@ -32,8 +32,8 @@ namespace DemoMicroServiceServer.Web.Modules {
 
         public DinosaurModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IDinoService dinoService): base(root) {
 
-
             log = logFactory.Create(typeof(DinosaurModule));
+            log.Trace("Entering DinosaurModule()");
 
             Get["/"] = _ => {
 
@@ -44,6 +44,17 @@ namespace DemoMicroServiceServer.Web.Modules {
                 var criteria = this.Bind<DinosaursPagedCriteria>();
                 return Negotiate
                     .WithModel(dinoService.Paged(criteria));
+
+            };
+
+            Get["/list"] = _ => {
+
+                this.RequiresAuthentication();
+
+                log.Debug(String.Format("Processing GET(/list) for {0}", this.Context.CurrentUser.UserName));
+
+                return Negotiate
+                    .WithModel(dinoService.List());
 
             };
 

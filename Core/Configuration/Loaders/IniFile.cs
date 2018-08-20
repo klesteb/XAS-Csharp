@@ -542,7 +542,7 @@ namespace XAS.Core.Configuration.Loaders {
             int offset = 0;
             string xkey = "";
 
-            for (int i = start; i < end; i++) {
+            for (int i = start; i <= end; i++) {
 
                 string line = contents[i];
 
