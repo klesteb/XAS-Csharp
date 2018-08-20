@@ -1,0 +1,109 @@
+﻿REST based access to the DemoDatabase. 
+
+There is no html interface, so you must set the "Accept" header, this should be either 
+"application/json" or "application/hal+json" to use a "discoverable" REST interface. All 
+access is authenticated using HTTP Basic Authentication, the username and password 
+depends on the Windows Domain that the server resides in.
+
+All interaction with the micro services strives to follow industry standards. In this 
+respect the following standards are followed:
+
+	“application/hal+json” => https://tools.ietf.org/html/draft-kelly-json-hal-08
+	“application/problem+json” => https://tools.ietf.org/html/rfc7807
+	“application/json” => https://www.ietf.org/rfc/rfc4627.txt
+
+They also strive to follow current operations theory on how to create distributed 
+web based applications that are outlined in various blogs, online forums, published 
+thesis and trade publications.
+
+Service Responses
+
+When a GET is done to the service root, i.e. “/”, a JSON data structure will be returned. 
+This is to help with HAL based discovery. By default all responses will depend on the HTTP 
+“Accept-Type” header. If one is not set, you will get a “Content-Type: application/hal+json” 
+response. Valid “Accept-Type” headers can be either “application/hal+json” or “application/json”.  
+If an error is encountered, the response will be “Content-Type: application/problem+json”.
+
+The following HTTP status codes are used:
+
+	200 – OK
+	202 – Accepted
+	204 - NoContent
+	400 – BadRequest – usually failed authentication.
+	401 – Unauthorized 
+	402 – Forbidden
+	404 – NotFoundError
+	406 – NotAccecptable
+	411 – LengthRequired
+	422 – UnprocessableEntity
+	500 – InternalServerError
+	503 – ServiceUnavailable
+
+Queries
+
+GET /
+
+    returns the root urls, useful for REST discovery
+
+    curl -v http://<server>:<port>/ -H "Accept: application/hal+json"
+
+    status code: 200 
+
+Basic CRUD
+
+GET /dinosaurs
+
+    returns a paged list of dinosaurs
+
+    curl -v http://<server>:<port>/dinosaurs -u <username>:<password> -H "Accept: application/hal+json"
+
+	status code: 200, 400
+
+GET /dinosaurs/list
+
+    returns an unpaged list of dinosaurs
+
+    curl -v http://<server>:<port>/groups/list -u <username>:<password> -H "Accept: application/hal+json"
+
+    status code: 200, 400
+
+GET /dinosaurs/{id}
+
+    returns a dinosaurs
+
+    curl -v http://<server>:<port>/dinosaurs/1 -u <username>:<password> -H "Accept: application/hal+json"
+
+    status code: 200, 400, 404
+
+POST /dinosaurs
+
+    creates a new dinosaur
+
+    set data={\"name\":\"%1\","height":%2,"status":"%3"}
+    curl -v http://<server>:<port>/dinosaurs -d "%data%" -u <username>:<password> -H "Content-type: application/json" -XPOST
+
+	The URL for this resource is returned in the HTTP Location header. A 422 means that the 
+	data could not be validated. The returned response will have the reason.
+
+	status code: 202, 400, 422
+
+PUT /dinosaurs/{id}
+
+    updates a dinosaur
+
+    set data={\"name\":\"%1\","height":%2,"status":"%3"}
+    curl -v http://<server>:<port>/dinosaurs/1 -d "%data%" -u <username>:<password> -H "Content-type: application/json" -XPUT
+
+	The URL for this resource is returned in the HTTP Location header. A 422 means that the 
+	data could not be validated. The returned response will have the reason.
+
+	status code: 202, 400, 422
+
+DELETE /dinosaur/{id}
+
+    removes a dinosaur
+
+    curl -v http://<server>:<port>/dinosaurs/1 -u <username>:<password> -H "Accept: application/hal+json" -XDELETE
+
+    success returns a 204 code
+
