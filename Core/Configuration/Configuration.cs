@@ -31,13 +31,13 @@ namespace XAS.Core.Configuration {
         /// Contructor.
         /// </summary>
         /// 
-        public Configuration(Section section, Key key) {
+        public Configuration() {
 
             _critical = new Object();
             contents = new Dictionary<string, List<KeyValues>>();
 
-            this.Key = key;
-            this.Section = section;
+            this.Key = new Key();
+            this.Section = new Section();
 
         }
 

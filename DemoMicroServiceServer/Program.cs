@@ -31,14 +31,13 @@ namespace DemoMicroServiceServer {
 
             // poormans DI
 
-            var key = new Key();
-            var secure = new Secure();
-            var section = new Section();
-
             // build the configuration
 
-            var config = new XAS.Core.Configuration.Configuration(section, key);
+            var config = new XAS.Core.Configuration.Configuration();
             config.Build();
+
+            var key = config.Key;
+            var section = config.Section;
 
             // build the locker
 
@@ -69,6 +68,8 @@ namespace DemoMicroServiceServer {
                 loader.Load(config);
 
             }
+
+            var secure = new Secure();
 
             // run the application
 
