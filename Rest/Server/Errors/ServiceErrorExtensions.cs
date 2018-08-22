@@ -5,6 +5,7 @@ using Nancy.Validation;
 
 using FluentValidation;
 
+using XAS.Rest.Common.Errors;
 using XAS.Rest.Server.Errors.Exceptions;
 
 namespace XAS.Rest.Server.Errors {

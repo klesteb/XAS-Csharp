@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Nancy;
 
-namespace XAS.Rest.Client.Errors {
+namespace XAS.Rest.Common.Errors {
 
     // taken from: https://github.com/bytefish/NancySamples/tree/master/ErrorHandling
     // with modifications
@@ -18,13 +18,13 @@ namespace XAS.Rest.Client.Errors {
         /// Get/Set the error code.
         /// </summary>
         /// 
-        public Int32 ErrorCode { get; set; }
+        public ServiceErrorCode ErrorCode { get; set; }
 
         /// <summary>
         /// Get/Set the HTTP status code.
         /// </summary>
         /// 
-        public Int32 Status { get; set; }
+        public HttpStatusCode Status { get; set; }
 
         /// <summary>
         /// Get/Set details about the error.

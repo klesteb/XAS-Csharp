@@ -6,6 +6,7 @@ using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Responses.Negotiation;
 
+using XAS.Rest.Common.Errors;
 using XAS.Rest.Server.Errors.Exceptions;
 
 namespace XAS.Rest.Server.Errors {

@@ -3,8 +3,9 @@ using RestSharp;
 using RestSharp.Deserializers;
 
 using Newtonsoft.Json;
+using XAS.Rest.Common.Errors;
 
-namespace XAS.Rest.Client.Errors {
+namespace XAS.Rest.Client.Serializers {
 
     public class ApplicationProblemDeserializer: IDeserializer {
 

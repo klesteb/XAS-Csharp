@@ -10,7 +10,6 @@ using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
-using XAS.Rest.Client.Errors;
 using XAS.Rest.Client.Exceptions;
 using XAS.Rest.Client.Serializers;
 
@@ -76,17 +75,26 @@ namespace XAS.Rest.Client {
                 if (response.ContentType == "application/problem+json") {
 
                     var error = response.Data;
-                    var message = String.Format("Title: {0}, Status: {1}, Error: {2},  Detail: {3}, Type: {4}",
-                        error.Title, error.Status, error.ErrorCode, error.Detail, error.Type);
+                    var ex = new ApplicationProblemException(error.Detail);
 
-                    throw new ApplicationProblemException(message);
+                    ex.Data.Add("Title", error.Title);
+                    ex.Data.Add("Status", error.Status);
+                    ex.Data.Add("ErrorCode", error.ErrorCode);
+                    ex.Data.Add("Detail", error.Detail);
+                    ex.Data.Add("Type", error.Type);
+
+                    throw ex;
 
                 } else {
 
                     var message = String.Format("Code: {0}, Message: {1}",
                         response.StatusCode, response.StatusDescription);
+                    var ex = new ResponseException(message);
 
-                    throw new ResponseException(message);
+                    ex.Data.Add("StatusCode", response.StatusCode);
+                    ex.Data.Add("StatusDescription", response.StatusDescription);
+
+                    throw ex;
 
                 }
 
@@ -119,17 +127,26 @@ namespace XAS.Rest.Client {
                 if (response.ContentType == "application/problem+json") {
 
                     var error = response.Data;
-                    var message = String.Format("Title: {0}, Status: {1}, Error: {2},  Detail: {3}, Type: {4}",
-                        error.Title, error.Status, error.ErrorCode, error.Detail, error.Type);
+                    var ex = new ApplicationProblemException(error.Detail);
 
-                    throw new ApplicationProblemException(message);
+                    ex.Data.Add("Title", error.Title);
+                    ex.Data.Add("Status", error.Status);
+                    ex.Data.Add("ErrorCode", error.ErrorCode);
+                    ex.Data.Add("Detail", error.Detail);
+                    ex.Data.Add("Type", error.Type);
+
+                    throw ex;
 
                 } else {
 
                     var message = String.Format("Code: {0}, Message: {1}",
                         response.StatusCode, response.StatusDescription);
+                    var ex = new ResponseException(message);
 
-                    throw new ResponseException(message);
+                    ex.Data.Add("StatusCode", response.StatusCode);
+                    ex.Data.Add("StatusDescription", response.StatusDescription);
+
+                    throw ex;
 
                 }
 

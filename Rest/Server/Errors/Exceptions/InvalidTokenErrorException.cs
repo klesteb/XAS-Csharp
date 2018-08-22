@@ -1,5 +1,7 @@
 ﻿using System;
 
+using XAS.Rest.Common.Errors;
+
 namespace XAS.Rest.Server.Errors.Exceptions {
 
     public class InvalidTokenErrorException:Exception, IHasServiceError {

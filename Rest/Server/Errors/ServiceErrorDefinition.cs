@@ -1,5 +1,7 @@
 ﻿using Nancy;
 
+using XAS.Rest.Common.Errors;
+
 namespace XAS.Rest.Server.Errors {
 
     // taken from: https://github.com/bytefish/NancySamples/tree/master/ErrorHandling

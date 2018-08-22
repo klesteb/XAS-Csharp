@@ -89,7 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\Client.cs" />
-    <Compile Include="Client\Errors\ServiceErrorModel.cs" />
     <Compile Include="Client\Exceptions\ApplicationProblemException.cs" />
     <Compile Include="Client\Exceptions\ResponseException.cs" />
     <Compile Include="Client\Serializers\ApplicationHALDeserializer.cs" />
@@ -108,11 +107,11 @@
     <Compile Include="Server\Errors\Exceptions\InvalidTokenErrorException.cs" />
     <Compile Include="Server\Errors\Exceptions\NotFoundErrorException.cs" />
     <Compile Include="Server\Errors\Exceptions\NotProccesableErrorException.cs" />
-    <Compile Include="Server\Errors\IHasServiceError.cs" />
-    <Compile Include="Server\Errors\ServiceErrorCode.cs" />
+    <Compile Include="Common\Errors\IHasServiceError.cs" />
+    <Compile Include="Common\Errors\ServiceErrorCode.cs" />
     <Compile Include="Server\Errors\ServiceErrorDefinition.cs" />
     <Compile Include="Server\Errors\ServiceErrorExtensions.cs" />
-    <Compile Include="Server\Errors\ServiceErrorModel.cs" />
+    <Compile Include="Common\Errors\ServiceErrorModel.cs" />
     <Compile Include="Server\Errors\StatusCodeHandler400.cs" />
     <Compile Include="Server\Errors\StatusCodeHandler401.cs" />
     <Compile Include="Server\Errors\StatusCodeHandler403.cs" />

@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace XAS.Rest.Server.Errors {
+namespace XAS.Rest.Common.Errors {
 
     // taken from: https://github.com/bytefish/NancySamples/tree/master/ErrorHandling
     // with modifications
