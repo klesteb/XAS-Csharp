@@ -56,6 +56,7 @@ namespace XAS.Rest.Common.Errors {
         /// 
         public ServiceErrorModel() {
 
+            this.Exception = "";
             this.Type = "about:blank";
 
         }

@@ -58,47 +58,7 @@ namespace XAS.Rest.Client {
         /// 
         public async Task<IRestResponse<dynamic>> CallAsync(IRestRequest request) {
 
-            dynamic response = null;
-
-            client.BaseUrl = new Uri(this.Url);
-            client.Authenticator = new HttpBasicAuthenticator(this.Username, this.Password);
-
-            response = await client.ExecuteTaskAsync<dynamic>(request);
-
-            if ((response.StatusCode >= HttpStatusCode.OK) &&               // >= 200
-                (response.StatusCode < HttpStatusCode.MultipleChoices)) {   // < 300
-
-                return response;
-
-            } else {
-
-                if (response.ContentType == "application/problem+json") {
-
-                    var error = response.Data;
-                    var ex = new ApplicationProblemException(error.Detail);
-
-                    ex.Data.Add("Title", error.Title);
-                    ex.Data.Add("Status", error.Status);
-                    ex.Data.Add("ErrorCode", error.ErrorCode);
-                    ex.Data.Add("Detail", error.Detail);
-                    ex.Data.Add("Type", error.Type);
-
-                    throw ex;
-
-                } else {
-
-                    var message = String.Format("Code: {0}, Message: {1}",
-                        response.StatusCode, response.StatusDescription);
-                    var ex = new ResponseException(message);
-
-                    ex.Data.Add("StatusCode", response.StatusCode);
-                    ex.Data.Add("StatusDescription", response.StatusDescription);
-
-                    throw ex;
-
-                }
-
-            }
+            return await Task.Run(() => Call(request));
 
         }
 
@@ -134,14 +94,13 @@ namespace XAS.Rest.Client {
                     ex.Data.Add("ErrorCode", error.ErrorCode);
                     ex.Data.Add("Detail", error.Detail);
                     ex.Data.Add("Type", error.Type);
+                    ex.Data.Add("Exception", error.Exception);
 
                     throw ex;
 
                 } else {
 
-                    var message = String.Format("Code: {0}, Message: {1}",
-                        response.StatusCode, response.StatusDescription);
-                    var ex = new ResponseException(message);
+                    var ex = new ResponseException(response.StatusDescription);
 
                     ex.Data.Add("StatusCode", response.StatusCode);
                     ex.Data.Add("StatusDescription", response.StatusDescription);
