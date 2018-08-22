@@ -193,7 +193,7 @@ namespace DemoDatabase {
             text.Add("");
             text.Add("CONFIGURATION");
             text.Add("");
-            text.Add("    The default configuration file is " + cfgFile + ", and contains the following stanzas:");
+            text.Add("    The default configuration file is \"" + cfgFile + "\", and contains the following stanzas:");
             text.Add("");
             text.Add("        [application]");
             text.Add("        alerts = true");

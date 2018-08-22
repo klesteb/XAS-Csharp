@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.ServiceProcess;
 using System.Collections.Generic;
 
 using XAS.App;
 using XAS.App.Exceptions;
-using XAS.App.Services.Framework;
 using XAS.App.Configuration.Loaders;
 
 using XAS.Core.Logging;
@@ -90,7 +88,7 @@ namespace DemoService {
 
             public override Int32 RunApp(String[] args) {
 
-                this.WindowsService = new MyService(config, handler, logFactory, secure);
+                this.WindowsService = new Service(config, handler, logFactory, secure);
 
                 return base.RunApp(args);
 
@@ -99,7 +97,7 @@ namespace DemoService {
             public override String GetUsage() {
 
                 return "Usage: DemoService\n   or: DemoService --help";
-               
+
             }
 
             public override Options GetOptions() {
@@ -137,7 +135,7 @@ namespace DemoService {
 
                 var key = config.Key;
                 var section = config.Section;
-                string cfgFile = config.GetValue(section.Application(), key.CfgFile());
+                string cfgFile = config.GetValue(section.Environment(), key.CfgFile());
                 List<string> text = new List<string>();
                 List<string> options = GetOptionsText();
 
@@ -168,7 +166,7 @@ namespace DemoService {
                 text.Add("");
                 text.Add("CONFIGURATION");
                 text.Add("");
-                text.Add("    The default configuration file is " + cfgFile + ", and contains the following stanzas:");
+                text.Add("    The default configuration file is \"" + cfgFile + "\", and contains the following stanzas:");
                 text.Add("");
                 text.Add("        [application]");
                 text.Add("        alerts = true");
@@ -177,8 +175,8 @@ namespace DemoService {
                 text.Add("        trace = false");
                 text.Add("        debug = false");
                 text.Add("        log-type = file");
-                text.Add("        log-file = " + config.GetValue(section.Application(), key.LogFile()));
-                text.Add("        log-conf = " + config.GetValue(section.Application(), key.LogConf()));
+                text.Add("        log-file = " + config.GetValue(section.Environment(), key.LogFile()));
+                text.Add("        log-conf = " + config.GetValue(section.Environment(), key.LogConf()));
                 text.Add("");
                 text.Add("    This is the basic options that every program has, they can be overridden on the command line.");
                 text.Add("    The above are the defaults and this stanza is not really needed. But it does allow you to easily");
@@ -201,74 +199,6 @@ namespace DemoService {
                 text.Add("");
 
                 return text.ToArray();
-
-            }
-
-        }
-
-        [WindowsService("DemoService",
-            DisplayName = "DemoService",
-            Description = "The description of the DemoService service.",
-            EventSource = "DemoService",
-            EventLog = "Application",
-            AutoLog = true,
-            StartMode = ServiceStartMode.Manual
-        )]
-
-        public class MyService: IWindowsService {
-
-            private readonly ILogger log = null;
-            protected readonly ISecurity security = null;
-            protected readonly IConfiguration config = null;
-            protected readonly IErrorHandler handler = null;
-
-            public MyService(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure) {
-
-                this.config = config;
-                this.security = secure;
-                this.handler = errorHandler;
-                this.log = logFactory.Create(typeof(MyService));
-
-            }
-
-            public void Dispose() {
-            
-
-            }
-
-            public void OnStart(String[] args) {
-
-                log.InfoMsg("ServiceStartup");
-
-            }
-
-            public void OnPause() {
-
-                log.InfoMsg("ServicePaused");
-
-            }
-
-            public void OnContinue() {
-
-                log.InfoMsg("ServiceResumed");
-
-            }
-
-            public void OnStop() {
-
-                log.InfoMsg("ServiceStopped");
-
-            }
-
-            public void OnShutdown() {
-
-                log.InfoMsg("ServiceShutdown");
-
-            }
-
-            public void OnCustomCommand(int command) {
-
-                log.Info(String.Format("customcommand: {0}", command));
 
             }
 
