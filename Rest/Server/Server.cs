@@ -11,43 +11,8 @@ using XAS.Rest.Server.Errors.Exceptions;
 namespace XAS.Rest.Server {
 
     /// <summary>
-    /// Entry point for a Nancy based REST application.
+    /// A REST based server.
     /// </summary>
-    /// <example>
-    /// 
-    /// using System;
-    /// using WPM.Rest;
-    /// 
-    /// namespace Demo {
-    /// 
-    ///     class Program {
-    ///    
-    ///        static void Main(string[] args) {
-    ///
-    ///            var uri = new Uri("http://localhost:8080");
-    ///        
-    ///            using (var host = new RestHost(uri)) {
-    ///
-    ///                host.Start();
-    ///
-    ///                System.Console.WriteLine("press any key to exit.");
-    ///                System.Console.ReadKey();
-    ///
-    ///                host.Stop();
-    ///
-    ///            }
-    ///
-    ///        }
-    ///
-    ///     }
-    ///     
-    /// }
-    /// 
-    /// </example>
-    /// <remarks>
-    /// This provides a complete application that autoloads all the required modules 
-    /// and will listening on port 8080 on the loopback interface for any requests. 
-    /// </remarks>
     /// 
     public class Server: IDisposable {
 

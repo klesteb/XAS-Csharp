@@ -88,6 +88,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoDatabaseInit", "DemoDat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoMicroServiceClient", "DemoMicroServiceClient\DemoMicroServiceClient.csproj", "{9EEDAEB6-C56C-4F01-AD79-9EABCD5808D4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceSpooler", "ServiceSpooler\ServiceSpooler.csproj", "{6EAE30E7-CB70-4899-9482-959875C93EE8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -150,6 +152,10 @@ Global
 		{9EEDAEB6-C56C-4F01-AD79-9EABCD5808D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EEDAEB6-C56C-4F01-AD79-9EABCD5808D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EEDAEB6-C56C-4F01-AD79-9EABCD5808D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EAE30E7-CB70-4899-9482-959875C93EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EAE30E7-CB70-4899-9482-959875C93EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EAE30E7-CB70-4899-9482-959875C93EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EAE30E7-CB70-4899-9482-959875C93EE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

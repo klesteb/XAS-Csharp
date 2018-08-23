@@ -16,7 +16,7 @@ using XAS.Rest.Client.Serializers;
 namespace XAS.Rest.Client {
 
     /// <summary>
-    /// A client to communicate with REST based services.
+    /// A REST based client.
     /// </summary>
     /// 
     public class Client {
