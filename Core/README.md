@@ -79,13 +79,13 @@ Directory | Environment Variable | Purpose
 \lib | XAS_LIBS | Shared libraries
 \sbin | XAS_SBIN | Services
 \tmp | XAS_TMP | Temporary work space
-\var | NA | Varirable data 
+\var |  | Variable data 
 \var\lib | XAS_LIB | Variable data, such as databases
 \var\run | XAS_RUN | Run time data, such as pid files
 \var\log | XAS_LOG | Log files
 \var\locks | XAS_LOCKS | Shared locks
 \var\spool | XAS_SPOOL | Spooler data
-\var\spool\alerts | NA | Outbound alerts
-\var\spool\logs | NA | Outbound JSON formatted log entries
+\var\spool\alerts |  | Outbound alerts
+\var\spool\logs |  | Outbound JSON formatted log entries
 
 The root directory can reside on any available disk device.
