@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ServiceSpooler")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("XAS-Spooler")]
+[assembly: AssemblyDescription("This service provides spooling service for the XAS Environment")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ServiceSpooler")]
+[assembly: AssemblyCompany("Kevin L. Esteb")]
+[assembly: AssemblyProduct("XAS-Spooler")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

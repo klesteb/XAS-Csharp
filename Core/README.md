@@ -94,5 +94,6 @@ structure. This works well, as most of the supporting libraries are not self
 signed (including Microsofts Entity Framework) and don't reside in the GAC.
 Except log4net. This needs to be in the GAC and luckily it is signed. 
 
-
+In my opinion, this is the basic environment needed to run in a modern
+DevOps oriented world.
 

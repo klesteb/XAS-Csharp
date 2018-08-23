@@ -27,6 +27,32 @@ namespace XAS.Core.Extensions {
 
         }
 
+        /// <summary>
+        /// Convert UNIX epoch to DateTime.
+        /// </summary>
+        /// <param name="unixTime"></param>
+        /// <returns>A DateTime object.</returns>
+        /// 
+        public static DateTime FromUnixTime(this Int64 unixTime) {
+
+            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return epoch.AddSeconds(unixTime);
+
+        }
+
+        /// <summary>
+        /// Convert a DateTime to a UNIX epoch (64bit).
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns>Number of seconds from 1970-01-01 00:00:00.</returns>
+        /// 
+        public static Int64 ToUnixTime(this DateTime date) {
+
+            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return Convert.ToInt64((date - epoch).TotalSeconds);
+
+        }
+
     }
 
 }

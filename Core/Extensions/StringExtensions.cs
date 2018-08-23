@@ -160,7 +160,7 @@ namespace XAS.Core.Extensions {
 
             if (string.IsNullOrEmpty(text)) {
 
-                return text;
+                throw new ArgumentException("The string must not be null or empty.");
 
             }
 
@@ -173,12 +173,11 @@ namespace XAS.Core.Extensions {
         /// Convert a Base64 encode string.
         /// </summary>
         /// <param name="text">A Base64 encoded string object.</param>
-        /// <param name="decodedText">The resulting decoded string.</param>
-        /// <returns>true if successful.</returns>
+        /// <returns>A decoded base64 string.</returns>
         /// 
-        public static bool TryParseBase64(this string text, out string decodedText) {
+        public static string FromBase64(this string text) {
 
-            return TryParseBase64(text, Encoding.UTF8, out decodedText);
+            return FromBase64(text, Encoding.UTF8);
 
         }
 
@@ -187,25 +186,34 @@ namespace XAS.Core.Extensions {
         /// </summary>
         /// <param name="text">A Base64 encode string object.</param>
         /// <param name="encoding">An Encoding object.</param>
-        /// <param name="decodedText">The resulting decoded string.</param>
-        /// <returns>true = if successful.</returns>
+        /// <returns>A decoded base64 string.</returns>
         /// 
-        public static bool TryParseBase64(this string text, Encoding encoding, out string decodedText) {
+        public static string FromBase64(this string text, Encoding encoding) {
 
-            bool stat = false;
+            if (string.IsNullOrEmpty(text)) {
 
-            decodedText = "";
+                throw new ArgumentException("The string must not be null or empty.");
 
-            try {
+            }
 
-                byte[] textAsBytes = Convert.FromBase64String(text);
-                decodedText = encoding.GetString(textAsBytes);
+            byte[] textAsBytes = Convert.FromBase64String(text);
+            return encoding.GetString(textAsBytes);
 
-                stat = true;
+        }
 
-            } catch { }
+        /// <summary>
+        /// Returns with suffix removed, if present.
+        /// </summary>
+        /// 
+        public static String TrimIfEndsWith(this String value, String suffix) {
 
-            return stat;
+            //taken from:  http://stackoverflow.com/questions/12936804/shorthand-way-to-remove-last-forward-slash-and-trailing-characters-from-string
+
+            return
+                value.EndsWith(suffix) ?
+                    value.Substring(0, value.Length - suffix.Length) :
+                    value;
+
         }
 
     }
