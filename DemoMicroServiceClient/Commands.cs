@@ -2,16 +2,16 @@
 using System.Linq;
 
 using XAS.App;
-using XAS.Model;
 using XAS.Core.Logging;
 using XAS.App.Exceptions;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
-using DemoModel;
 using DemoModelCommon.DataStructures;
+using XAS.Core.Configuration.Extensions;
+using DemoMicroServiceClient.Configuration.Extensions;
 
-namespace DemoDatabase {
+namespace DemoMicroServiceClient {
 
     /// <summary>
     /// Command Handler.
@@ -19,13 +19,16 @@ namespace DemoDatabase {
     /// 
     public class Commands: CommandHandler {
 
-        private IManager manager = null;
-        private readonly String model = "";
+        private Int32 port = 8080;
+        private string username = "";
+        private string password = "";
+        private string server = "localost";
+
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
         private readonly ILoggerFactory logFactory = null;
-        private readonly DemoModel.Service.Dinosaur dino = null;
+        private readonly DemoMicroServiceClient.Client dino = null;
 
         /// <summary>
         /// Constructor.
@@ -33,15 +36,21 @@ namespace DemoDatabase {
         /// <param name="config">An IConfiguration object.</param>
         /// <param name="logFactory">An ILogggerFactory object.</param>
         /// 
-        public Commands(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, String model): base() {
+        public Commands(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory): base() {
 
-            this.model = model;
             this.config = config;
             this.handler = handler;
             this.logFactory = logFactory;
 
+            var key = config.Key;
+            var section = config.Section;
+
+            this.username = config.GetValue(section.Environment(), key.Username());
+            this.server = config.GetValue(section.Service(), key.Server(), "localhost");
+            this.port = Convert.ToInt32(config.GetValue(section.Service(), key.Port(), "8080"));
+
+            this.dino = new Client(config, handler, logFactory);
             this.log = logFactory.Create(typeof(Commands));
-            this.dino = new DemoModel.Service.Dinosaur(config, handler, logFactory);
 
         }
 
@@ -61,9 +70,23 @@ namespace DemoDatabase {
                 displayHelp = true;
             });
 
-            try {
+            options.Add("username=", "set a new username.", (v) => {
+                this.username = v;
+            });
 
-                InitDbContext();
+            options.Add("password=", "set a new password.", (v) => {
+                this.password = v;
+            });
+
+            options.Add("server=", "set a new server to use.", (v) => {
+                this.server = v;
+            });
+
+            options.Add("port=", "set the port on the server.", (v) => {
+                this.port = Convert.ToInt32(v);
+            });
+
+            try {
 
                 var parameters = options.Parse(args).ToArray();
 
@@ -97,6 +120,9 @@ namespace DemoDatabase {
             bool dinoShow = false;
             bool dinoList = false;
             bool displayHelp = false;
+            bool displayPort = false;
+            bool displayServer = false;
+            bool displayUsername = false;
 
             Options options = new Options(this.config);
 
@@ -113,9 +139,19 @@ namespace DemoDatabase {
                 dinoList = true;
             });
 
-            try {
+            options.Add("username", "show current username", (v) => {
+                displayUsername = true;
+            });
 
-                InitDbContext();
+            options.Add("port", "show current port", (v) => {
+                displayPort = true;
+            });
+
+            options.Add("server", "show current server", (v) => {
+                displayServer = true;
+            });
+
+            try {
 
                 var parameters = options.Parse(args).ToArray();
 
@@ -125,59 +161,83 @@ namespace DemoDatabase {
 
                 } else if (dinoShow) {
 
-                    using (var repo = manager.Repository as DemoModel.Repositories) {
+                    dino.Port = port;
+                    dino.Server = server;
+                    dino.Username = username;
+                    dino.Password = password;
 
-                        var dto = dino.Get(repo, id);
+                    var dto = dino.Get(id);
 
-                        if (dto != null) {
+                    if (dto != null) {
 
-                            System.Console.WriteLine("");
-                            System.Console.WriteLine("Id    : {0}", dto.Id);
-                            System.Console.WriteLine("Name  : {0}", dto.Name);
-                            System.Console.WriteLine("Status: {0}", dto.Status);
-                            System.Console.WriteLine("Height: {0}", dto.Height);
-                            System.Console.WriteLine("");
+                        System.Console.WriteLine("");
+                        System.Console.WriteLine("Id    : {0}", dto.Id);
+                        System.Console.WriteLine("Name  : {0}", dto.Name);
+                        System.Console.WriteLine("Status: {0}", dto.Status);
+                        System.Console.WriteLine("Height: {0}", dto.Height);
+                        System.Console.WriteLine("");
 
-                        } else {
+                    } else {
 
-                            log.Error(String.Format("Unable to find {0}", id));
-
-                        }
+                        log.Error(String.Format("Unable to find {0}", id));
 
                     }
 
                 } else if (dinoList) {
 
-                    using (var repo = manager.Repository as DemoModel.Repositories) {
+                    dino.Port = port;
+                    dino.Server = server;
+                    dino.Username = username;
+                    dino.Password = password;
 
-                        var dtos = dino.List(repo);
-                        string padding = "                               ";
+                    var dtos = dino.List();
+                    string padding = "                               ";
 
-                        System.Console.WriteLine("");
-                        System.Console.WriteLine("  Id          Name             Status        Height");
-                        System.Console.WriteLine("-------+-----------------+-----------------+--------+");
+                    System.Console.WriteLine("");
+                    System.Console.WriteLine("  Id          Name             Status        Height");
+                    System.Console.WriteLine("-------+-----------------+-----------------+--------+");
 
-                        foreach (var dto in dtos) {
+                    foreach (var dto in dtos) {
 
-                            string xid = dto.Id.ToString() + padding;
-                            string name = dto.Name + padding;
-                            string status = dto.Status + padding;
+                        string xid = dto.Id.ToString() + padding;
+                        string name = dto.Name + padding;
+                        string status = dto.Status + padding;
 
-                            string output = String.Format(
-                                "  {0}  {1}  {2}  {3}",
-                                xid.Substring(0, 5),
-                                name.Substring(0, 16),
-                                status.Substring(0, 16),
-                                dto.Height
-                            );
+                        string output = String.Format(
+                            "  {0}  {1}  {2}  {3}",
+                            xid.Substring(0, 5),
+                            name.Substring(0, 16),
+                            status.Substring(0, 16),
+                            dto.Height
+                        );
 
-                            System.Console.WriteLine(output);
-
-                        }
-                    
-                        System.Console.WriteLine("");
+                        System.Console.WriteLine(output);
 
                     }
+
+                    System.Console.WriteLine("");
+
+                } else if (displayUsername) {
+
+                    System.Console.WriteLine("Username: {0}", username);
+
+                } else if (displayServer) {
+
+                    System.Console.WriteLine("Server: {0}", server);
+
+                } else if (displayPort) {
+
+                    System.Console.WriteLine("Port: {0}", port);
+
+                } else {
+
+                    System.Console.WriteLine("");
+                    System.Console.WriteLine("Global Settings");
+                    System.Console.WriteLine("------------------------");
+                    System.Console.WriteLine("Username: {0}", username);
+                    System.Console.WriteLine("Server  : {0}", server);
+                    System.Console.WriteLine("Port    : {0}", port);
+                    System.Console.WriteLine("");
 
                 }
 
@@ -219,8 +279,6 @@ namespace DemoDatabase {
 
             try {
 
-                InitDbContext();
-
                 var parameters = options.Parse(args).ToArray();
 
                 if (displayHelp) {
@@ -229,26 +287,28 @@ namespace DemoDatabase {
 
                 } else {
 
-                    var dti = new DinosaurDTI {
+                    var post = new DinosaurPost {
                         Name = name,
                         Status = status,
                         Height = height
                     };
 
-                    using (var repo = manager.Repository as DemoModel.Repositories) {
+                    dino.Port = port;
+                    dino.Server = server;
+                    dino.Username = username;
+                    dino.Password = password;
 
-                        int id = dino.Create(repo, dti);
-                        if (id != 0) {
+                    int id = dino.Create(post);
+                    if (id != 0) {
 
-                            System.Console.WriteLine("Created: {0}", id);
+                        System.Console.WriteLine("Created: {0}", id);
 
-                        } else {
+                    } else {
 
-                            log.Error("Unable to create a new dinosaur");
-
-                        }
+                        log.Error("Unable to create a new dinosaur");
 
                     }
+
 
                 }
 
@@ -274,8 +334,6 @@ namespace DemoDatabase {
 
             try {
 
-                InitDbContext();
-
                 var parameters = options.Parse(args).ToArray();
 
                 if (displayHelp) {
@@ -286,19 +344,20 @@ namespace DemoDatabase {
 
                     if (parameters.Count() > 0) {
 
+                        dino.Port = port;
+                        dino.Server = server;
+                        dino.Username = username;
+                        dino.Password = password;
+
                         int id = Convert.ToInt32(parameters[0]);
 
-                        using (var repo = manager.Repository as DemoModel.Repositories) {
+                        if (dino.Delete(id)) {
 
-                            if (dino.Delete(repo, id)) {
+                            System.Console.WriteLine("Removed: {0}", id);
 
-                                System.Console.WriteLine("Removed: {0}", id);
+                        } else {
 
-                            } else {
-
-                                log.Error(String.Format("{0} was not removed", id));
-
-                            }
+                            log.Error(String.Format("{0} was not removed", id));
 
                         }
 
@@ -348,8 +407,6 @@ namespace DemoDatabase {
 
             try {
 
-                InitDbContext();
-
                 var parameters = options.Parse(args).ToArray();
 
                 if (displayHelp) {
@@ -360,25 +417,26 @@ namespace DemoDatabase {
 
                     if (parameters.Count() > 0) {
 
+                        dino.Port = port;
+                        dino.Server = server;
+                        dino.Username = username;
+                        dino.Password = password;
+
                         int id = Convert.ToInt32(parameters[0]);
 
-                        var dti = new DinosaurDTI {
+                        var update = new DinosaurUpdate {
                             Name = name,
                             Status = status,
                             Height = height
                         };
 
-                        using (var repo = manager.Repository as DemoModel.Repositories) {
+                        if (dino.Update(id, update)) {
 
-                            if (dino.Update(repo, id, dti)) {
+                            System.Console.WriteLine("Updated: {0}", id);
 
-                                System.Console.WriteLine("Updated: {0}", id);
+                        } else {
 
-                            } else {
-
-                                log.Error(String.Format("Unable to update {0}", id));
-
-                            }
+                            log.Error(String.Format("Unable to update {0}", id));
 
                         }
 
@@ -401,19 +459,6 @@ namespace DemoDatabase {
         }
 
         #region Private Methods
-
-        private void InitDbContext() {
-
-            // build the database access
-
-            var context = new DemoModel.Context(null, model);
-            var repository = new DemoModel.Repositories(config, handler, logFactory, context);
-
-            // store the context
-
-            this.manager = new Manager(context, repository);
-
-        }
 
         private void DisplayAddHelp(Options options) {
 

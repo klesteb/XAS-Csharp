@@ -11,13 +11,13 @@ namespace XAS.Rest.Client.Exceptions {
     /// The following properties are used.
     /// 
     ///     Key:        Value:
-    ///     ----------+-----------------------------
-    ///     Title       The title of the error
-    ///     Status      The error status
-    ///     ErrorCode   The error code
-    ///     Detail      Error details
-    ///     Type        A url to possible useful help 
+    ///     ----------+-------------------------------------------------------------------------
+    ///     Title       A short human readable summary of the problem type
+    ///     Status      The HTTP status code
+    ///     Detail      An human readable explaination specific to this occurence of the problem
+    ///     Type        An absoulute URI that identifies the problem type.
     ///     Exception   A stack trace
+    ///     ErrorCode   An application error code
     ///     
     /// </remarks>
     /// 
