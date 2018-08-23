@@ -3,51 +3,51 @@
 This is the core modules that the rest of the system is built on. It provides
 the following facilities.
 
-## Alerting
+### Alerting
 
 A general purpose alerting platform. This used to send "alerts" to outside 
 entities.
 
-## Configuration
+### Configuration
 
 A general purpose configuration system. Uses the tried true method of sections
 with key/value pairs. This also builds a base enviornment that the rest of the
 system uses to find "stuff".
 
-## Data Structures
+### Data Structures
 
 Usefull predefined data structures.
 
-## Exceptions
+### Exceptions
 
 Usefull predefined exceptions. Also contains methods to display exceptions in
 a pleasing manner.
 
-## Extensions
+### Extensions
 
 Some usefull String and DateTime extensions.
 
-## Locking
+### Locking
 
 A factory and supporting classes for locking to access to common system 
 resources such as directories in the file system.
 
-## Logging
+### Logging
 
 A factory and supporting classes to provide a logging framework. This is
 based on the log4net library. This includes prepackaged logging configurations
 for "console", "file", "event" and "json".
 
-## MIME
+### MIME
 
 Provides MIME support.
 
-## Security
+### Security
 
 Provides modules for security. Such as authenticating against AD and 
 dealing with the UAC bullshit and some other usefull modules.
 
-## Spooling
+### Spooling
 
 Uses the tried and true methods for maintaining spool files in spool
 directories. Nothing fancy here, just the way they have been doing it on
