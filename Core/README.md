@@ -1,4 +1,4 @@
-﻿# XAS.Core
+﻿# ***XAS.Core***
 
 This is the core modules that the rest of the system is built on. It provides
 the following facilities.
@@ -53,7 +53,7 @@ Uses the tried and true methods for maintaining spool files in spool
 directories. Nothing fancy here, just the way they have been doing it on
 UNIX since the mid '70s.
 
-# The XAS Environment
+# ***The XAS Environment***
 
 Microsoft has an interesting notion on where applications should live and
 where their resources are located. And the .NET environment does a really good
@@ -73,10 +73,10 @@ reconfigured with environment variables. It is layed out as follows:
 
 Directory | Environment Variable | Purpose
 --------- | -------------------- | -------
-\ | XAS_ROOT | Root directory
+\ | XAS_ROOT | Root directory (C:\xas\)
 \bin | XAS_BIN | Command line applications
 \etc | XAS_ETC | Configuration files
-\lib | XAS_LIBS | Shared libraries
+\lib | XAS_LIBS | Shared libraries (including 3rd party)
 \sbin | XAS_SBIN | Services
 \tmp | XAS_TMP | Temporary work space
 \var |  | Variable data 
@@ -88,4 +88,11 @@ Directory | Environment Variable | Purpose
 \var\spool\alerts |  | Outbound alerts
 \var\spool\logs |  | Outbound JSON formatted log entries
 
-The root directory can reside on any available disk device.
+The root directory can reside on any available disk device, it defualts to
+C:\xas. The whole XAS operations environment resides within this directory 
+structure. This works well, as most of the supporting libraries are not self 
+signed (including Microsofts Entity Framework) and don't reside in the GAC.
+Except log4net. This needs to be in the GAC and luckily it is signed. 
+
+
+
