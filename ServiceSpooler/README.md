@@ -13,5 +13,5 @@ Creating spool files is built into the system. If you generate an alert, a
 spool file is created. If you use JSON logging, a spool file is created, one
 per each log entry.
 
-Hey, it works for email, and has beeen, since email was invented. So it can't 
-be all bad.
+Hey, it works for email, and has beeen used, since email was invented. So it 
+can't be all bad.
