@@ -146,7 +146,7 @@ namespace XAS.Core.Spooling {
 
             if (locker.Lock()) {
                
-                foreach (string file in System.IO.Directory.EnumerateFiles(Directory, pattern)) {
+                foreach (string file in System.IO.Directory.EnumerateFiles(this.Directory, pattern)) {
 
                     files.Add(file);
 
@@ -201,7 +201,7 @@ namespace XAS.Core.Spooling {
 
                 // theres gotta be a better way!
 
-                foreach (string file in System.IO.Directory.EnumerateFiles(Directory, pattern)) {
+                foreach (string file in System.IO.Directory.EnumerateFiles(this.Directory, pattern)) {
 
                     count++;
 
@@ -229,7 +229,7 @@ namespace XAS.Core.Spooling {
 
                 // theres gotta be a better way!
 
-                foreach (string f in System.IO.Directory.EnumerateFiles(Directory, pattern)) {
+                foreach (string f in System.IO.Directory.EnumerateFiles(this.Directory, pattern)) {
 
                     file = f;
                     break;

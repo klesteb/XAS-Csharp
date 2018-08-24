@@ -10,7 +10,6 @@ using System.Collections.Concurrent;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using XAS.Core;
 using XAS.Core.Logging;
 using XAS.Core.Extensions;
 using XAS.Core.Exceptions;
@@ -122,7 +121,7 @@ namespace ServiceSpooler.Processors {
             var lockDriver = config.GetValue(section.Application(), key.LockDriver()).ToLockDriver();
             var locker = new XAS.Core.Locking.Factory(lockName).Create(lockDriver);
 
-            foreach (var directory in sections) {
+            foreach (string directory in sections) {
 
                 if ((directory != section.Application()) && 
                     (directory != section.MessageQueue()) &&
