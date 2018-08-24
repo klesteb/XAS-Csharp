@@ -35,8 +35,20 @@ namespace ServiceSpooler.Processors {
         /// <param name="cfgs">A configuration object.</param>
         /// <param name="level">The STOMP level to use.</param>
         /// 
-        public Connector(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, String level): 
-            base(config, handler, logFactory, level) {
+        public Connector(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory): 
+            base(config, handler, logFactory, "1.0") {
+
+            var key = config.Key;
+            var section = config.Section;
+            string mqServer = config.GetValue(section.Environment(), key.MQServer());
+            string mqPort = config.GetValue(section.Environment(), key.MQPort());
+
+            this.Cancellation = new CancellationTokenSource();
+            this.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
+            this.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
+            this.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
+            this.Level = Convert.ToSingle(config.GetValue(section.MessageQueue(), key.Level(), "1.0"));
+            this.Port = Convert.ToInt32(config.GetValue(section.MessageQueue(), key.MQPort(), mqPort));
 
             this.log = logFactory.Create(typeof(Connector));
 
@@ -83,8 +95,7 @@ namespace ServiceSpooler.Processors {
 
             try {
 
-                string format = config.GetValue(section.Messages(), key.UnlinkFile());
-                log.InfoMsg(format, filename);
+                log.InfoMsg(key.UnlinkFile(), filename);
 
                 File.Delete(filename);
 
@@ -198,13 +209,12 @@ namespace ServiceSpooler.Processors {
 
             var key = config.Key;
             var section = config.Section;
-            string format = config.GetValue(section.Messages(), key.Connected());
 
             log.Trace("Entering OnConnected()");
             log.Debug(Utils.Dump(frame));
 
 
-            log.InfoMsg(format, this.Server, this.Port);
+            log.InfoMsg(key.Connected(), this.Server, this.Port);
             this.ConnectionEvent.Set();
 
             log.Trace("Leaving OnConnected()");
@@ -223,7 +233,6 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering OnReceipt()");
             log.Debug(String.Format("frame: {0}", Utils.Dump(frame)));
-            string format = config.GetValue(section.Messages(), key.Disconnected());
 
             if (frame.Headers.ContainsKey("receipt-id")) {
 
@@ -246,7 +255,7 @@ namespace ServiceSpooler.Processors {
 
                 } else if (receipt.ToLower() == "disconnected") {
 
-                    log.InfoMsg(format, this.Server);
+                    log.InfoMsg(key.Disconnected(), this.Server);
 
                 }
 
@@ -271,7 +280,6 @@ namespace ServiceSpooler.Processors {
 
             string body = "";
             string message = "";
-            string format = config.GetValue(section.Messages(), key.ProtocolError());
 
             if (frame.Headers.ContainsKey("message")) {
 
@@ -286,7 +294,7 @@ namespace ServiceSpooler.Processors {
 
             }
 
-            log.ErrorMsg(format, message, body);
+            log.ErrorMsg(key.ProtocolError(), message, body);
 
             log.Trace("Leaving OnError()");
 

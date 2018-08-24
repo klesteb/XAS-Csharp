@@ -48,6 +48,10 @@ namespace ServiceSpooler.Configuration.Extensions {
             return "ProtocolError";
         }
 
+        public static String NoData(this Key junk) {
+            return "NoData";
+        }
+
         // configs
 
         public static String Server(this Key junk) {

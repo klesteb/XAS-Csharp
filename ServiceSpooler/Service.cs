@@ -16,7 +16,7 @@ namespace ServiceSpooler {
 
     [WindowsService("XasSpooler",
         DisplayName = "XAS Spooler",
-        Description = "Manage spool files and directories for the XAS environment.",
+        Description = "This manages spool files and directories for the XAS environment.",
         EventSource = "XasSpooler",
         EventLog = "Application",
         AutoLog = true,
@@ -58,11 +58,7 @@ namespace ServiceSpooler {
             this.dequeueEvent = new AutoResetEvent(false);
             this.connectionEvent = new ManualResetEvent(false);
 
-            var key = config.Key;
-            var section = config.Section;
-            string level = config.GetValue(section.MessageQueue(), key.Level(), "1.0");
-
-            this.connector = new Processors.Connector(config, handler, logFactory, level);
+            this.connector = new Processors.Connector(config, handler, logFactory);
             this.watchers = new Processors.Watchers(config, handler, logFactory, queued);
             this.monitor = new Processors.Monitor(config, handler, logFactory, queued, connector);
 

@@ -64,18 +64,19 @@ namespace XAS.Network.STOMP {
 
             var key = config.Key;
             var section = config.Section;
+
             parser = new Parser(level: level);
             frames = new ConcurrentQueue<Frame>();
             stomp = new Stomp(config, handler, logFactory);
 
             this.VirtualHost = "/";
-            this.Port = Convert.ToInt32(config.GetValue(section.Environment(), key.MQPort()));
             this.Username = "guest";
             this.Password = "guest";
-            this.Server = config.GetValue(section.Environment(), key.MQServer());
             this.Subscription = "stomp-client";
             this.Level = Convert.ToSingle(level);
             this.Cancellation = new CancellationTokenSource();
+            this.Server = config.GetValue(section.Environment(), key.MQServer());
+            this.Port = Convert.ToInt32(config.GetValue(section.Environment(), key.MQPort()));
 
             this.dispatchEvent = new AutoResetEvent(false);
 

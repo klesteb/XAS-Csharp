@@ -88,7 +88,7 @@ namespace ServiceSpooler.Configuration.Loaders {
 
             }
 
-            List<string> directories = config.GetSections();
+            string[] directories = iniFile.GetSections();
 
             foreach (string directory in directories) {
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 
 using Polly;
 using Polly.Retry;
+
 using XAS.Core.Locking;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
@@ -137,14 +139,18 @@ namespace XAS.Core.Spooling {
         /// </summary>
         /// <returns>A FileInfo array.</returns>
         /// 
-        public String[] Scan() {
+        public List<String> Scan() {
 
-            String[] files = null;
+            var files = new List<String>();
+            string pattern = String.Format("*{0}", this.Extension);
 
             if (locker.Lock()) {
+               
+                foreach (string file in System.IO.Directory.EnumerateFiles(Directory, pattern)) {
 
-                string pattern = String.Format("*{0}", this.Extension);
-                files = System.IO.Directory.GetFiles(pattern);
+                    files.Add(file);
+
+                }
 
                 locker.Unlock();
 
@@ -188,18 +194,24 @@ namespace XAS.Core.Spooling {
         /// 
         public Int32 Count() {
 
-            String[] files = null;
+            Int32 count = 0;
+            string pattern = String.Format("*{0}", this.Extension);
 
             if (locker.Lock()) {
 
-                string pattern = String.Format("*{0}", this.Extension);
-                files = System.IO.Directory.GetFiles(pattern);
-                
+                // theres gotta be a better way!
+
+                foreach (string file in System.IO.Directory.EnumerateFiles(Directory, pattern)) {
+
+                    count++;
+
+                }
+
                 locker.Unlock();
 
             }
 
-            return files.Length;
+            return count;
 
         }
 
@@ -210,18 +222,25 @@ namespace XAS.Core.Spooling {
         /// 
         public String Get() {
 
-            String[] files = null;
+            String file = "";
+            string pattern = String.Format("*{0}", this.Extension);
 
             if (locker.Lock()) {
 
-                string pattern = String.Format("*{0}", this.Extension);
-                files = System.IO.Directory.GetFiles(pattern);
+                // theres gotta be a better way!
+
+                foreach (string f in System.IO.Directory.EnumerateFiles(Directory, pattern)) {
+
+                    file = f;
+                    break;
+
+                }
 
                 locker.Unlock();
 
             }
 
-            return files[0];
+            return file;
 
         }
 

@@ -124,7 +124,10 @@ namespace ServiceSpooler.Processors {
 
             foreach (var directory in sections) {
 
-                if ((directory != section.Application()) && (directory != section.MessageQueue())) {
+                if ((directory != section.Application()) && 
+                    (directory != section.MessageQueue()) &&
+                    (directory != section.Environment()) &&
+                    (directory != section.Messages())) {
 
                     if (Directory.Exists(directory)) {
 
@@ -146,11 +149,11 @@ namespace ServiceSpooler.Processors {
 
                         this.watchers.Add(directory.TrimIfEndsWith("\\"), watcher);
 
-                        log.InfoMsg(key.WatchDirectory(), section);
+                        log.InfoMsg(key.WatchDirectory(), directory);
 
                     } else {
 
-                        log.ErrorMsg(key.NoDirectory(), section);
+                        log.ErrorMsg(key.NoDirectory(), directory);
 
                     }
 
@@ -279,7 +282,7 @@ namespace ServiceSpooler.Processors {
 
                         Packet packet = new Packet();
                         string rawData = Encoding.UTF8.GetString(buffer);
-                        string header = String.Format("{{'hostname':'{{{0}}}','timestamp':'{{{1}}}','type':'{{{2}}}'}}",
+                        string header = String.Format("{{'hostname':'{0}','timestamp':'{1}','type':'{2}'}}",
                             config.GetValue(section.Environment(), key.Host()),
                             DateTime.Now.ToUnixTime().ToString(),
                             watcher.type
@@ -287,24 +290,35 @@ namespace ServiceSpooler.Processors {
                           
                         log.Debug(String.Format("EncodePacket() - header: {0}", header));
 
-                        JObject packetData = JObject.Parse(header);
-                        JObject spoolData = JObject.Parse(rawData);
+                        // checking for no data in file.
 
-                        packetData.Add("data", spoolData);
+                        if (! String.IsNullOrEmpty(rawData)) {
 
-                        string jsonData = JsonConvert.SerializeObject(packetData);
-                        string receipt = String.Format("{0};{1}", watcher.alias, filename);
+                            JObject packetData = JObject.Parse(header);
+                            JObject spoolData = JObject.Parse(rawData);
 
-                        log.Debug(String.Format("EncodePacket() - jsonData: {0}", jsonData));
+                            packetData.Add("data", spoolData);
 
-                        packet.queue = watcher.queue;
-                        packet.json = jsonData;
-                        packet.receipt = receipt.ToBase64();
+                            string jsonData = JsonConvert.SerializeObject(packetData);
+                            string receipt = String.Format("{0};{1}", watcher.alias, filename);
 
-                        this.queued.Enqueue(packet);
-                        this.DequeueEvent.Set();
+                            log.Debug(String.Format("EncodePacket() - jsonData: {0}", jsonData));
 
-                        log.InfoMsg(key.FileFound(), filename, watcher.queue);
+                            packet.queue = watcher.queue;
+                            packet.json = jsonData;
+                            packet.receipt = receipt.ToBase64();
+
+                            this.queued.Enqueue(packet);
+                            this.DequeueEvent.Set();
+
+                            log.InfoMsg(key.FileFound(), filename, watcher.queue);
+
+                        } else {
+
+                            file.Delete();
+                            log.WarnMsg(key.NoData(), filename, watcher.queue);
+
+                        }
 
                     } else {
 
@@ -371,7 +385,7 @@ namespace ServiceSpooler.Processors {
 
             this.ConnectionEvent.WaitOne();
 
-            string[] files = watcher.spool.Scan();
+            var files = watcher.spool.Scan();
 
             log.Debug(String.Format("EnqueueOrphans() - found {0} files in {1}", files.Count(), watcher.directory));
 
