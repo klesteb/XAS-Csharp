@@ -41,3 +41,47 @@ the local file system.
 
 A configuration file is used to define the directories and the location of the
 message queue server. 
+
+### ***Configuration***
+
+The XAS Configuration sub system consists of sections that contains key/value 
+pairs. This can be populated from many sources. In this case it is populated
+from the familiar Windows .ini style of configuration file. The configuration 
+file %XAS_ETC%\xas-spoolerd.ini is used for this purpose. 
+
+The configuration file contains three stanzas. They are the following:
+
+    [applicaton]
+    alerts = true
+    facility = systems
+    priority = low
+    trace = false
+    debug = false
+    log-type = file
+    log-file = %XAS_LOG%\xas-spoolerd.log
+    log-conf = %XAS_ETC%\xas-spoolerd.conf
+
+	[message-queue]
+    server = %XAS_MQSERVER%
+    port = %XAS_MQPORT%
+    use-ssl = false
+    username = guest
+    password = guest
+    keepalive = true;
+    level = 1.0
+
+	[%XAS_SPOOL%\alerts]
+    queue = /queue/alerts
+    packet-type = xas-alerts
+	alias = unlink
+
+	[%XAS_SPOOL%\logs]
+    queue = /queue/logs
+    packet-type = xas-logs
+	alias = unlink
+
+The %<name>% needs to be hardcoded. It doesn't subsitute the environment variable. 
+But these are the defaults. The "applicaiton" stanza is used to set command line
+defaults. This is very usefull for services. The "message-queue" stanza defines
+which message queue server to use. The rest are for the directories that are being
+used by the spooling system. There can be as many as you need.
