@@ -112,6 +112,7 @@
     </None>
     <None Include="DemoDatabase.ini" />
     <None Include="packages.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">

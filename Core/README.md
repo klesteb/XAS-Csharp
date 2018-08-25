@@ -88,7 +88,7 @@ Directory | Environment Variable | Purpose
 \var\spool\alerts |  | Outbound alerts
 \var\spool\logs |  | Outbound JSON formatted log entries
 
-The root directory can reside on any available disk device, it defualts to
+The root directory can reside on any available disk device, it defaults to
 C:\xas. The whole XAS operations environment resides within this directory 
 structure. This works well, as most of the supporting libraries are not self 
 signed (including Microsofts Entity Framework) and don't reside in the GAC.
