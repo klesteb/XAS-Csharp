@@ -80,7 +80,7 @@ The configuration file contains three stanzas. They are the following:
     packet-type = xas-logs
 	alias = unlink
 
-The %<name>% needs to be hardcoded. It doesn't subsitute the environment variable. 
+The %<NAME>% needs to be hardcoded. It doesn't subsitute the environment variable. 
 But these are the defaults. The "applicaiton" stanza is used to set command line
 defaults. This is very usefull for services. The "message-queue" stanza defines
 which message queue server to use. The rest are for the directories that are being
