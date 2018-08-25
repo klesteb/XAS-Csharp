@@ -29,14 +29,14 @@ with it.
 Communications with the message queue server is done with the STOMP protocol. A
 STOMP SEND frame is created. It is marked as "presistent" and a "receipt" is 
 attached. The JSON blob is the message. The receipt consists of an "alias" 
-and the filename. This "recipt" is then encoded into a base64 string. This 
+and the filename. This "receipt" is then encoded into a base64 string. This 
 "receipt" is used in the ack. The ack is a STOMP RECEIPT frame. When this is
-received the "receipt" is decoded and parsed to find the filename. At that 
+received, the "receipt" is decoded and parsed to find the filename. At that 
 point the file is removed from the directory. 
 
 This methodology was developed because not all messages queue servers 
 supported the STOMP transaction feature. Also with the frame marked as 
-"presistent", this was determined to be as good as writting the blob to 
+"presistent", it was determined to be as good as writting the blob to 
 the local file system.
 
 A configuration file is used to define the directories and the location of the
