@@ -93,6 +93,8 @@
     <Compile Include="Logging\Loggers\log4net.cs" />
     <Compile Include="Mime\IMimeTypes.cs" />
     <Compile Include="Mime\MimeTypes.cs" />
+    <Compile Include="Process\Spawn.cs" />
+    <Compile Include="Process\SpawnInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\Authenticate.cs" />
     <Compile Include="Security\IAuthenticate.cs" />

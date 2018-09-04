@@ -44,7 +44,7 @@ namespace XAS.Core.Security {
 
             string[] args = Environment.GetCommandLineArgs();
             int length = args.Length - 1;
-            Process process = new Process();
+            var process = new System.Diagnostics.Process();
 
             process.StartInfo = new ProcessStartInfo() {
                 Verb = "runas",
@@ -73,7 +73,7 @@ namespace XAS.Core.Security {
         /// 
         public Int32 RunAs(String command, String args, out List<string> stdout, out List<string> stderr) {
 
-            Process process = new Process();
+            var process = new System.Diagnostics.Process();
             List<string> output = new List<string>();
             List<string> error = new List<string>();
 
