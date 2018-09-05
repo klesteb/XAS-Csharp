@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 
-namespace XAS.Core.Process {
+namespace XAS.Core.Processes {
 
     /// <summary>
     /// A configuration class for Spawn.

@@ -10,7 +10,7 @@ using XAS.Core.Security;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
-namespace XAS.Core.Process {
+namespace XAS.Core.Processes {
 
     /// <summary>
     /// Spawn a process and keep it running.
@@ -162,9 +162,6 @@ namespace XAS.Core.Process {
             log.Trace("Entering Stop()");
 
             process.CloseMainWindow();
-            process.CancelOutputRead();
-            process.CancelErrorRead();
-            process.Close();
 
             log.Trace("Leaving Stop()");
 
@@ -207,9 +204,6 @@ namespace XAS.Core.Process {
             log.Trace("Entering Kill()");
 
             process.Kill();
-            process.CancelOutputRead();
-            process.CancelErrorRead();
-            process.Close();
 
             log.Trace("Leaving Kill()");
 
