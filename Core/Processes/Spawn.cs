@@ -33,7 +33,7 @@ namespace XAS.Core.Processes {
         /// <param name="config">An IConfiguration object.</param>
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
-        /// <param name="spawnInfo">An SpawnInfo object.</param>
+        /// <param name="spawnInfo">A SpawnInfo object.</param>
         /// 
         public Spawn(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, SpawnInfo spawnInfo) {
  

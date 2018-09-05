@@ -43,9 +43,20 @@ namespace XAS.Core {
 
         }
 
+        /// <summary>
+        /// Parse a string into command line arguments.
+        /// </summary>
+        /// <param name="commandLine">A string.</param>
+        /// <returns>A string array.</returns>
+        /// <remarks>
+        /// This will parse a string into command line arguments just like the 
+        /// .NET runtime does. It will also expand any environment variables 
+        /// found in the string.
+        /// </remarks>
+        /// 
         public static String[] ParseCommandLine(String commandLine) {
 
-            // expand any environment variables in command line.
+            // expand any environment variables in the command line.
 
             string cmdLine = Environment.ExpandEnvironmentVariables(commandLine);
 
