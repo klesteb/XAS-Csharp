@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Diagnostics;
-using System.ComponentModel;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 using XAS.Core.Logging;
 using XAS.Core.Security;
@@ -22,12 +20,12 @@ namespace XAS.Core.Processes {
         private Int32 exitCode = 0;
 
         private readonly ILogger log = null;
+        private readonly Process process = null;
         private readonly ISecurity secure = null;
         private readonly SpawnInfo spawnInfo = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
         private readonly ProcessStartInfo startInfo = null;
-        private readonly System.Diagnostics.Process process = null;
 
         /// <summary>
         /// Contructor.
@@ -52,7 +50,7 @@ namespace XAS.Core.Processes {
 
             // set up the process
 
-            this.process = new System.Diagnostics.Process();
+            this.process = new Process();
             this.startInfo = new ProcessStartInfo() {
                 FileName = args[0],
                 CreateNoWindow = true,
