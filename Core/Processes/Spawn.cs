@@ -143,6 +143,10 @@ namespace XAS.Core.Processes {
 
         }
 
+        /// <summary>
+        /// Start a process.
+        /// </summary>
+        /// 
         public void Start() {
 
             log.Trace("Entering Start()");
@@ -155,6 +159,10 @@ namespace XAS.Core.Processes {
 
         }
 
+        /// <summary>
+        /// Stop a process.
+        /// </summary>
+        /// 
         public void Stop() {
 
             log.Trace("Entering Stop()");
@@ -165,6 +173,11 @@ namespace XAS.Core.Processes {
 
         }
 
+        /// <summary>
+        /// Stat a process.
+        /// </summary>
+        /// <returns>true if the process still exists.</returns>
+        /// 
         public Boolean Stat() {
 
             log.Trace("Entering Stat()");
@@ -184,12 +197,20 @@ namespace XAS.Core.Processes {
 
         }
 
+        /// <summary>
+        /// Pause a process.
+        /// </summary>
+        /// 
         public void Pause() {
 
             log.Trace("Entering Pause()");
             log.Trace("Leaving Pause()");
         }
 
+        /// <summary>
+        /// Resume a process.
+        /// </summary>
+        /// 
         public void Resume() {
 
             log.Trace("Entering Resume()");
@@ -197,6 +218,10 @@ namespace XAS.Core.Processes {
 
         }
 
+        /// <summary>
+        /// Kill a process.
+        /// </summary>
+        /// 
         public void Kill() {
 
             log.Trace("Entering Kill()");
@@ -207,6 +232,11 @@ namespace XAS.Core.Processes {
 
         }
 
+        /// <summary>
+        /// Return the processes exit code.
+        /// </summary>
+        /// <returns>A integer value.</returns>
+        /// 
         public Int32 ExitCode() {
 
             return exitCode;
