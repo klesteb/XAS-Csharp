@@ -23,12 +23,6 @@ namespace XAS.App {
     /// 
     public class CommandOptions: ICommandOptions {
 
-        [DllImport("shell32.dll", SetLastError = true)]
-        static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string lpCmdLine, out int pNumArgs);
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr LocalFree(IntPtr hMem);
-
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
         private Dictionary<string, string> descriptions;
@@ -197,18 +191,23 @@ namespace XAS.App {
         private bool Dispatch(string commandLine) {
 
             bool stat = false;
-            string[] args = ParseCommandLine(commandLine);
-            string arg = args[0];
 
-            log.Debug(Utils.Dump(args));
+            if (! String.IsNullOrEmpty(commandLine)) {
 
-            try {
+                string[] args = Utils.ParseCommandLine(commandLine);
+                string arg = args[0];
 
-                stat = actions[arg].Invoke(args.Skip(1).ToArray());
+                log.Debug(Utils.Dump(args));
 
-            } catch(Exception ex) {
+                try {
 
-                log.Debug(String.Format("Exception = {0}", ex.Message));
+                    stat = actions[arg].Invoke(args.Skip(1).ToArray());
+
+                } catch (Exception ex) {
+
+                    log.Debug(String.Format("Exception = {0}", ex.Message));
+
+                }
 
             }
 
@@ -269,8 +268,6 @@ namespace XAS.App {
 
         private String Input() {
 
-            string line;
-
             if (! (System.Console.IsInputRedirected || InCommandFile)) {
 
                 System.Console.Write(this.Prompt);
@@ -278,19 +275,6 @@ namespace XAS.App {
             }
 
             string buffer = System.Console.ReadLine();
-
-            // buffer can be null if the EOF has been reached on 
-            // stdin or the redirected command file.
-
-            if (String.IsNullOrEmpty(buffer)) {
-
-                line = buffer;
-
-            } else {
-            
-                line = Environment.ExpandEnvironmentVariables(buffer);
-
-            }
 
             // need to slow things down when redirected, causes problems 
             // with option processing.
@@ -301,49 +285,7 @@ namespace XAS.App {
 
             }
 
-            return line;
-
-        }
-
-        private string[] ParseCommandLine(string commandLine) {
-
-            // taken from: https://github.com/wyattoday/wyupdate/blob/master/Util/CmdLineToArgvW.cs
-            // returns a parsed command line like what Environment.GetCommandLineArgs() returns
-
-            IntPtr ptrToSplitArgs = CommandLineToArgvW(commandLine, out int numberOfArgs);
-
-            // CommandLineToArgvW returns NULL upon failure.
-
-            if (ptrToSplitArgs == IntPtr.Zero) {
-
-                throw new ArgumentException("Unable to split argument.", new Win32Exception());
-
-            }
-
-            // Make sure the memory ptrToSplitArgs to is freed, even upon failure.
-
-            try {
-
-                string[] splitArgs = new string[numberOfArgs];
-
-                // ptrToSplitArgs is an array of pointers to null terminated Unicode strings.
-                // Copy each of these strings into our split argument array.
-
-                for (int i = 0; i < numberOfArgs; i++) {
-
-                    splitArgs[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(ptrToSplitArgs, i * IntPtr.Size));
-
-                }
-
-                return splitArgs;
-
-            } finally {
-
-                // Free memory obtained by CommandLineToArgW.
-
-                LocalFree(ptrToSplitArgs);
-
-            }
+            return buffer;
 
         }
 
