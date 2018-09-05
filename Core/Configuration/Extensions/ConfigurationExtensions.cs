@@ -192,7 +192,7 @@ namespace XAS.Core.Configuration.Extensions {
             config.AddKey(section.Environment(), key.Script(), Path.GetFileName(_args[0]));
             config.AddKey(section.Environment(), key.Priority(), "low");
             config.AddKey(section.Environment(), key.Facility(), "systems");
-            config.AddKey(section.Environment(), key.Pid(), Process.GetCurrentProcess().Id.ToString());
+            config.AddKey(section.Environment(), key.Pid(), System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
 
             config.AddKey(section.Environment(), key.LogFile(),
                  String.Format("{0}\\{1}.log",

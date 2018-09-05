@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-
 using XAS.Core.Logging;
 using XAS.Core.Security;
 using XAS.Core.Exceptions;
@@ -14,11 +13,12 @@ using XAS.Core.Configuration;
 namespace XAS.Core.Process {
 
     /// <summary>
-    /// Spawn a process.
+    /// Spawn a process and keep it running.
     /// </summary>
     /// 
     public class Spawn {
 
+        private Int32 retries = 0;
         private Int32 exitCode = 0;
 
         private readonly ILogger log = null;
@@ -26,22 +26,16 @@ namespace XAS.Core.Process {
         private readonly SpawnInfo spawnInfo = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
+        private readonly ProcessStartInfo startInfo = null;
         private readonly System.Diagnostics.Process process = null;
-        private readonly System.Diagnostics.ProcessStartInfo processInfo = null;
-
-        [DllImport("shell32.dll", SetLastError = true)]
-        static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string lpCmdLine, out int pNumArgs);
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr LocalFree(IntPtr hMem);
 
         /// <summary>
         /// Contructor.
         /// </summary>
-        /// <param name="config"></param>
-        /// <param name="handler"></param>
-        /// <param name="logFactory"></param>
-        /// <param name="spawnInfo"></param>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name="spawnInfo">An SpawnInfo object.</param>
         /// 
         public Spawn(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, SpawnInfo spawnInfo) {
  
@@ -49,19 +43,17 @@ namespace XAS.Core.Process {
             this.handler = handler;
             this.spawnInfo = spawnInfo;
             this.secure = new Secure();
-
             this.log = logFactory.Create(typeof(Spawn));
 
             // parse the command line
 
-            string cmdLine = Environment.ExpandEnvironmentVariables(spawnInfo.Command);
-            string[] args = ParseCommandLine(cmdLine);
+            string[] args = Utils.ParseCommandLine(spawnInfo.Command);
             int length = args.Length - 1;
 
             // set up the process
 
             this.process = new System.Diagnostics.Process();
-            this.processInfo = new System.Diagnostics.ProcessStartInfo() {
+            this.startInfo = new ProcessStartInfo() {
                 FileName = args[0],
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -72,35 +64,36 @@ namespace XAS.Core.Process {
                 Arguments = String.Join(" ", args.Skip(1).Take(length).ToArray()),
             };
 
-            // set user context
+            // set user context, if any
 
-            if ((!String.IsNullOrEmpty(spawnInfo.Username) && (!String.IsNullOrEmpty(spawnInfo.Password)))) {
+            if ((! String.IsNullOrEmpty(spawnInfo.Username) && (! String.IsNullOrEmpty(spawnInfo.Password)))) {
 
-                processInfo.LoadUserProfile = true;
-                processInfo.Domain = spawnInfo.Domain;
-                processInfo.UserName = spawnInfo.Username;
-                processInfo.Password = secure.MakeSecureString(spawnInfo.Password);
+                startInfo.LoadUserProfile = true;
+                startInfo.Domain = spawnInfo.Domain;
+                startInfo.UserName = spawnInfo.Username;
+                startInfo.Password = secure.MakeSecureString(spawnInfo.Password);
 
             }
 
-            // add environment variables
+            // add environment variables, if any
 
             foreach (KeyValuePair<String, String> env in spawnInfo.Environment) {
 
                 // replace existing environment variables
 
-                if (processInfo.Environment.ContainsKey(env.Key)) {
+                if (startInfo.Environment.ContainsKey(env.Key)) {
 
-                    processInfo.Environment.Remove(env.Key);
+                    startInfo.Environment.Remove(env.Key);
 
                 }
 
-                processInfo.Environment.Add(env.Key, env.Value);
+                startInfo.Environment.Add(env.Key, env.Value);
 
             }
 
             process.EnableRaisingEvents = true;
-            process.StartInfo = processInfo;
+            process.StartInfo = startInfo;
+            process.Exited += ExitHandler;
 
             if (spawnInfo.StderrHandler != null) {
 
@@ -110,7 +103,7 @@ namespace XAS.Core.Process {
 
                 process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs e) {
 
-                    if (!String.IsNullOrEmpty(e.Data)) {
+                    if (! String.IsNullOrEmpty(e.Data)) {
 
                         log.Error(e.Data.Trim());
 
@@ -128,7 +121,7 @@ namespace XAS.Core.Process {
 
                 process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs e) {
 
-                    if (!String.IsNullOrEmpty(e.Data)) {
+                    if (! String.IsNullOrEmpty(e.Data)) {
 
                         log.Info(e.Data.Trim());
 
@@ -140,12 +133,13 @@ namespace XAS.Core.Process {
 
             if (spawnInfo.ExitHandler != null) {
 
-                process.Exited += ExitHandler;
                 process.Exited += spawnInfo.ExitHandler;
 
-            } else {
+            }
 
-                process.Exited += ExitHandler;
+            if (spawnInfo.AutoStart) {
+
+                Start();
 
             }
 
@@ -153,22 +147,32 @@ namespace XAS.Core.Process {
 
         public void Start() {
 
+            log.Trace("Entering Start()");
+
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
+            log.Trace("Leaving Start()");
+
         }
 
         public void Stop() {
+
+            log.Trace("Entering Stop()");
 
             process.CloseMainWindow();
             process.CancelOutputRead();
             process.CancelErrorRead();
             process.Close();
 
+            log.Trace("Leaving Stop()");
+
         }
 
         public Boolean Stat() {
+
+            log.Trace("Entering Stat()");
 
             bool stat = false;
 
@@ -179,24 +183,35 @@ namespace XAS.Core.Process {
 
             } catch { }
 
+            log.Trace("Leaving Stat()");
+
             return stat;
 
         }
 
         public void Pause() {
-        
+
+            log.Trace("Entering Pause()");
+            log.Trace("Leaving Pause()");
         }
 
         public void Resume() {
-        
+
+            log.Trace("Entering Resume()");
+            log.Trace("Leaving Resume()");
+
         }
 
         public void Kill() {
+
+            log.Trace("Entering Kill()");
 
             process.Kill();
             process.CancelOutputRead();
             process.CancelErrorRead();
             process.Close();
+
+            log.Trace("Leaving Kill()");
 
         }
 
@@ -210,49 +225,31 @@ namespace XAS.Core.Process {
 
         private void ExitHandler(object sender, EventArgs e) {
 
+            log.Trace("Entering ExitHandler()");
+
             exitCode = process.ExitCode;
 
-        }
+            // do some cleanup
 
-        private string[] ParseCommandLine(string commandLine) {
+            process.CancelOutputRead();
+            process.CancelErrorRead();
+            process.Close();
 
-            // taken from: https://github.com/wyattoday/wyupdate/blob/master/Util/CmdLineToArgvW.cs
-            // returns a parsed command line like what Environment.GetCommandLineArgs() returns
+            // restart logic
 
-            IntPtr ptrToSplitArgs = CommandLineToArgvW(commandLine, out int numberOfArgs);
+            retries++;
 
-            // CommandLineToArgvW returns NULL upon failure.
+            if (! spawnInfo.ExitCodes.Contains(exitCode)) {
 
-            if (ptrToSplitArgs == IntPtr.Zero) {
+                if ((spawnInfo.AutoRestart) && (retries <= spawnInfo.ExitRetries)) {
 
-                throw new ArgumentException("Unable to split argument.", new Win32Exception());
-
-            }
-
-            // Make sure the memory ptrToSplitArgs to is freed, even upon failure.
-
-            try {
-
-                string[] splitArgs = new string[numberOfArgs];
-
-                // ptrToSplitArgs is an array of pointers to null terminated Unicode strings.
-                // Copy each of these strings into our split argument array.
-
-                for (int i = 0; i < numberOfArgs; i++) {
-
-                    splitArgs[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(ptrToSplitArgs, i * IntPtr.Size));
+                    Start();
 
                 }
 
-                return splitArgs;
-
-            } finally {
-
-                // Free memory obtained by CommandLineToArgW.
-
-                LocalFree(ptrToSplitArgs);
-
             }
+
+            log.Trace("Leaving ExitHandler()");
 
         }
 
