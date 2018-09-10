@@ -47,8 +47,8 @@ namespace ServiceSpooler.Processors {
             this.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
             this.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
             this.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
-            this.Level = Convert.ToSingle(config.GetValue(section.MessageQueue(), key.Level(), "1.0"));
-            this.Port = Convert.ToInt32(config.GetValue(section.MessageQueue(), key.MQPort(), mqPort));
+            this.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
+            this.Port = config.GetValue(section.MessageQueue(), key.MQPort(), mqPort).ToInt32();
 
             this.log = logFactory.Create(typeof(Connector));
 
@@ -126,10 +126,10 @@ namespace ServiceSpooler.Processors {
             this.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
             this.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
             this.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
-            this.Port = Convert.ToInt32(config.GetValue(section.MessageQueue(), key.Port(), mqPort));
-            this.Level = Convert.ToSingle(config.GetValue(section.MessageQueue(), key.Level(), "1.0"));
-            this.UseSSL = Convert.ToBoolean(config.GetValue(section.MessageQueue(), key.UseSSL(), "false"));
-            this.Keepalive = Convert.ToBoolean(config.GetValue(section.MessageQueue(), key.KeepAlive(), "true"));
+            this.Port = config.GetValue(section.MessageQueue(), key.Port(), mqPort).ToInt32();
+            this.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
+            this.UseSSL = config.GetValue(section.MessageQueue(), key.UseSSL(), "false").ToBoolean();
+            this.Keepalive = config.GetValue(section.MessageQueue(), key.KeepAlive(), "true").ToBoolean();
 
             this.Connect();
 

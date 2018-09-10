@@ -216,6 +216,54 @@ namespace XAS.Core.Extensions {
 
         }
 
+        /// <summary>
+        /// Convert a string to a int32.
+        /// </summary>
+        /// <param name="value">A string representing a int32 value.</param>
+        /// <returns>An Int32.</returns>
+        /// 
+        public static Int32 ToInt32(this String value) {
+
+            return Convert.ToInt32(value);
+
+        }
+
+        /// <summary>
+        /// Convert a string to a int64.
+        /// </summary>
+        /// <param name="value">A string representing a int64 value.</param>
+        /// <returns>An Int64</returns>
+        /// 
+        public static Int64 ToInt64(this String value) {
+
+            return Convert.ToInt64(value);
+
+        }
+
+        /// <summary>
+        /// Convert a string to a single.
+        /// </summary>
+        /// <param name="value">A string representing a single value.</param>
+        /// <returns>A Single.</returns>
+        /// 
+        public static Single ToSingle(this String value) {
+
+            return Convert.ToSingle(value);
+
+        }
+
+        /// <summary>
+        /// Convert a string to a double.
+        /// </summary>
+        /// <param name="value">A string representing a double value.</param>
+        /// <returns>A Double.</returns>
+        /// 
+        public static Double ToDouble(this String value) {
+
+            return Convert.ToDouble(value);
+
+        }
+
     }
 
 }

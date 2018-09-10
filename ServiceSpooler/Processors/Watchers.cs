@@ -281,7 +281,8 @@ namespace ServiceSpooler.Processors {
 
                         Packet packet = new Packet();
                         string rawData = Encoding.UTF8.GetString(buffer);
-                        string header = String.Format("{{'hostname':'{0}','timestamp':'{1}','type':'{2}'}}",
+                        string header = String.Format(
+                            "{{'hostname':'{0}','timestamp':'{1}','type':'{2}'}}",
                             config.GetValue(section.Environment(), key.Host()),
                             DateTime.Now.ToUnixTime().ToString(),
                             watcher.type
