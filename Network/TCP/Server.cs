@@ -148,6 +148,7 @@ namespace XAS.Network.TCP {
 
                     if (this.Cancellation.Token.IsCancellationRequested) {
 
+                        Stop();
                         break;
 
                     }
@@ -213,14 +214,7 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering Shutdown()");
 
-            foreach (KeyValuePair<Int32, State> client in clients) {
-
-                client.Value.Stream.Close();
-                client.Value.Listener.Close();
-
-            }
-
-            clients.Clear();
+            Stop();
 
             log.Trace("Leaving Shutdown()");
 
@@ -294,7 +288,16 @@ namespace XAS.Network.TCP {
 
                 if (this.UseSSL) {
 
-                    SetSslOptions(client);
+                    try {
+
+                        SetSslOptions(client);
+                    
+                    } catch (AuthenticationException ex ) {
+
+                        this.OnException(client.Id, ex);
+                        return;
+
+                    }
 
                 }
 
@@ -450,31 +453,12 @@ namespace XAS.Network.TCP {
                 this.SSLEncryptionPolicy
             );
 
+            // this will throw an exception
+
             if (!String.IsNullOrEmpty(this.SSLcacert)) {
 
-                // comma delimited list ?
-
-                if (this.SSLcacert.Contains(",")) {
-
-                    foreach (string cert in Regex.Split(this.SSLcacert, ",")) {
-
-                        X509Certificate2 cacert = new X509Certificate2(cert);
-                        clientCerts.Add(cacert);
-
-                    }
-
-                } else {
-
-                    X509Certificate2 cacert = new X509Certificate2(this.SSLcacert);
-                    clientCerts.Add(cacert);
-
-                }
-
-            }
-
-            foreach (var cert in clientCerts) {
-
-                //sslStream.AuthenticateAsServer(cert);
+                var serverCertificate = X509Certificate.CreateFromCertFile(this.SSLcacert);
+                sslStream.AuthenticateAsServer(serverCertificate, true, false);
 
             }
 
