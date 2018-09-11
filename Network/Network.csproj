@@ -65,6 +65,8 @@
     <Compile Include="TCP\Client.cs" />
     <Compile Include="TCP\Context.cs" />
     <Compile Include="TCP\Extensions.cs" />
+    <Compile Include="TCP\Server.cs" />
+    <Compile Include="TCP\State.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
