@@ -177,9 +177,10 @@ namespace XAS.Network.TCP {
 
                 }
 
-                if ((clients.Count >= Connections) && (Connections != 0)) {
+                if ((clients.Count > Connections) && (Connections != 0)) {
 
-                    // throttle client connections
+                    // throttle client connections. the reaper will remove 
+                    // dead clients and clear this event flag.
 
                     mre.WaitOne();
 
@@ -285,7 +286,7 @@ namespace XAS.Network.TCP {
             var client = GetClient(id);
             var callback = new AsyncCallback(WriteCallback);
 
-            if (! this.Cancellation.Token.IsCancellationRequested) {
+            if (! Cancellation.Token.IsCancellationRequested) {
 
                 if (client != null) {
 
@@ -411,8 +412,8 @@ namespace XAS.Network.TCP {
 
                 } else {
 
-                    // stream has been remotely closed.
-                    // let the reaper take care of the dead connection
+                    // stream has been remotely closed
+                    // let the reaper take care of the dead client
 
                     log.Debug("ReadCallback() - read == 0");
 
@@ -510,18 +511,12 @@ namespace XAS.Network.TCP {
 
                 }
 
-                if (!client.Value.Socket.IsConnected()) {
+                if (! client.Value.Socket.IsConnected()) {
 
                     client.Value.Socket.Close();
                     client.Value.Stream.Close();
 
                     removals.Add(client.Key);
-
-                }
-
-                if ((clients.Count < Connections) && (Connections != 0)) {
-
-                    mre.Set();
 
                 }
 
@@ -539,8 +534,14 @@ namespace XAS.Network.TCP {
 
             }
 
+            if ((clients.Count < Connections) && (Connections != 0)) {
+
+                mre.Set();
+
+            }
+
         }
-        
+
         private void SetSslOptions(State client) {
 
             log.Trace("Entering SetSslOptions()");
