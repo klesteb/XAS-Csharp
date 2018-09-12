@@ -14,7 +14,6 @@ using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 using XAS.Network.Configuration.Extensions;
-using System.Threading.Tasks;
 
 namespace XAS.Network.TCP {
 
@@ -30,7 +29,8 @@ namespace XAS.Network.TCP {
 
         private Socket listener = null;
         private Object _critical = null;
-        private ManualResetEvent mre = null;
+        private ManualResetEvent accept = null;
+        private ManualResetEvent throttle = null;
         private System.Timers.Timer reaperTimer = null;
 
         private readonly ILogger log = null;
@@ -139,7 +139,8 @@ namespace XAS.Network.TCP {
             this.config = config;
             this.handler = handler;
             this.OnException += ExceptionHander;
-            this.mre = new ManualResetEvent(false);
+            this.accept = new ManualResetEvent(false);
+            this.throttle = new ManualResetEvent(false);
             this.log = logFactory.Create(typeof(Server));
             this.clients = new ConcurrentDictionary<Int32, State>();
 
@@ -158,9 +159,10 @@ namespace XAS.Network.TCP {
 
             reaperTimer.Start();
 
-            IPHostEntry host = Dns.GetHostEntry(this.Host);
+            IPHostEntry host = Dns.GetHostEntry(Host);
             IPAddress ip = host.AddressList[3];
-            IPEndPoint socket = new IPEndPoint(ip, this.Port);
+            IPEndPoint socket = new IPEndPoint(ip, Port);
+            var callback = new AsyncCallback(OnClientConnect);
 
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             listener.Bind(socket);
@@ -168,7 +170,8 @@ namespace XAS.Network.TCP {
 
             for (;;) {
 
-                mre.Set();
+                accept.Set();
+                throttle.Set();
 
                 if (Cancellation.Token.IsCancellationRequested) {
 
@@ -179,16 +182,13 @@ namespace XAS.Network.TCP {
 
                 if ((clients.Count > Connections) && (Connections != 0)) {
 
-                    // throttle client connections. the reaper will remove 
-                    // dead clients and clear this event flag.
-
-                    mre.WaitOne();
+                    throttle.WaitOne();
 
                 }
 
-                listener.BeginAccept(new AsyncCallback(OnClientConnect), listener);
+                listener.BeginAccept(callback, listener);
 
-                mre.WaitOne();
+                accept.WaitOne();
 
             }
 
@@ -329,7 +329,7 @@ namespace XAS.Network.TCP {
 
                     client.Stream = new NetworkStream(client.Socket);
 
-                    if (this.UseSSL) {
+                    if (UseSSL) {
 
                         SetSslOptions(client);
 
@@ -350,7 +350,7 @@ namespace XAS.Network.TCP {
 
             } finally {
 
-                mre.Set();
+                accept.Set();
 
             }
 
@@ -367,7 +367,7 @@ namespace XAS.Network.TCP {
 
                 if (! Cancellation.Token.IsCancellationRequested) {
 
-                    if (client.Stream != null) {
+                    if ((client.Connected) && (client.Stream != null)) {
 
                         client.Stream.BeginRead(client.Buffer, 0, client.Size, callback, client);
 
@@ -500,6 +500,13 @@ namespace XAS.Network.TCP {
         
         private void ClientReaper(object sender, EventArgs args) {
 
+            // there is no good way to tell if socket is open
+            // other then writting to it. this will scan all of the 
+            // clients looking for dead sockets. if found they are 
+            // closed and the client removed from the clients list. 
+            // if throttling has been activated this will set the 
+            // event to start accepting connections again. 
+
             var junk = new State();
             var removals = new List<Int32>();
 
@@ -536,7 +543,7 @@ namespace XAS.Network.TCP {
 
             if ((clients.Count < Connections) && (Connections != 0)) {
 
-                mre.Set();
+                throttle.Set();
 
             }
 
