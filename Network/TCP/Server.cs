@@ -14,6 +14,7 @@ using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 using XAS.Network.Configuration.Extensions;
+using System.Threading.Tasks;
 
 namespace XAS.Network.TCP {
 
@@ -54,6 +55,12 @@ namespace XAS.Network.TCP {
         /// </summary>
         /// 
         public Int32 Backlog { get; set; }
+
+        /// <summary>
+        /// Get.Set the number of client connections.
+        /// </summary>
+        /// 
+        public Int32 Connections { get; set; }
 
         /// <summary>
         /// Toggles wither to use SSL.
@@ -120,6 +127,7 @@ namespace XAS.Network.TCP {
 
             this.Port = 7;          // echo server
             this.Backlog = 10;
+            this.Connections = 0;
             this.Host = "localhost";
 
             this.UseSSL = false;
@@ -154,32 +162,32 @@ namespace XAS.Network.TCP {
             IPAddress ip = host.AddressList[3];
             IPEndPoint socket = new IPEndPoint(ip, this.Port);
 
-            try {
+            listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            listener.Bind(socket);
+            listener.Listen(this.Backlog);
 
-                listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                listener.Bind(socket);
-                listener.Listen(this.Backlog);
+            for (;;) {
 
-                for (;;) {
+                mre.Set();
 
-                    mre.Set();
+                if (Cancellation.Token.IsCancellationRequested) {
 
-                    if (this.Cancellation.Token.IsCancellationRequested) {
+                    Stop();
+                    break;
 
-                        Stop();
-                        break;
+                }
 
-                    }
+                if ((clients.Count >= Connections) && (Connections != 0)) {
 
-                    listener.BeginAccept(new AsyncCallback(OnClientConnect), listener);
+                    // throttle client connections
 
                     mre.WaitOne();
 
                 }
 
-            } catch (SocketException ex) {
+                listener.BeginAccept(new AsyncCallback(OnClientConnect), listener);
 
-                handler.Exit(ex);
+                mre.WaitOne();
 
             }
 
@@ -313,7 +321,7 @@ namespace XAS.Network.TCP {
                 client.RemotePort = remoteEndPoint.Port;
                 client.RemoteHost = remoteEndPoint.Address.ToString();
 
-                if (! this.Cancellation.Token.IsCancellationRequested) {
+                if (! Cancellation.Token.IsCancellationRequested) {
 
                     client.Id = !clients.Any() ? 1 : clients.Keys.Max() + 1;
                     clients.TryAdd(client.Id, client);
@@ -356,7 +364,7 @@ namespace XAS.Network.TCP {
 
                 client.Count = client.Socket.EndReceive(result);
 
-                if (! this.Cancellation.Token.IsCancellationRequested) {
+                if (! Cancellation.Token.IsCancellationRequested) {
 
                     if (client.Stream != null) {
 
@@ -496,7 +504,7 @@ namespace XAS.Network.TCP {
 
             foreach (KeyValuePair<Int32, State> client in clients) {
 
-                if (this.Cancellation.Token.IsCancellationRequested) {
+                if (Cancellation.Token.IsCancellationRequested) {
 
                     return;
 
@@ -508,6 +516,12 @@ namespace XAS.Network.TCP {
                     client.Value.Stream.Close();
 
                     removals.Add(client.Key);
+
+                }
+
+                if ((clients.Count < Connections) && (Connections != 0)) {
+
+                    mre.Set();
 
                 }
 
