@@ -34,6 +34,10 @@ namespace XAS.Network.Configuration.Extensions {
             return "StompUnsubscribeException";
         }
 
+        public static String ClientConnect(this Key junk) {
+            return "ClientConnect";
+        }
+
     }
 
 }

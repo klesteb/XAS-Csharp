@@ -81,7 +81,7 @@ namespace XAS.Network.TCP {
             this.Size = size;
             this.Stream = null;
             this.Close = false;
-            this.Listener = null;
+            this.Socket = null;
             this.Buffer = new byte[size];
 
         }

@@ -34,7 +34,8 @@ namespace XAS.Network.Configuration.Messages {
             config.AddKey(section.Messages(), key.StompSubscribeException(), "A SUBSCRIBE must have an id defined.");
             config.AddKey(section.Messages(), key.StompNackSubscrptionExecption(), "A NACK must have a subscription.");
             config.AddKey(section.Messages(), key.StompUnsubscribeException(), "An UNSUBSCRIBE must have a destination or id, or both.");
-  
+            config.AddKey(section.Messages(), key.ClientConnect(), "Client {0} on port {2} has connected.");
+
         }
 
     }

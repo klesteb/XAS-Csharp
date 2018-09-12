@@ -254,8 +254,6 @@ namespace XAS.Network.TCP {
                     AsyncCallback callback = new AsyncCallback(WriteCallback);
                     context.Stream.BeginWrite(buffer, 0, buffer.Length, callback, context);
 
-                    // context.Stream.Write(buffer, 0, buffer.Length);
-
                 }
 
             }

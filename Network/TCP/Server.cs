@@ -11,6 +11,9 @@ using System.Security.Cryptography.X509Certificates;
 
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
+using XAS.Core.Configuration;
+using XAS.Core.Configuration.Extensions;
+using XAS.Network.Configuration.Extensions;
 
 namespace XAS.Network.TCP {
 
@@ -25,11 +28,13 @@ namespace XAS.Network.TCP {
     public class Server {
 
         private Socket listener = null;
+        private Object _critical = null;
         private ManualResetEvent mre = null;
         private System.Timers.Timer reaperTimer = null;
 
         private readonly ILogger log = null;
         private readonly IErrorHandler handler = null;
+        private readonly IConfiguration config = null;
         private readonly ConcurrentDictionary<Int32, State> clients = null;
 
         /// <summary>
@@ -107,10 +112,11 @@ namespace XAS.Network.TCP {
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="config">An IConfiguration object.</param>
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
         /// 
-        public Server(IErrorHandler handler, ILoggerFactory logFactory) {
+        public Server(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
             this.Port = 7;          // echo server
             this.Backlog = 10;
@@ -122,6 +128,7 @@ namespace XAS.Network.TCP {
             this.SSLEncryptionPolicy = EncryptionPolicy.RequireEncryption;
             this.SSLProtocols = (SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12);
 
+            this.config = config;
             this.handler = handler;
             this.OnException += ExceptionHander;
             this.mre = new ManualResetEvent(false);
@@ -290,7 +297,9 @@ namespace XAS.Network.TCP {
 
         private void OnClientConnect(IAsyncResult result) {
 
+            var key = config.Key;
             var client = new State();
+            var section = config.Section;
             var listener = (Socket)result.AsyncState;
             var callback = new AsyncCallback(OnDataReceivedCallback);
 
@@ -317,6 +326,7 @@ namespace XAS.Network.TCP {
 
                     }
 
+                    log.InfoMsg(key.ClientConnect(), client.RemoteHost, client.RemotePort);
                     client.Stream.BeginRead(client.Buffer, 0, client.Size, callback, client);
 
                 }
@@ -378,7 +388,9 @@ namespace XAS.Network.TCP {
                 if (client.Count > 0) {
 
                     byte[] buffer = new byte[client.Count];
+
                     Array.Copy(client.Buffer, buffer, client.Count);
+                    Array.Clear(client.Buffer, 0, client.Size);
 
                     if (this.OnDataReceived != null) {
 
@@ -392,16 +404,22 @@ namespace XAS.Network.TCP {
                 } else {
 
                     // stream has been remotely closed.
+                    // let the reaper take care of the dead connection
 
                     log.Debug("ReadCallback() - read == 0");
 
-                    var junk = new State();
+                    var junk = new State(size: client.Size) {
+                        Count = 0,
+                        Id = client.Id,
+                        Connected = false,
+                        Close = client.Close,
+                        Stream = client.Stream,
+                        Socket = client.Socket,
+                        RemoteHost = client.RemoteHost,
+                        RemotePort = client.RemotePort,
+                    };
 
-                    client.Count = 0;
-                    client.Connected = false;
-                    client.Stream.Close();
-                    client.Socket.Close();
-                    clients.TryRemove(client.Id, out junk);
+                    clients.TryUpdate(client.Id, client, junk);
 
                 }
 
