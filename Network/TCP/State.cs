@@ -32,7 +32,7 @@ namespace XAS.Network.TCP {
         /// Get/Size the clients socket.
         /// </summary>
         /// 
-        public Socket Listener { get; set; }
+        public Socket Socket { get; set; }
 
         /// <summary>
         /// Gets/Sets the availble bytes in the buffer.

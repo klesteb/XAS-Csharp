@@ -7,7 +7,6 @@ using System.Net.Security;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Security.Authentication;
-using System.Text.RegularExpressions;
 using System.Security.Cryptography.X509Certificates;
 
 using XAS.Core.Logging;
@@ -20,14 +19,17 @@ namespace XAS.Network.TCP {
     public delegate void OnDataReceived(Int32 id, byte[] buffer);
 
     /// <summary>
-    /// A basic async TCP server.
+    /// A basic async TCP server with ssl.
     /// </summary>
     /// 
     public class Server {
 
+        private Socket listener = null;
+        private ManualResetEvent mre = null;
+        private System.Timers.Timer reaperTimer = null;
+
         private readonly ILogger log = null;
         private readonly IErrorHandler handler = null;
-        private readonly X509CertificateCollection clientCerts = null;
         private readonly ConcurrentDictionary<Int32, State> clients = null;
 
         /// <summary>
@@ -105,6 +107,7 @@ namespace XAS.Network.TCP {
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
         /// 
         public Server(IErrorHandler handler, ILoggerFactory logFactory) {
@@ -121,9 +124,12 @@ namespace XAS.Network.TCP {
 
             this.handler = handler;
             this.OnException += ExceptionHander;
+            this.mre = new ManualResetEvent(false);
             this.log = logFactory.Create(typeof(Server));
-            this.clientCerts = new X509CertificateCollection();
-            this.clients = new ConcurrentDictionary<int, State>();
+            this.clients = new ConcurrentDictionary<Int32, State>();
+
+            this.reaperTimer = new System.Timers.Timer(60 * 1000);
+            this.reaperTimer.Elapsed += ClientReaper;
 
         }
 
@@ -135,16 +141,21 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering Start()");
 
+            reaperTimer.Start();
+
             IPHostEntry host = Dns.GetHostEntry(this.Host);
             IPAddress ip = host.AddressList[3];
             IPEndPoint socket = new IPEndPoint(ip, this.Port);
 
-            using (Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)) {
+            try {
 
+                listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 listener.Bind(socket);
                 listener.Listen(this.Backlog);
 
                 for (;;) {
+
+                    mre.Set();
 
                     if (this.Cancellation.Token.IsCancellationRequested) {
 
@@ -155,7 +166,13 @@ namespace XAS.Network.TCP {
 
                     listener.BeginAccept(new AsyncCallback(OnClientConnect), listener);
 
+                    mre.WaitOne();
+
                 }
+
+            } catch (SocketException ex) {
+
+                handler.Exit(ex);
 
             }
 
@@ -171,14 +188,17 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering Stop()");
 
+            reaperTimer.Stop();
+
             foreach (KeyValuePair<Int32, State> client in clients) {
 
                 client.Value.Stream.Close();
-                client.Value.Listener.Close();
+                client.Value.Socket.Close();
                 
             }
 
             clients.Clear();
+            listener.Close();
 
             log.Trace("Leaving Stop()");
 
@@ -191,6 +211,9 @@ namespace XAS.Network.TCP {
         public void Pause() {
 
             log.Trace("Entering Pause()");
+
+            Stop();
+
             log.Trace("Leaving Pause()");
 
         }
@@ -202,6 +225,9 @@ namespace XAS.Network.TCP {
         public void Resume() {
 
             log.Trace("Entering Resume()");
+
+            Start();
+
             log.Trace("Leaving Resume()");
 
         }
@@ -262,46 +288,50 @@ namespace XAS.Network.TCP {
 
         #region Private Methods
 
-        // Add a socket to the clients dictionary. OnReceivedCallback raise a event, 
-        // after the message receive complete. 
-
         private void OnClientConnect(IAsyncResult result) {
 
             var client = new State();
+            var listener = (Socket)result.AsyncState;
             var callback = new AsyncCallback(OnDataReceivedCallback);
 
-            client.Connected = true;
-            client.Listener = (Socket)result.AsyncState;
-            client.Listener.EndAccept(result);
+            try {
 
-            var remoteEndPoint = client.Listener.RemoteEndPoint as IPEndPoint;
+                client.Connected = true;
+                client.Socket = listener.EndAccept(result);
 
-            client.RemotePort = remoteEndPoint.Port;
-            client.RemoteHost = remoteEndPoint.Address.ToString();
+                var remoteEndPoint = listener.RemoteEndPoint as IPEndPoint;
 
-            if (! this.Cancellation.Token.IsCancellationRequested) {
+                client.RemotePort = remoteEndPoint.Port;
+                client.RemoteHost = remoteEndPoint.Address.ToString();
 
-                client.Id = !clients.Any() ? 1 : clients.Keys.Max() + 1;
-                clients.TryAdd(client.Id, client);
+                if (! this.Cancellation.Token.IsCancellationRequested) {
 
-                client.Stream = new NetworkStream(client.Listener);
+                    client.Id = !clients.Any() ? 1 : clients.Keys.Max() + 1;
+                    clients.TryAdd(client.Id, client);
 
-                if (this.UseSSL) {
+                    client.Stream = new NetworkStream(client.Socket);
 
-                    try {
+                    if (this.UseSSL) {
 
                         SetSslOptions(client);
-                    
-                    } catch (AuthenticationException ex ) {
-
-                        this.OnException(client.Id, ex);
-                        return;
 
                     }
 
+                    client.Stream.BeginRead(client.Buffer, 0, client.Size, callback, client);
+
                 }
 
-                client.Stream.BeginRead(client.Buffer, 0, client.Size, callback, client);
+            } catch (AuthenticationException ex) {
+
+                this.OnException(client.Id, ex);
+
+            } catch (ObjectDisposedException) {
+
+                // do nothing, an expected error
+
+            } finally {
+
+                mre.Set();
 
             }
 
@@ -314,9 +344,9 @@ namespace XAS.Network.TCP {
 
             try {
 
-                client.Count = client.Listener.EndReceive(result);
+                client.Count = client.Socket.EndReceive(result);
 
-                if (!this.Cancellation.Token.IsCancellationRequested) {
+                if (! this.Cancellation.Token.IsCancellationRequested) {
 
                     if (client.Stream != null) {
 
@@ -370,7 +400,7 @@ namespace XAS.Network.TCP {
                     client.Count = 0;
                     client.Connected = false;
                     client.Stream.Close();
-                    client.Listener.Close();
+                    client.Socket.Close();
                     clients.TryRemove(client.Id, out junk);
 
                 }
@@ -436,6 +466,44 @@ namespace XAS.Network.TCP {
             } else {
 
                 handler.Exceptions(ex);
+
+            }
+
+        }
+        
+        private void ClientReaper(object sender, EventArgs args) {
+
+            var junk = new State();
+            var removals = new List<Int32>();
+
+            foreach (KeyValuePair<Int32, State> client in clients) {
+
+                if (this.Cancellation.Token.IsCancellationRequested) {
+
+                    return;
+
+                }
+
+                if (!client.Value.Socket.IsConnected()) {
+
+                    client.Value.Socket.Close();
+                    client.Value.Stream.Close();
+
+                    removals.Add(client.Key);
+
+                }
+
+            }
+
+            foreach (Int32 key in removals) {
+
+                if (this.Cancellation.Token.IsCancellationRequested) {
+
+                    return;
+
+                }
+
+                clients.TryRemove(key, out junk);
 
             }
 
