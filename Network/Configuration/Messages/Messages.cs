@@ -29,12 +29,17 @@ namespace XAS.Network.Configuration.Messages {
             var section = config.Section;
 
             config.AddKey(section.Messages(), key.ConnectionTimeoutException(), "Connection timeout.");
+
             config.AddKey(section.Messages(), key.StompAckException(), "An ACK must have a subscription.");
             config.AddKey(section.Messages(), key.StompNackVersionException(), "A NACK is not supported on v1.0.");
             config.AddKey(section.Messages(), key.StompSubscribeException(), "A SUBSCRIBE must have an id defined.");
             config.AddKey(section.Messages(), key.StompNackSubscrptionExecption(), "A NACK must have a subscription.");
             config.AddKey(section.Messages(), key.StompUnsubscribeException(), "An UNSUBSCRIBE must have a destination or id, or both.");
+
+            config.AddKey(section.Messages(), key.ClientProblems(), "Host: {0}, Port: {1} has problems");
             config.AddKey(section.Messages(), key.ClientConnect(), "Client {0} on port {2} has connected.");
+            config.AddKey(section.Messages(), key.ClientInactive(), "Client {0} on port {1} has been disconected for inactivity.");
+            config.AddKey(section.Messages(), key.ClientDeadSocket(), "Clinet {0} on port {1} had been disconnected for a dead socker.");
 
         }
 

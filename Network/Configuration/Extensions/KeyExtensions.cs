@@ -38,6 +38,18 @@ namespace XAS.Network.Configuration.Extensions {
             return "ClientConnect";
         }
 
+        public static String ClientInactive(this Key junk) {
+            return "ClientInactive";
+        }
+
+        public static String ClientDeadSocket(this Key junk) {
+            return "ClientDeadSocket";
+        }
+
+        public static String ClientProblems(this Key junk) {
+            return "ClientProblems";
+        }
+
     }
 
 }

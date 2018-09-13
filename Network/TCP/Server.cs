@@ -415,9 +415,9 @@ namespace XAS.Network.TCP {
                     Array.Copy(client.Buffer, buffer, client.Count);
                     Array.Clear(client.Buffer, 0, client.Size);
 
-                    if (this.OnDataReceived != null) {
+                    if (OnDataReceived != null) {
 
-                        this.OnDataReceived(client.Id, buffer);
+                        OnDataReceived(client.Id, buffer);
 
                     }
 
@@ -453,7 +453,7 @@ namespace XAS.Network.TCP {
 
             } catch (Exception ex) {
 
-                this.OnException(client.Id, ex);
+                OnException(client.Id, ex);
 
             }
 
@@ -475,15 +475,15 @@ namespace XAS.Network.TCP {
                 client.Activity = DateTime.Now.ToUnixTime();
                 UpdateClient(client);
 
-                if (this.OnDataSent != null) {
+                if (OnDataSent != null) {
 
-                    this.OnDataSent(client.Id);
+                    OnDataSent(client.Id);
 
                 }
 
             } catch (Exception ex) {
 
-                this.OnException(client.Id, ex);
+                OnException(client.Id, ex);
 
             }
 
@@ -493,11 +493,15 @@ namespace XAS.Network.TCP {
 
         private void ExceptionHander(Int32 id, Exception ex) {
 
+            var key = config.Key;
             var client = GetClient(id);
+            var section = config.Section;
 
             if (client != null) {
 
-                string msg = String.Format("Host: {0}, Port: {1} has problems", client.RemoteHost, client.RemoteHost);
+                string format = config.GetValue(section.Messages(), key.ClientProblems());
+                string msg = String.Format(format, client.RemoteHost, client.RemotePort);
+
                 log.Error(msg, ex);
 
             } else {
@@ -515,7 +519,7 @@ namespace XAS.Network.TCP {
             // poormans GC
             //
             // there is no good way to tell if a socket is active.
-            // you can only tell when you can't do i/o to it.
+            // you can only tell when you can't do any i/o to it.
             //
             // this method will scan the client list and check on
             // the connections. it does it in 2 ways. 
@@ -534,8 +538,9 @@ namespace XAS.Network.TCP {
             //
             // if you don't do something like this, you will eventually
             // run out of system resources. something the documentation
-            // dosen't explain, microsofts or otherwise.
+            // and examples don't explain, microsofts or otherwise.
 
+            var key = config.Key;
             var removals = new List<Int32>();
             Int64 now = DateTime.Now.ToUnixTime();
 
@@ -553,6 +558,8 @@ namespace XAS.Network.TCP {
 
                     if ((now - client.Value.Activity) > ClientTimeout) {
 
+                        log.WarnMsg(key.ClientInactive(), client.Value.RemoteHost, client.Value.RemotePort);
+
                         DisconnectClient(client.Value);
                         removals.Add(client.Key);
 
@@ -566,6 +573,8 @@ namespace XAS.Network.TCP {
 
                 if (!client.Value.Socket.IsConnected()) {
 
+                    log.WarnMsg(key.ClientDeadSocket(), client.Value.RemoteHost, client.Value.RemotePort);
+
                     DisconnectClient(client.Value);
                     removals.Add(client.Key);
 
@@ -573,7 +582,7 @@ namespace XAS.Network.TCP {
 
             }
 
-            foreach (Int32 key in removals) {
+            foreach (Int32 id in removals) {
 
                 if (this.Cancellation.Token.IsCancellationRequested) {
 
@@ -581,7 +590,7 @@ namespace XAS.Network.TCP {
 
                 }
 
-                DeleteClient(key);
+                DeleteClient(id);
 
             }
 
@@ -628,7 +637,11 @@ namespace XAS.Network.TCP {
 
             lock (_dictionary) {
 
-                clients[state.Id] = state;
+                if (clients.ContainsKey(state.Id)) {
+
+                    clients[state.Id] = state;
+
+                }
 
             }
 
@@ -652,11 +665,15 @@ namespace XAS.Network.TCP {
 
             lock (_dictionary) {
 
-                state.Socket.Close();
-                state.Stream.Close();
-                state.Connected = false;
+                if (clients.ContainsKey(state.Id)) {
 
-                clients[state.Id] = state;
+                    state.Socket.Close();
+                    state.Stream.Close();
+                    state.Connected = false;
+
+                    clients[state.Id] = state;
+
+                }
 
             }
 
