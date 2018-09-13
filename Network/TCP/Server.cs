@@ -132,7 +132,7 @@ namespace XAS.Network.TCP {
         /// 
         public Server(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
-            this.Port = 7;          // echo server
+            this.Port = 7;          // a default "echo" server
             this.Backlog = 10;
             this.ClientTimeout = 0;
             this.MaxConnections = 0;
@@ -180,7 +180,7 @@ namespace XAS.Network.TCP {
 
             for (;;) {
 
-                accept.Set();
+                accept.Reset();
 
                 if (Cancellation.Token.IsCancellationRequested) {
 
@@ -191,7 +191,7 @@ namespace XAS.Network.TCP {
 
                 if ((clients.Count > MaxConnections) && (MaxConnections > 0)) {
 
-                    throttle.Set();
+                    throttle.Reset();
                     throttle.WaitOne();
 
                 }
