@@ -5,7 +5,6 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Net.Security;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
@@ -315,6 +314,8 @@ namespace XAS.Network.TCP {
 
         private void OnClientConnectCallback(IAsyncResult result) {
 
+            log.Trace("Entering OnClientConnectCallback()");
+
             var key = config.Key;
             var client = new State();
             var section = config.Section;
@@ -363,9 +364,13 @@ namespace XAS.Network.TCP {
 
             }
 
+            log.Trace("Leaving OnClientConnectCallback()");
+
         }
 
         private void OnDataReceivedCallback(IAsyncResult result) {
+
+            log.Trace("Entering OnDataReceivedCallback()");
 
             var client = (State)result.AsyncState;
             var callback = new AsyncCallback(ReadCallback);
@@ -387,6 +392,8 @@ namespace XAS.Network.TCP {
                 this.OnException(client.Id, ex);
 
             }
+
+            log.Trace("Leaving OnDataReceivedCallback()");
 
         }
 
@@ -503,6 +510,8 @@ namespace XAS.Network.TCP {
         
         private void ReapClients(object sender, EventArgs args) {
 
+            log.Trace("Entering ReapClients()");
+
             // poormans GC
             //
             // there is no good way to tell if a socket is active.
@@ -581,6 +590,8 @@ namespace XAS.Network.TCP {
                 throttle.Set();
 
             }
+
+            log.Trace("Leaving ReapClients()");
 
         }
 
