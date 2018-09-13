@@ -59,6 +59,12 @@ namespace XAS.Network.TCP {
         public Boolean Connected { get; set; }
 
         /// <summary>
+        /// Get/Set the last activity with this client.
+        /// </summary>
+        /// 
+        public Int64 Activity { get;set; }
+
+        /// <summary>
         /// Get/Set the remote host.
         /// </summary>
         /// 

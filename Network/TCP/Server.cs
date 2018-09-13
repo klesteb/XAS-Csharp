@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
+using XAS.Core.Extensions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 using XAS.Network.Configuration.Extensions;
@@ -29,6 +30,7 @@ namespace XAS.Network.TCP {
 
         private Socket listener = null;
         private Object _critical = null;
+        private Object _dictionary = null;
         private ManualResetEvent accept = null;
         private ManualResetEvent throttle = null;
         private System.Timers.Timer reaperTimer = null;
@@ -36,7 +38,7 @@ namespace XAS.Network.TCP {
         private readonly ILogger log = null;
         private readonly IErrorHandler handler = null;
         private readonly IConfiguration config = null;
-        private readonly ConcurrentDictionary<Int32, State> clients = null;
+        private readonly Dictionary<Int32, State> clients = null;
 
         /// <summary>
         /// Get/Set the name of the host.
@@ -57,10 +59,16 @@ namespace XAS.Network.TCP {
         public Int32 Backlog { get; set; }
 
         /// <summary>
-        /// Get.Set the number of client connections.
+        /// Get/Set the number of client connections.
         /// </summary>
         /// 
-        public Int32 Connections { get; set; }
+        public Int32 MaxConnections { get; set; }
+
+        /// <summary>
+        /// Get/Set a timeout for inactive clients.
+        /// </summary>
+        /// 
+        public Int32 ClientTimeout { get; set; }
 
         /// <summary>
         /// Toggles wither to use SSL.
@@ -127,7 +135,8 @@ namespace XAS.Network.TCP {
 
             this.Port = 7;          // echo server
             this.Backlog = 10;
-            this.Connections = 0;
+            this.ClientTimeout = 0;
+            this.MaxConnections = 0;
             this.Host = "localhost";
 
             this.UseSSL = false;
@@ -138,14 +147,16 @@ namespace XAS.Network.TCP {
 
             this.config = config;
             this.handler = handler;
+            this._critical = new Object();
+            this._dictionary = new Object();
             this.OnException += ExceptionHander;
             this.accept = new ManualResetEvent(false);
             this.throttle = new ManualResetEvent(false);
             this.log = logFactory.Create(typeof(Server));
-            this.clients = new ConcurrentDictionary<Int32, State>();
+            this.clients = new Dictionary<Int32, State>();
 
             this.reaperTimer = new System.Timers.Timer(60 * 1000);
-            this.reaperTimer.Elapsed += ClientReaper;
+            this.reaperTimer.Elapsed += ReapClients;
 
         }
 
@@ -162,7 +173,7 @@ namespace XAS.Network.TCP {
             IPHostEntry host = Dns.GetHostEntry(Host);
             IPAddress ip = host.AddressList[3];
             IPEndPoint socket = new IPEndPoint(ip, Port);
-            var callback = new AsyncCallback(OnClientConnect);
+            var callback = new AsyncCallback(OnClientConnectCallback);          
 
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             listener.Bind(socket);
@@ -180,7 +191,7 @@ namespace XAS.Network.TCP {
 
                 }
 
-                if ((clients.Count > Connections) && (Connections != 0)) {
+                if ((clients.Count > MaxConnections) && (MaxConnections > 0)) {
 
                     throttle.WaitOne();
 
@@ -206,14 +217,8 @@ namespace XAS.Network.TCP {
 
             reaperTimer.Stop();
 
-            foreach (KeyValuePair<Int32, State> client in clients) {
+            RemoveClients();
 
-                client.Value.Stream.Close();
-                client.Value.Socket.Close();
-                
-            }
-
-            clients.Clear();
             listener.Close();
 
             log.Trace("Leaving Stop()");
@@ -266,12 +271,16 @@ namespace XAS.Network.TCP {
         /// Get a client.
         /// </summary>
         /// <param name="id">Client ie.</param>
-        /// <returns>A State object for the client.</returns>
+        /// <returns>The State object for the client or null.</returns>
         /// 
         public State GetClient(Int32 id) {
 
-            var state = new State();
-            return clients.TryGetValue(id, out state) ? state : null;
+            lock (_dictionary) {
+
+                var state = new State();
+                return clients.TryGetValue(id, out state) ? state : null;
+
+            }
 
         }
 
@@ -304,7 +313,7 @@ namespace XAS.Network.TCP {
 
         #region Private Methods
 
-        private void OnClientConnect(IAsyncResult result) {
+        private void OnClientConnectCallback(IAsyncResult result) {
 
             var key = config.Key;
             var client = new State();
@@ -321,11 +330,9 @@ namespace XAS.Network.TCP {
 
                 client.RemotePort = remoteEndPoint.Port;
                 client.RemoteHost = remoteEndPoint.Address.ToString();
+                client.Activity = DateTime.Now.ToUnixTime();
 
                 if (! Cancellation.Token.IsCancellationRequested) {
-
-                    client.Id = !clients.Any() ? 1 : clients.Keys.Max() + 1;
-                    clients.TryAdd(client.Id, client);
 
                     client.Stream = new NetworkStream(client.Socket);
 
@@ -334,6 +341,8 @@ namespace XAS.Network.TCP {
                         SetSslOptions(client);
 
                     }
+
+                    AddClient(client);
 
                     log.InfoMsg(key.ClientConnect(), client.RemoteHost, client.RemotePort);
                     client.Stream.BeginRead(client.Buffer, 0, client.Size, callback, client);
@@ -363,11 +372,9 @@ namespace XAS.Network.TCP {
 
             try {
 
-                client.Count = client.Socket.EndReceive(result);
-
                 if (! Cancellation.Token.IsCancellationRequested) {
 
-                    if ((client.Connected) && (client.Stream != null)) {
+                    if (client.Connected && (client.Stream != null)) {
 
                         client.Stream.BeginRead(client.Buffer, 0, client.Size, callback, client);
 
@@ -408,6 +415,9 @@ namespace XAS.Network.TCP {
                     }
 
                     client.Count = 0;
+                    client.Activity = DateTime.Now.ToUnixTime();
+                    UpdateClient(client);
+
                     client.Stream.BeginRead(client.Buffer, 0, client.Size, callback, client);
 
                 } else {
@@ -417,18 +427,8 @@ namespace XAS.Network.TCP {
 
                     log.Debug("ReadCallback() - read == 0");
 
-                    var junk = new State(size: client.Size) {
-                        Count = 0,
-                        Id = client.Id,
-                        Connected = false,
-                        Close = client.Close,
-                        Stream = client.Stream,
-                        Socket = client.Socket,
-                        RemoteHost = client.RemoteHost,
-                        RemotePort = client.RemotePort,
-                    };
-
-                    clients.TryUpdate(client.Id, client, junk);
+                    client.Connected = false;
+                    UpdateClient(client);
 
                 }
 
@@ -465,6 +465,9 @@ namespace XAS.Network.TCP {
                 client.Stream.EndWrite(asyn);
                 client.Stream.Flush();
 
+                client.Activity = DateTime.Now.ToUnixTime();
+                UpdateClient(client);
+
                 if (this.OnDataSent != null) {
 
                     this.OnDataSent(client.Id);
@@ -498,17 +501,34 @@ namespace XAS.Network.TCP {
 
         }
         
-        private void ClientReaper(object sender, EventArgs args) {
+        private void ReapClients(object sender, EventArgs args) {
 
-            // there is no good way to tell if socket is open
-            // other then writting to it. this will scan all of the 
-            // clients looking for dead sockets. if found they are 
-            // closed and the client removed from the clients list. 
-            // if throttling has been activated this will set the 
-            // event to start accepting connections again. 
+            // poormans GC
+            //
+            // there is no good way to tell if a socket is active.
+            // you can only tell when you can't do i/o to it.
+            //
+            // this method will scan the client list and check on
+            // the connections. it does it in 2 ways. 
+            //
+            //   1) if client idle detection has been activated,
+            //      has there been any i/o during the timeout period
+            //
+            //   2) can you write to the socket. 
+            //
+            // if either of these 2 tests fail, the socket and
+            // associated stream are closed and the client removed 
+            // from the client list. 
+            //
+            // if client throttling has been activated this will set 
+            // the event flag to start accepting connections again. 
+            //
+            // if you don't do something like this, you will eventually
+            // run out of system resources. something the documentation
+            // dosen't explain, microsofts or otherwise.
 
-            var junk = new State();
             var removals = new List<Int32>();
+            Int64 now = DateTime.Now.ToUnixTime();
 
             foreach (KeyValuePair<Int32, State> client in clients) {
 
@@ -518,11 +538,26 @@ namespace XAS.Network.TCP {
 
                 }
 
-                if (! client.Value.Socket.IsConnected()) {
+                // check for client inactivity
 
-                    client.Value.Socket.Close();
-                    client.Value.Stream.Close();
+                if (ClientTimeout > 0) {
 
+                    if ((now - client.Value.Activity) > ClientTimeout) {
+
+                        DisconnectClient(client.Value);
+                        removals.Add(client.Key);
+
+                        continue;
+
+                    }
+
+                }
+
+                // check for dead sockets
+
+                if (!client.Value.Socket.IsConnected()) {
+
+                    DisconnectClient(client.Value);
                     removals.Add(client.Key);
 
                 }
@@ -537,13 +572,97 @@ namespace XAS.Network.TCP {
 
                 }
 
-                clients.TryRemove(key, out junk);
+                DeleteClient(key);
 
             }
 
-            if ((clients.Count < Connections) && (Connections != 0)) {
+            if ((clients.Count < MaxConnections) && (MaxConnections > 0)) {
 
                 throttle.Set();
+
+            }
+
+        }
+
+        private State CloneClient(State state) {
+
+            var junk = new State(size: state.Size) {
+                Id = state.Id,
+                Count = state.Count,
+                Close = state.Close,
+                Stream = state.Stream,
+                Socket = state.Socket,
+                Buffer = state.Buffer,
+                Connected = state.Connected,
+                RemoteHost = state.RemoteHost,
+                RemotePort = state.RemotePort,
+            };
+
+            return junk;
+
+        }
+
+        private void AddClient(State state) {
+
+            lock (_dictionary) {
+
+                state.Id = !clients.Any() ? 1 : clients.Keys.Max() + 1;
+                clients.Add(state.Id, state);
+
+            }
+
+        }
+
+        private void UpdateClient(State state) {
+
+            lock (_dictionary) {
+
+                clients[state.Id] = state;
+
+            }
+
+        }
+
+        private void DeleteClient(Int32 key) {
+
+            lock (_dictionary) {
+
+                if (clients.ContainsKey(key)) {
+
+                    clients.Remove(key);
+
+                }
+
+            }
+
+        }
+
+        private void DisconnectClient(State state) {
+
+            lock (_dictionary) {
+
+                state.Socket.Close();
+                state.Stream.Close();
+                state.Connected = false;
+
+                clients[state.Id] = state;
+
+            }
+
+        }
+
+        private void RemoveClients() {
+
+            lock (_dictionary) {
+
+                foreach (KeyValuePair<Int32, State> client in clients) {
+
+                    client.Value.Stream.Close();
+                    client.Value.Socket.Close();
+
+                }
+
+                clients.Clear();
 
             }
 
