@@ -182,7 +182,6 @@ namespace XAS.Network.TCP {
             for (;;) {
 
                 accept.Set();
-                throttle.Set();
 
                 if (Cancellation.Token.IsCancellationRequested) {
 
@@ -193,6 +192,7 @@ namespace XAS.Network.TCP {
 
                 if ((clients.Count > MaxConnections) && (MaxConnections > 0)) {
 
+                    throttle.Set();
                     throttle.WaitOne();
 
                 }
