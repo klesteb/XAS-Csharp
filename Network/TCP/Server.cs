@@ -13,6 +13,7 @@ using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
+using XAS.Network.Configuration.Messages;
 using XAS.Network.Configuration.Extensions;
 
 namespace XAS.Network.TCP {
@@ -27,6 +28,7 @@ namespace XAS.Network.TCP {
     /// 
     public class Server {
 
+        private string sslCaCert = "";
         private Socket listener = null;
         private Object _critical = null;
         private Object _dictionary = null;
@@ -40,10 +42,10 @@ namespace XAS.Network.TCP {
         private readonly Dictionary<Int32, State> clients = null;
 
         /// <summary>
-        /// Get/Set the name of the host.
+        /// Get/Set the the address.
         /// </summary>
         /// 
-        public String Host { get; set; }
+        public String Address { get; set; }
 
         /// <summary>
         /// Get/Set the port number to listen on.
@@ -52,22 +54,31 @@ namespace XAS.Network.TCP {
         public Int32 Port { get; set; }
 
         /// <summary>
-        /// Get/Set the backlog of available connections.
+        /// Get/Set the backlog of available connections, default is 10.
         /// </summary>
+        /// <value>
+        /// This is the number of connections.
+        /// </value>
         /// 
         public Int32 Backlog { get; set; }
 
         /// <summary>
-        /// Get/Set the number of client connections.
+        /// Get/Set the number of client connections, default is 0 or unlimitied.
         /// </summary>
         /// 
         public Int32 MaxConnections { get; set; }
 
         /// <summary>
-        /// Get/Set a timeout for inactive clients.
+        /// Get/Set a timeout for inactive clients, default is 0 or unlimitied.
         /// </summary>
         /// 
         public Int32 ClientTimeout { get; set; }
+
+        /// <summary>
+        /// Get/Set the interval between client reaper processing, defaults to 60 seconds.
+        /// </summary>
+        /// 
+        public Int32 ReaperInterval { get; set; }
 
         /// <summary>
         /// Toggles wither to use SSL, default is false.
@@ -78,6 +89,9 @@ namespace XAS.Network.TCP {
         /// <summary>
         /// Gets/Sets the SSL CA cerificate to use, default is none.
         /// </summary>
+        /// <value>
+        /// This is a path to a CA Certificate.
+        /// </value>
         /// 
         public String SSLCaCert { get; set; }
 
@@ -133,7 +147,9 @@ namespace XAS.Network.TCP {
             this.Backlog = 10;
             this.ClientTimeout = 0;
             this.MaxConnections = 0;
-            this.Host = "localhost";
+            this.ReaperInterval = 60;
+            this.Address = "127.0.0.1";
+            this.Cancellation = new CancellationTokenSource();
 
             this.UseSSL = false;
             this.SSLCaCert = "";
@@ -150,7 +166,7 @@ namespace XAS.Network.TCP {
             this.log = logFactory.Create(typeof(Server));
             this.clients = new Dictionary<Int32, State>();
 
-            this.reaperTimer = new System.Timers.Timer(60 * 1000);
+            this.reaperTimer = new System.Timers.Timer(ReaperInterval * 1000);
             this.reaperTimer.Elapsed += ReapClients;
 
         }
@@ -165,10 +181,8 @@ namespace XAS.Network.TCP {
 
             reaperTimer.Start();
 
-            IPHostEntry host = Dns.GetHostEntry(Host);
-            IPAddress ip = host.AddressList[3];
-            IPEndPoint socket = new IPEndPoint(ip, Port);
-            var callback = new AsyncCallback(OnClientConnectCallback);          
+            IPEndPoint socket = new IPEndPoint(IPAddress.Parse(Address), Port);
+            var callback = new AsyncCallback(OnAcceptCallback);
 
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             listener.Bind(socket);
@@ -308,22 +322,22 @@ namespace XAS.Network.TCP {
 
         #region Private Methods
 
-        private void OnClientConnectCallback(IAsyncResult result) {
+        private void OnAcceptCallback(IAsyncResult result) {
 
-            log.Trace("Entering OnClientConnectCallback()");
+            log.Trace("Entering OnAcceptCallback()");
 
             var key = config.Key;
             var client = new State();
             var section = config.Section;
             var listener = (Socket)result.AsyncState;
-            var callback = new AsyncCallback(OnDataReceivedCallback);
+            var callback = new AsyncCallback(ReadCallback);
 
             try {
 
                 client.Connected = true;
                 client.Socket = listener.EndAccept(result);
 
-                var remoteEndPoint = listener.RemoteEndPoint as IPEndPoint;
+                var remoteEndPoint = client.Socket.RemoteEndPoint as IPEndPoint;
 
                 client.RemotePort = remoteEndPoint.Port;
                 client.RemoteHost = remoteEndPoint.Address.ToString();
@@ -353,8 +367,6 @@ namespace XAS.Network.TCP {
                 client.Socket.Close();
                 client.Stream.Close();
 
-                OnException(client.Id, ex);
-
             } catch (ObjectDisposedException) {
 
                 // do nothing, an expected error
@@ -365,36 +377,7 @@ namespace XAS.Network.TCP {
 
             }
 
-            log.Trace("Leaving OnClientConnectCallback()");
-
-        }
-
-        private void OnDataReceivedCallback(IAsyncResult result) {
-
-            log.Trace("Entering OnDataReceivedCallback()");
-
-            var client = (State)result.AsyncState;
-            var callback = new AsyncCallback(ReadCallback);
-
-            try {
-
-                if (! Cancellation.Token.IsCancellationRequested) {
-
-                    if (client.Connected && (client.Stream != null)) {
-
-                        client.Stream.BeginRead(client.Buffer, 0, client.Size, callback, client);
-
-                    }
-
-                }
-
-            } catch (SocketException ex) {
-
-                OnException(client.Id, ex);
-
-            }
-
-            log.Trace("Leaving OnDataReceivedCallback()");
+            log.Trace("Leaving OnAcceptCallback()");
 
         }
 
@@ -403,7 +386,7 @@ namespace XAS.Network.TCP {
             log.Trace("Entering ReadCallback()");
 
             var client = (State)asyn.AsyncState;
-            var callback = new AsyncCallback(OnDataReceivedCallback);
+            var callback = new AsyncCallback(ReadCallback);
 
             try {
 
@@ -448,7 +431,7 @@ namespace XAS.Network.TCP {
 
             } catch (NullReferenceException) {
 
-                // ignore, Disconnect() with an outstanding read.
+                // ignore, disconnect with an outstanding read.
 
                 log.Debug("ReadCallback() - Ignored but a NullReferenceException was thrown");
 
@@ -701,11 +684,11 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering EnableSSL()");
 
+            // this will throw an exception if unable to validate
+
             var sslStream = new SslStream(client.Stream, false);
 
-            // this will throw an exception
-
-            var serverCertificate = X509Certificate.CreateFromCertFile(this.SSLCaCert);
+             var serverCertificate = X509Certificate.CreateFromCertFile(this.sslCaCert);    
             sslStream.AuthenticateAsServer(serverCertificate, this.SSLVerifyPeer, this.SSLProtocols, true);
 
             client.Stream = sslStream;
