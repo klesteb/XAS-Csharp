@@ -70,34 +70,28 @@ namespace XAS.Network.TCP {
         public Int32 ClientTimeout { get; set; }
 
         /// <summary>
-        /// Toggles wither to use SSL.
+        /// Toggles wither to use SSL, default is false.
         /// </summary>
         /// 
         public Boolean UseSSL { get; set; }
 
         /// <summary>
-        /// Gets/Sets the SSL CA cerificate to use.
+        /// Gets/Sets the SSL CA cerificate to use, default is none.
         /// </summary>
         /// 
-        public String SSLcacert { get; set; }
+        public String SSLCaCert { get; set; }
 
         /// <summary>
-        /// Toggles wither to verify the SSL peer.
+        /// Toggles wither to verify the SSL peer, default is false.
         /// </summary>
         /// 
         public Boolean SSLVerifyPeer { get; set; }
 
         /// <summary>
-        /// Gets/Sets the SSL Protocols.
+        /// Gets/Sets the SSL Protocols, default is to allow ssl3, tls1.1 and tls1.2.
         /// </summary>
         /// 
         public SslProtocols SSLProtocols { get; set; }
-
-        /// <summary>
-        /// Get/Sets the SSL encryption policy.
-        /// </summary>
-        /// 
-        public EncryptionPolicy SSLEncryptionPolicy { get; set; }
 
         /// <summary>
         /// Gets/Sets the cancelation token.
@@ -114,6 +108,9 @@ namespace XAS.Network.TCP {
         /// <summary>
         /// Get/Set the delegate to call whan an exception has occurred.
         /// </summary>
+        /// <remarks>
+        /// A internal exception handler is enbled. It logs the exception.
+        /// </remarks>
         /// 
         public OnException OnException { get; set; }
 
@@ -139,9 +136,8 @@ namespace XAS.Network.TCP {
             this.Host = "localhost";
 
             this.UseSSL = false;
-            this.SSLcacert = "";
+            this.SSLCaCert = "";
             this.SSLVerifyPeer = false;
-            this.SSLEncryptionPolicy = EncryptionPolicy.RequireEncryption;
             this.SSLProtocols = (SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12);
 
             this.config = config;
@@ -176,7 +172,7 @@ namespace XAS.Network.TCP {
 
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             listener.Bind(socket);
-            listener.Listen(this.Backlog);
+            listener.Listen(Backlog);
 
             for (;;) {
 
@@ -339,7 +335,7 @@ namespace XAS.Network.TCP {
 
                     if (UseSSL) {
 
-                        SetSslOptions(client);
+                        EnableSSL(client);
 
                     }
 
@@ -352,7 +348,7 @@ namespace XAS.Network.TCP {
 
             } catch (AuthenticationException ex) {
 
-                this.OnException(client.Id, ex);
+                OnException(client.Id, ex);
 
             } catch (ObjectDisposedException) {
 
@@ -389,7 +385,7 @@ namespace XAS.Network.TCP {
 
             } catch (SocketException ex) {
 
-                this.OnException(client.Id, ex);
+                OnException(client.Id, ex);
 
             }
 
@@ -606,7 +602,7 @@ namespace XAS.Network.TCP {
 
         private State CloneClient(State state) {
 
-            var junk = new State(size: state.Size) {
+            var clone = new State(size: state.Size) {
                 Id = state.Id,
                 Count = state.Count,
                 Close = state.Close,
@@ -618,7 +614,7 @@ namespace XAS.Network.TCP {
                 RemotePort = state.RemotePort,
             };
 
-            return junk;
+            return clone;
 
         }
 
@@ -696,95 +692,20 @@ namespace XAS.Network.TCP {
 
         }
 
-        private void SetSslOptions(State client) {
+        private void EnableSSL(State client) {
 
-            log.Trace("Entering SetSslOptions()");
+            log.Trace("Entering EnableSSL()");
 
-            var sslStream = new SslStream(
-                client.Stream,
-                false,
-                new RemoteCertificateValidationCallback(OnValidateCertificate),
-                new LocalCertificateSelectionCallback(SelectLocalCertificate),
-                this.SSLEncryptionPolicy
-            );
+            var sslStream = new SslStream(client.Stream, false);
 
             // this will throw an exception
 
-            if (!String.IsNullOrEmpty(this.SSLcacert)) {
-
-                var serverCertificate = X509Certificate.CreateFromCertFile(this.SSLcacert);
-                sslStream.AuthenticateAsServer(serverCertificate, true, false);
-
-            }
+            var serverCertificate = X509Certificate.CreateFromCertFile(this.SSLCaCert);
+            sslStream.AuthenticateAsServer(serverCertificate, this.SSLVerifyPeer, this.SSLProtocols, true);
 
             client.Stream = sslStream;
 
-            log.Trace("Leaving SetSslOptions()");
-
-        }
-
-        private bool OnValidateCertificate(
-              object sender,
-              X509Certificate certificate,
-              X509Chain chain,
-              SslPolicyErrors sslPolicyErrors) {
-
-            log.Trace("Entering OnValidateCertificate()");
-
-            bool stat = true;
-
-            if (sslPolicyErrors != SslPolicyErrors.None) {
-
-                stat = this.SSLVerifyPeer;
-
-            }
-
-            log.Trace("Leaving OnValidateCertificate()");
-
-            return stat;
-
-        }
-
-        private X509Certificate SelectLocalCertificate(
-            object sender,
-            string targetHost,
-            X509CertificateCollection localCertificates,
-            X509Certificate remoteCertificate,
-            string[] acceptableIssuers) {
-
-            log.Trace("Entering SelectLocalCertifcate()");
-
-            X509Certificate ourCertificate = null;
-
-            if ((acceptableIssuers != null) &&
-                (acceptableIssuers.Length > 0) &&
-                (localCertificates != null) &&
-                (localCertificates.Count > 0)) {
-
-                foreach (X509Certificate certificate in localCertificates) {
-
-                    string issuer = certificate.Issuer;
-
-                    if (Array.IndexOf(acceptableIssuers, issuer) != -1) {
-
-                        ourCertificate = certificate;
-                        break;
-
-                    }
-
-                }
-
-            }
-
-            if ((localCertificates != null) && (localCertificates.Count > 0)) {
-
-                ourCertificate = localCertificates[0];
-
-            }
-
-            log.Trace("Leaving SelectLocalCertifcate()");
-
-            return ourCertificate;
+            log.Trace("Leaving EnableSSL()");
 
         }
 
