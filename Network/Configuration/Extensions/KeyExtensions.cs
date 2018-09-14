@@ -50,6 +50,10 @@ namespace XAS.Network.Configuration.Extensions {
             return "ClientProblems";
         }
 
+        public static String ClientSSLValidation(this Key junk) {
+            return "ClientSSLValidation";
+        }
+
     }
 
 }

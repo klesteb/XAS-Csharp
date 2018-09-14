@@ -348,6 +348,11 @@ namespace XAS.Network.TCP {
 
             } catch (AuthenticationException ex) {
 
+                log.WarnMsg(key.ClientSSLValidation(), client.RemoteHost, client.RemotePort);
+
+                client.Socket.Close();
+                client.Stream.Close();
+
                 OnException(client.Id, ex);
 
             } catch (ObjectDisposedException) {
