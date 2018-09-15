@@ -88,10 +88,10 @@ namespace XAS.Network.TCP {
         public Boolean UseSSL { get; set; }
 
         /// <summary>
-        /// Gets/Sets the SSL CA cerificate to use, default is none.
+        /// Gets/Sets the SSL CA Cerificate to use, default is none.
         /// </summary>
         /// <value>
-        /// This is a path to a CA Certificate.
+        /// This is a path/name to the CA Certificate.
         /// </value>
         /// 
         public String SSLCaCert { get; set; }
@@ -440,7 +440,7 @@ namespace XAS.Network.TCP {
 
             } catch (NullReferenceException) {
 
-                // ignore, disconnect with an outstanding read.
+                // ignore, remote disconnect with an outstanding read.
 
                 log.Debug("ReadCallback() - Ignored but a NullReferenceException was thrown");
 
@@ -714,18 +714,18 @@ namespace XAS.Network.TCP {
 
         }
 
-        private void EnableSSL(State client) {
+        private void EnableSSL(State state) {
 
             log.Trace("Entering EnableSSL()");
 
             // this will throw an exception if unable to validate
 
-            var sslStream = new SslStream(client.Stream, false);
+            var sslStream = new SslStream(state.Stream, false);
 
              var serverCertificate = X509Certificate.CreateFromCertFile(this.sslCaCert);    
             sslStream.AuthenticateAsServer(serverCertificate, this.SSLVerifyPeer, this.SSLProtocols, true);
 
-            client.Stream = sslStream;
+            state.Stream = sslStream;
 
             log.Trace("Leaving EnableSSL()");
 
