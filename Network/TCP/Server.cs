@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Linq;
 using System.Threading;
@@ -360,7 +361,7 @@ namespace XAS.Network.TCP {
 
                 }
 
-            } catch (AuthenticationException ex) {
+            } catch (AuthenticationException) {
 
                 log.WarnMsg(key.ClientSSLValidation(), client.RemoteHost, client.RemotePort);
 
@@ -370,6 +371,8 @@ namespace XAS.Network.TCP {
             } catch (ObjectDisposedException) {
 
                 // do nothing, an expected error
+
+                log.Debug("OnAcceptCallback() - Ignored but a ObjectDisposedException was thrown");
 
             } finally {
 
@@ -428,6 +431,12 @@ namespace XAS.Network.TCP {
                 // ignore, stream has been disposed with an outstanding read.
 
                 log.Debug("ReadCallback() - Ignored but a ObjectDisposedException was thrown");
+
+            } catch (IOException) {
+
+                // ignore, stream has been disposed with an outstanding read.
+
+                log.Debug("ReadCallback() - Ignored but a IOException was thrown");
 
             } catch (NullReferenceException) {
 
@@ -525,10 +534,21 @@ namespace XAS.Network.TCP {
             // and examples don't explain, microsofts or otherwise.
 
             var key = config.Key;
+            var keys = new List<Int32>();
             var removals = new List<Int32>();
             Int64 now = DateTime.Now.ToUnixTime();
 
-            foreach (KeyValuePair<Int32, State> client in clients) {
+            // collect all of the client ids
+
+            foreach (Int32 id in clients.Keys.ToList()) {
+
+                keys.Add(id);
+
+            }
+
+            // start processing the clients
+
+            foreach (Int32 id in keys) {
 
                 if (Cancellation.Token.IsCancellationRequested) {
 
@@ -536,16 +556,18 @@ namespace XAS.Network.TCP {
 
                 }
 
+                var client = GetClient(id);
+
                 // check for client inactivity
 
                 if (ClientTimeout > 0) {
 
-                    if ((now - client.Value.Activity) > ClientTimeout) {
+                    if ((now - client.Activity) > ClientTimeout) {
 
-                        log.WarnMsg(key.ClientInactive(), client.Value.RemoteHost, client.Value.RemotePort);
+                        log.WarnMsg(key.ClientInactive(), client.RemoteHost, client.RemotePort);
 
-                        DisconnectClient(client.Value);
-                        removals.Add(client.Key);
+                        DisconnectClient(client);
+                        removals.Add(id);
 
                         continue;
 
@@ -555,16 +577,18 @@ namespace XAS.Network.TCP {
 
                 // check for dead sockets
 
-                if (!client.Value.Socket.IsConnected()) {
+                if (! client.Socket.IsConnected()) {
 
-                    log.WarnMsg(key.ClientDeadSocket(), client.Value.RemoteHost, client.Value.RemotePort);
+                    log.WarnMsg(key.ClientDeadSocket(), client.RemoteHost, client.RemotePort);
 
-                    DisconnectClient(client.Value);
-                    removals.Add(client.Key);
+                    DisconnectClient(client);
+                    removals.Add(id);
 
                 }
 
             }
+
+            // remove any dead clients
 
             foreach (Int32 id in removals) {
 
@@ -577,6 +601,8 @@ namespace XAS.Network.TCP {
                 DeleteClient(id);
 
             }
+
+            // if throttling is activated, restart accepting connections
 
             if ((clients.Count < MaxConnections) && (MaxConnections > 0)) {
 
@@ -651,10 +677,14 @@ namespace XAS.Network.TCP {
 
                 if (clients.ContainsKey(state.Id)) {
 
-                    state.Socket.Close();
-                    state.Stream.Close();
-                    state.Connected = false;
+                    try {   // ignore any errors
 
+                        state.Socket.Close();
+                        state.Stream.Close();
+
+                    } catch { }
+
+                    state.Connected = false;
                     clients[state.Id] = state;
 
                 }
@@ -669,8 +699,12 @@ namespace XAS.Network.TCP {
 
                 foreach (KeyValuePair<Int32, State> client in clients) {
 
-                    client.Value.Stream.Close();
-                    client.Value.Socket.Close();
+                    try {   // ignore any errors
+
+                        client.Value.Stream.Close();
+                        client.Value.Socket.Close();
+
+                    } catch { }
 
                 }
 
