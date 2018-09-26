@@ -58,6 +58,11 @@ namespace XAS.Core.Processes {
         public Boolean AutoRestart { get; set; }
 
         /// <summary>
+        /// Get/Set the delay between restarts, default is 0.
+        /// </summary>
+        public Int32 RestartDelay { get; set; }
+
+        /// <summary>
         /// Get/Set the known exit codes, defaults are 0 and 1.
         /// </summary>
         /// 
@@ -70,28 +75,10 @@ namespace XAS.Core.Processes {
         public String WorkingDirectory { get; set; }
 
         /// <summary>
-        /// Get/Set an optional exit handler.
-        /// </summary>
-        /// 
-        public EventHandler ExitHandler { get; set; }
-
-        /// <summary>
         /// Get/Set optional environment variables for the process.
         /// </summary>
         /// 
         public Dictionary<String, String> Environment { get; set; }
-
-        /// <summary>
-        /// Get/Set an optional stdout handler.
-        /// </summary>
-        /// 
-        public DataReceivedEventHandler StdoutHandler { get; set; }
-
-        /// <summary>
-        /// Get/Set an optional stderr handler.
-        /// </summary>
-        /// 
-        public DataReceivedEventHandler StderrHandler { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -100,6 +87,7 @@ namespace XAS.Core.Processes {
         public SpawnInfo() {
 
             ExitRetries = 5;
+            RestartDelay = 0;
             AutoStart = false;
             AutoRestart = false;
             WorkingDirectory = "C:\\";

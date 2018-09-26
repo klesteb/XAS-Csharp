@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Diagnostics;
 using System.Collections.Generic;
 
@@ -9,6 +10,10 @@ using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
 namespace XAS.Core.Processes {
+
+    public delegate void OnStdout(Int32 pid, String buffer);
+    public delegate void OnStderr(Int32 pid, String buffer);
+    public delegate Boolean OnExit(Int32 pid, Int32 exitCode);
 
     /// <summary>
     /// Spawn a process and keep it running.
@@ -26,6 +31,24 @@ namespace XAS.Core.Processes {
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
         private readonly ProcessStartInfo startInfo = null;
+
+        /// <summary>
+        /// Get/Set a delegate to handle an exit event.
+        /// </summary>
+        /// 
+        public OnExit OnExit { get; set; }
+
+        /// <summary>
+        /// Get/Set a delgate to handle output on stderr.
+        /// </summary>
+        /// 
+        public OnStderr OnStderr { get; set; }
+
+        /// <summary>
+        /// Get/Set a delegate to handle output on stdout.
+        /// </summary>
+        /// 
+        public OnStdout OnStdout { get;set; }
 
         /// <summary>
         /// Contructor.
@@ -81,7 +104,7 @@ namespace XAS.Core.Processes {
 
                 if (startInfo.Environment.ContainsKey(env.Key)) {
 
-                    startInfo.Environment.Remove(env.Key);
+                    startInfo.Environment[env.Key] = env.Value;
 
                 }
 
@@ -92,48 +115,8 @@ namespace XAS.Core.Processes {
             process.EnableRaisingEvents = true;
             process.StartInfo = startInfo;
             process.Exited += ExitHandler;
-
-            if (spawnInfo.StderrHandler != null) {
-
-                process.ErrorDataReceived += spawnInfo.StderrHandler;
-
-            } else {
-
-                process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs e) {
-
-                    if (! String.IsNullOrEmpty(e.Data)) {
-
-                        log.Error(e.Data.Trim());
-
-                    }
-
-                };
-
-            }
-
-            if (spawnInfo.StdoutHandler != null) {
-
-                process.OutputDataReceived += spawnInfo.StdoutHandler;
-
-            } else {
-
-                process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs e) {
-
-                    if (! String.IsNullOrEmpty(e.Data)) {
-
-                        log.Info(e.Data.Trim());
-
-                    }
-
-                };
-
-            }
-
-            if (spawnInfo.ExitHandler != null) {
-
-                process.Exited += spawnInfo.ExitHandler;
-
-            }
+            process.ErrorDataReceived += StderrHandler;
+            process.OutputDataReceived += StdoutHandler;
 
             if (spawnInfo.AutoStart) {
 
@@ -245,17 +228,7 @@ namespace XAS.Core.Processes {
 
         #region Private Methods
 
-        private void ExitHandler(object sender, EventArgs e) {
-
-            log.Trace("Entering ExitHandler()");
-
-            exitCode = process.ExitCode;
-
-            // do some cleanup
-
-            process.CancelOutputRead();
-            process.CancelErrorRead();
-            process.Close();
+        private void RestartHandler() {
 
             // restart logic
 
@@ -265,13 +238,98 @@ namespace XAS.Core.Processes {
 
                 if ((spawnInfo.AutoRestart) && (retries <= spawnInfo.ExitRetries)) {
 
+                    if (spawnInfo.RestartDelay > 0) {
+
+                        Thread.Sleep(spawnInfo.RestartDelay * 1000);
+
+                    }
+
                     Start();
 
                 }
 
             }
 
+        }
+
+        private void ExitHandler(object sender, EventArgs e) {
+
+            log.Trace("Entering ExitHandler()");
+
+            int id = process.Id;
+            exitCode = process.ExitCode;
+
+            // do some cleanup
+
+            process.CancelOutputRead();
+            process.CancelErrorRead();
+            process.Close();
+
+            // call the exit handler callback
+
+            if (OnExit != null) {
+
+                if (OnExit(id, exitCode)) {
+
+                    RestartHandler();
+
+                }
+
+            } else {
+
+                RestartHandler();
+
+            }
+
             log.Trace("Leaving ExitHandler()");
+
+        }
+
+        private void StdoutHandler(object sender, DataReceivedEventArgs e) {
+
+            log.Trace("Entering StdoutHandler()");
+
+            if (! String.IsNullOrEmpty(e.Data)) {
+
+                string buffer = e.Data.Trim();
+
+                if (OnStdout != null) {
+
+                    OnStdout(process.Id, buffer);
+
+                } else {
+
+                    log.Info(buffer);
+
+                }
+
+            }
+
+            log.Trace("Leaving StdoutHandler()");
+
+        }
+
+        private void StderrHandler(object sender, DataReceivedEventArgs e) {
+
+            log.Trace("Entering StderrHandler()");
+
+            if (! String.IsNullOrEmpty(e.Data)) {
+
+                string buffer = e.Data.Trim();
+
+                if (OnStderr != null) {
+
+                    OnStderr(process.Id, buffer);
+
+                } else {
+
+                    log.Error(buffer);
+
+                }
+
+            }
+
+            log.Trace("Leaving StderrHandler()");
 
         }
 
