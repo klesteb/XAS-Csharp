@@ -87,7 +87,8 @@ namespace XAS.Core.Processes {
 
             // set user context, if any
 
-            if ((! String.IsNullOrEmpty(spawnInfo.Username) && (! String.IsNullOrEmpty(spawnInfo.Password)))) {
+            if ((! String.IsNullOrEmpty(spawnInfo.Username) && 
+                (! String.IsNullOrEmpty(spawnInfo.Password)))) {
 
                 startInfo.LoadUserProfile = true;
                 startInfo.Domain = spawnInfo.Domain;
@@ -105,6 +106,7 @@ namespace XAS.Core.Processes {
                 if (startInfo.Environment.ContainsKey(env.Key)) {
 
                     startInfo.Environment[env.Key] = env.Value;
+                    continue;
 
                 }
 
@@ -133,6 +135,9 @@ namespace XAS.Core.Processes {
         public void Start() {
 
             log.Trace("Entering Start()");
+
+            retries = 0;
+            exitCode = 0;
 
             process.Start();
             process.BeginOutputReadLine();
@@ -230,6 +235,8 @@ namespace XAS.Core.Processes {
 
         private void RestartHandler() {
 
+            log.Trace("Entering RestartHandler()");
+
             // restart logic
 
             retries++;
@@ -250,13 +257,15 @@ namespace XAS.Core.Processes {
 
             }
 
+            log.Trace("Leaving RestartHandler()");
+
         }
 
         private void ExitHandler(object sender, EventArgs e) {
 
             log.Trace("Entering ExitHandler()");
 
-            int id = process.Id;
+            Int32 id = process.Id;
             exitCode = process.ExitCode;
 
             // do some cleanup
