@@ -77,7 +77,7 @@ namespace DemoEchoServer.Processors {
             decoder.GetChars(buffer, 0, bytes, chars, 0);
             message.Append(chars);
 
-            log.Info(String.Format("Received data from: {0}, on port: {1}, data: {2}",
+            log.Info(String.Format("Received data from: {0}, on port: {1}, data: \"{2}\"",
                 client.RemoteHost, client.RemotePort, message.ToString()));
 
             server.Send(id, buffer);
