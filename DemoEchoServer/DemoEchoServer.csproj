@@ -69,6 +69,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="DemoEchoServerd.ini" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
