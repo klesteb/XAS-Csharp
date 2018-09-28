@@ -61,6 +61,7 @@
     <Compile Include="Configuration\Extensions\KeyExtensions.cs" />
     <Compile Include="Configuration\Extensions\SectionExtensions.cs" />
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
+    <Compile Include="Processors\Echo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />

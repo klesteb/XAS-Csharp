@@ -33,8 +33,8 @@ namespace XAS.Network.TCP {
         private Socket listener = null;
         private Object _critical = null;
         private Object _dictionary = null;
-        private ManualResetEvent accept = null;
-        private ManualResetEvent throttle = null;
+        private ManualResetEventSlim accept = null;
+        private ManualResetEventSlim throttle = null;
         private System.Timers.Timer reaperTimer = null;
 
         private readonly ILogger log = null;
@@ -150,7 +150,6 @@ namespace XAS.Network.TCP {
             this.MaxConnections = 0;
             this.ReaperInterval = 60;
             this.Address = "127.0.0.1";
-            this.Cancellation = new CancellationTokenSource();
 
             this.UseSSL = false;
             this.SSLCaCert = "";
@@ -162,8 +161,8 @@ namespace XAS.Network.TCP {
             this._critical = new Object();
             this._dictionary = new Object();
             this.OnException += ExceptionHander;
-            this.accept = new ManualResetEvent(false);
-            this.throttle = new ManualResetEvent(false);
+            this.accept = new ManualResetEventSlim(false);
+            this.throttle = new ManualResetEventSlim(false);
             this.log = logFactory.Create(typeof(Server));
             this.clients = new Dictionary<Int32, State>();
 
@@ -203,13 +202,12 @@ namespace XAS.Network.TCP {
                 if ((clients.Count > MaxConnections) && (MaxConnections > 0)) {
 
                     throttle.Reset();
-                    throttle.WaitOne();
+                    throttle.Wait(Cancellation.Token);
 
                 }
 
                 listener.BeginAccept(callback, listener);
-
-                accept.WaitOne();
+                accept.Wait(Cancellation.Token);
 
             }
 
@@ -226,9 +224,7 @@ namespace XAS.Network.TCP {
             log.Trace("Entering Stop()");
 
             reaperTimer.Stop();
-
             RemoveClients();
-
             listener.Close();
 
             log.Trace("Leaving Stop()");
