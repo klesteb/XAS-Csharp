@@ -11,7 +11,7 @@ Additionally, any contributed modules, code or documentation, must have an autho
 
 ### **Donations**
 
-I will gladly accept money donations. You can donate thru [​PayPal](https://www.paypal.com/home). My email is in the code. The donation doesn't obligate me in any way or fashion to provide a service. Please use the "Friends and Family" option when sending the donation.
+I will gladly accept money donations. You can donate thru [​PayPal](https://www.paypal.com/home). My email is below. The donation doesn't obligate me in any way or fashion to provide a service. Please use the "Friends and Family" option when sending the donation.
 
 ### **Author**
 

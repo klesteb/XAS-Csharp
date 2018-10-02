@@ -79,5 +79,8 @@
     <Compile Include="Services\ServiceImplementaion.cs" />
     <Compile Include="Shell.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
