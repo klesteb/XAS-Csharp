@@ -302,5 +302,7 @@ To run it interactivily, do the following:
 
 Where you can stop, pause or resume the service. Since this is using
 the common command line options you can toggle tracing or debugging and
-specify a alternative configuration to use.
+specify a alternative configuration to use. All of which interacting with
+services somewhat less annoying.
+
 
