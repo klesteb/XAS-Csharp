@@ -69,7 +69,6 @@ is loaded, the following stanza is processed.
 
 This set defaults for the application. These can be overridden on the 
 command line. This makes it very easy to modify the behavior of a service.
-Something that is not easy to do from the command line. 
 
 The following takes a boolean value:
 
@@ -85,8 +84,8 @@ Boolean values use the following verbage:
 Alerting is built into the application. The following is used to
 control the serverity of the alert.
 
-    facility - free form text, default "system"
-	priority - free form text, default "low"
+    facility - free form text, default is "system"
+	priority - free form text, default is "low"
 
 This can be anything that has meaning for your alerting platform. When
 an alert is generated, it creates a spool file in %XAS_SPOOL%\alerts.
@@ -266,7 +265,7 @@ Asking for additional help on the "schedule" command displays this:
 Which should look familiar. The shell also has the feature of loading and 
 executing commands from a file. Oldtimers like me, would recognize this 
 feature from DEC's PDP11 line of operating systems. Where it was called an
-"indirect" command file. You can invoke this as follows:
+"indirect" command file. You can use this feature as follows:
 
 	C:\dev\XAS\DemoShell\bin\Debug>DemoShell.exe
 	Help is available with the "help" command.
@@ -279,8 +278,7 @@ Where test.job looks like this:
 	set -requestor testing
 
 Which is nothing but a series of commands that the shell will execute one after
-the other. Particular usefull when setting up a command environment. This also 
-allows you have to have canned procedures that you can run automagically.
+the other. This is particularly usefull when setting up a command shell environment. 
 
 ## **Services**
 
@@ -304,5 +302,4 @@ Where you can stop, pause or resume the service. Since this is using
 the common command line options you can toggle tracing or debugging and
 specify a alternative configuration to use. All of which makes interacting 
 with services somewhat less annoying.
-
 
