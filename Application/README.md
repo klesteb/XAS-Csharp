@@ -85,8 +85,8 @@ Boolean values use the following verbage:
 Alerting is built into the application. The following is used to
 control the serverity of the alert.
 
-    facility - free form text
-	priority - free form text
+    facility - free form text, default "system"
+	priority - free form text, default "low"
 
 This can be anything that has meaning for your alerting platform. When
 an alert is generated, it creates a spool file in %XAS_SPOOL%\alerts.
