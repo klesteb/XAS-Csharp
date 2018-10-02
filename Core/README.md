@@ -1,4 +1,4 @@
-﻿# ***XAS.Core***
+﻿## **XAS.Core**
 
 This is the core modules that the rest of the system is built on. It provides
 the following facilities.

@@ -1,4 +1,4 @@
-﻿## **Application**
+﻿## **XAS.Application**
 
 I don't write GUI code, wither Windows or Web based. Most of my applications 
 focus on the single command, a command shell or a service. This project 
@@ -19,7 +19,7 @@ command line are parsed and their values subsituted in place.
 
 ### **Common options**
 
-Each application, wither it is cli, shell or service based has the same
+Each application, wither it is command, shell or service based has the same
 common set of options. They are as follows:
 
     -alerts     - toggles the sending of alerts.
@@ -105,5 +105,183 @@ This is used to specify an alterntaive log4net configuration.
 Spooling is used to decouple the local application from a remote resource. 
 It is much easier to write a local spool file then to connect to a remote 
 resource. Especially when that remote resource is unavailable.
+
+## **Basic usage**
+
+All applications can be invoked in a similar fashion. For example:
+
+	C:\dev\XAS\DemoApp\bin\Debug>DemoApp.exe -help
+
+	Usage: DemoApp
+	   or: DemoApp --help
+
+	  Options:
+		-alerts     - toggles the sending of alerts.
+		-debug      - toggles debug output to the log.
+		-trace      - toggles trace output to the log.
+		-version|v  - outputs the programs version.
+		-help|h|?   - outputs a simple help message.
+		-manual     - outputs the progams manual.
+		-facility=  - sets the alerts facility, default "system".
+		-priority=  - sets the alerts priority, default "low".
+		-log-type=  - toggles the log type, default "console", possible "file", "json" or "event".
+		-log-file=  - names the log file to use, default "C:\XAS\var\log\DemoApp.log".
+		-log-conf=  - alternative logging configuration file, default "C:\XAS\etc\DemoApp.conf".
+		-minwin     - minimizes the console window.
+		-cfg-file=  - use an alternative configuration file, default: "C:\XAS\etc\DemoApp.ini".
+
+	Options can begin with a "-","--" or "/". Single character options must
+	start with a "-" and can be stacked. Options with a trailing "=" have required
+	arguments, options with a trailing ":", have optional arguments. Options that are
+	being used to toggle functionality can have a trailing "-" or "+" to force boolean
+	behavior. Option processing ends with "-- " and the rest of the commadline is
+	passed verbatium.
+
+Doing this with any of the application will produce this simple help screen. Doing this:
+
+	C:\dev\XAS\DemoApp\bin\Debug>DemoApp.exe -manual
+
+	NAME
+
+		DemoApp - A demo application using XAS.App
+
+	SYNPOSIS
+
+		DemoApp [--help] [--manual] [--version]
+
+	DESCRIPTION
+
+		This program is a demo command line application using XAS.App.
+
+	OPTIONS and ARGUMENTS
+
+		Options:
+		  -alerts     - toggles the sending of alerts.
+		  -debug      - toggles debug output to the log.
+		  -trace      - toggles trace output to the log.
+		  -version|v  - outputs the programs version.
+		  -help|h|?   - outputs a simple help message.
+		  -manual     - outputs the progams manual.
+		  -facility=  - sets the alerts facility, default "system".
+		  -priority=  - sets the alerts priority, default "low".
+		  -log-type=  - toggles the log type, default "console", possible "file", "json" or "event".
+		  -log-file=  - names the log file to use, default "C:\XAS\var\log\DemoApp.log".
+		  -log-conf=  - alternative logging configuration file, default "C:\XAS\etc\DemoApp.conf".
+		  -minwin     - minimizes the console window.
+		  -cfg-file=  - use an alternative configuration file, default: "C:\XAS\etc\DemoApp.ini".
+
+	CONFIGURATION
+
+		The default configuration file is "C:\XAS\etc\DemoApp.ini", and contains the following stanzas:
+
+			[application]
+			alerts = true
+			facility = systems
+			priority = low
+			trace = false
+			debug = false
+			log-type = file
+			log-file = C:\XAS\var\log\DemoApp.log
+			log-conf = C:\XAS\etc\DemoApp.conf
+
+		This is the basic options that every program has, they can be overridden on the command line.
+		The above are the defaults and this stanza is not really needed. But it does allow you to easily
+		configure a service.
+
+	EXIT CODES
+
+		0 - success
+		1 - failure
+
+	SEE ALSO
+
+	AUTHOR
+
+		Kevin L. Esteb - kevin@kesteb.us
+
+	COPYRIGHT AND LICENSE
+
+		Copyright (c) 2018 Kevin L. Esteb
+
+Will produce brief documentation on how the program works. This is using the familiar
+UNIX man page format. Doing this will print out the version of the application.
+
+	C:\dev\XAS\DemoApp\bin\Debug>DemoApp.exe -version
+	Version: v1.0.0.0
+
+All of which help with troubleshooting problems when they arise. 
+
+## **Shells**
+
+This creates a shell style of interface. In that you can type commands and 
+display the results. This is not a Turing complete interperator. Invoking a
+shell you will get this prompt:
+
+	C:\dev\XAS\DemoShell\bin\Debug>DemoShell.exe
+	Help is available with the "help" command.
+	>
+
+Typing "help" will get you this:
+
+	> help
+
+	Internal Commands:
+		clear  - clear the screen.
+		cls    - clear the screen.
+		exit   - exit the shell.
+		help   - display this screen.
+		quit   - exit the shell.
+
+	Additional Commands:
+		set      - set global settings.
+		show     - show global settings.
+		schedule - schedule a job to run.
+
+	Additional help is available with <command> --help.
+
+	>
+
+Asking for additional help on the "schedule" command displays this:
+
+	> schedule -help
+
+	Usage: schedule --requestor <username> "<job parameters>"
+
+	  Options:
+		-help        - outputs a simple help message..
+		-requestor:  - the requestor of the job..
+		-date:       - the date to submit the job on, defaults to "today"..
+		-time:       - the time to start the job, defaults to "now"..
+		-group:      - the group to submit the job too, defaults to "production"..
+		-target:     - the target to sumbit the job too, defaults to "production"..
+
+	Options can begin with a "-","--" or "/". Single character options must
+	start with a "-" and can be stacked. Options with a trailing "=" have required
+	arguments, options with a trailing ":", have optional arguments. Options that are
+	being used to toggle functionality can have a trailing "-" or "+" to force boolean
+	behavior.
+
+	>
+
+Which should look familiar. The shell also has the feature of loading and 
+executing commands from a file. Oldtimers like me, would recognize this 
+feature from DEC's PDP11 line of operating systems. Where it was called an
+"indirect" command file. You can invoke this as follows:
+
+	C:\dev\XAS\DemoShell\bin\Debug>DemoShell.exe
+	Help is available with the "help" command.
+	> @test.job
+	>
+
+Where test.job looks like this:
+
+	C:\dev\XAS\DemoShell\bin\Debug>type test.job
+	set -requestor testing
+
+Which is nothing but a series of commands that the shell will execute one after
+the other. This allows you have to have canned procedures that you can run 
+automagically.
+
+## **Services**
 
 
