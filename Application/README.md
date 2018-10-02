@@ -203,13 +203,13 @@ Doing this with any of the application will produce this simple help screen. Doi
 
 		Copyright (c) 2018 Kevin L. Esteb
 
-Will produce brief documentation on how the program works. This is using the familiar
+Will display simple documentation on how the program works. This is using the familiar
 UNIX man page format. Doing this will print out the version of the application.
 
 	C:\dev\XAS\DemoApp\bin\Debug>DemoApp.exe -version
 	Version: v1.0.0.0
 
-All of which help with troubleshooting problems when they arise. 
+All of which helps with troubleshooting problems when they arise. 
 
 ## **Shells**
 
@@ -221,7 +221,7 @@ shell you will get this prompt:
 	Help is available with the "help" command.
 	>
 
-Typing "help" will get you this:
+Typing "help" will display this:
 
 	> help
 
@@ -279,9 +279,28 @@ Where test.job looks like this:
 	set -requestor testing
 
 Which is nothing but a series of commands that the shell will execute one after
-the other. This allows you have to have canned procedures that you can run 
-automagically.
+the other. Particular usefull when setting up a command environment. This also 
+allows you have to have canned procedures that you can run automagically.
 
 ## **Services**
 
+A service is a background process that is controlled with the Windows SCM. They
+are notoriously difficult to install, configure and debug. We are trying to
+simplify this process. To install the service do the following:
+
+   C:\dev\XAS\DemoService\bin\Debug>DemoService.exe -install
+
+To desinstall, do the following:
+
+   C:\dev\XAS\DemoService\bin\Debug>DemoService.exe -uninstall
+
+To run it interactivily, do the following:
+
+	C:\dev\XAS\DemoService\bin\Debug>DemoService.exe
+	INFO  - Service has been started
+	Running Service: Enter either [Q]uit, [P]ause, [R]esume:
+
+Where you can stop, pause or resume the service. Since this is using
+the common command line options you can toggle tracing or debugging and
+specify a alternative configuration to use.
 
