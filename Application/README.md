@@ -303,7 +303,7 @@ the common command line options you can toggle tracing or debugging and
 specify a alternative configuration to use. All of which makes interacting 
 with services somewhat less annoying.
 
-## **Be a good command line citzen**
+## **Being a good command line citzen**
 
 A good command line citzen show do the following:
 
