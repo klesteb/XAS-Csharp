@@ -19,7 +19,7 @@ command line are parsed and their values subsituted in place.
 
 ### **Common options**
 
-Each application, wither it is command, shell or service based has the same
+Each application, wither it is a command, shell or service based has the same
 common set of options. They are as follows:
 
     -alerts     - toggles the sending of alerts.
@@ -302,4 +302,23 @@ Where you can stop, pause or resume the service. Since this is using
 the common command line options you can toggle tracing or debugging and
 specify a alternative configuration to use. All of which makes interacting 
 with services somewhat less annoying.
+
+## **Be a good command line citzen**
+
+A good command line citzen show do the following:
+
+    * Accept input on stdin
+	* Write output to stdout
+	* Write error messages to stderr
+	* Return a meaningful exit code
+
+A command or shell will do the following:
+
+    * Accept input from stdin
+	* You can write to stdout
+	* Console logging goes to stderr
+	* By default, it will return 0 for success and 1 for failure
+
+A service has no concept of stdin, stdout or stderr, even thou the .NET
+runtime does a good job of faking that. 
 
