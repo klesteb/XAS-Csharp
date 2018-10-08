@@ -14,7 +14,7 @@ namespace XAS.Core.Utilities {
     public class RoboCopy {
 
         private readonly ILogger log = null;
-        private readonly String robocopy = "";
+        private readonly String roboCopy = "";
         private readonly String lockName = "";
         private readonly ISecurity secure = null;
         private readonly IErrorHandler handler = null;
@@ -38,7 +38,7 @@ namespace XAS.Core.Utilities {
             this.log = logFactory.Create(typeof(RoboCopy));
 
             this.lockName = config.GetValue(section.Environment(), key.LockName());
-            this.robocopy = Path.Combine(
+            this.roboCopy = Path.Combine(
                 Environment.GetEnvironmentVariable("SystemRoot"), 
                 "System32", 
                 "Robocopy.exe"
@@ -49,7 +49,8 @@ namespace XAS.Core.Utilities {
         public Int32 Copy(String source, String destination, String filename) {
 
             String format = "\"{0}\" \"{1}\" \"{2}\" /np /r:1";
-            String command = String.Format(format, source, destination, filename);
+            String args = String.Format(format, source, destination, filename);
+            String command = Environment.ExpandEnvironmentVariables(args);
 
             return DoCommand(command);
 
@@ -58,7 +59,8 @@ namespace XAS.Core.Utilities {
         public Int32 Move(String source, String destination, String filename) {
 
             String format = "\"{0}\" \"{1}\" \"{2}\" /mov /np /r:1";
-            String command = String.Format(format, source, destination, filename);
+            String args = String.Format(format, source, destination, filename);
+            String command = Environment.ExpandEnvironmentVariables(args);
 
             return DoCommand(command);
 
@@ -67,7 +69,8 @@ namespace XAS.Core.Utilities {
         public Int32 Mirror(String source, String destination) {
 
             String format = "\"{0}\" \"{1}\" /mir /e /np /r:1";
-            String command = String.Format(format, source, destination);
+            String args = String.Format(format, source, destination);
+            String command = Environment.ExpandEnvironmentVariables(args);
 
             return DoCommand(command);
 
@@ -81,9 +84,9 @@ namespace XAS.Core.Utilities {
             var stdout = new List<string>();
             var stderr = new List<string>();
 
-            log.Debug(String.Format("command = {0} {1}", robocopy, command));
+            log.Debug(String.Format("command = {0} {1}", roboCopy, command));
 
-            stat = secure.RunAs(robocopy, command, out stdout, out stderr);
+            stat = secure.RunAs(roboCopy, command, out stdout, out stderr);
             CheckStatus(stat);
 
             if (stdout.Count > 0) {
