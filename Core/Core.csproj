@@ -104,6 +104,7 @@
     <Compile Include="Spooling\ISpooler.cs" />
     <Compile Include="Spooling\Spooler.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Utilities\Bitops.cs" />
     <Compile Include="Utilities\RoboCopy.cs" />
     <Compile Include="Utilities\Shares.cs" />
     <Compile Include="Utils.cs" />

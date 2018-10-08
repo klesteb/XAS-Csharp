@@ -5,12 +5,15 @@ using System.Collections.Generic;
 using XAS.Core.Logging;
 using XAS.Core.Security;
 using XAS.Core.Exceptions;
-using XAS.Core.Extensions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 
 namespace XAS.Core.Utilities {
 
+    /// <summary>
+    /// A class to run robocopy.exe
+    /// </summary>
+    /// 
     public class RoboCopy {
 
         private readonly ILogger log = null;
@@ -125,7 +128,6 @@ namespace XAS.Core.Utilities {
         // 0×10 16 Serious error. Robocopy did not copy any files.
         //
         // Either a usage error or an error due to insufficient access privileges
-        //
         // on the source or destination directories.
         //
         // 0×08 8 Some files or directories could not be copied
@@ -158,30 +160,29 @@ namespace XAS.Core.Utilities {
             var key = config.Key;
             var section = config.Section;
 
-            switch(rc) {
-                case 16:
-                    log.ErrorMsg(key.RoboCopyLevel6());
-                    break;
+            if (Bitops.IsSet(rc, 16)) {
 
-                case 8:
-                    log.WarnMsg(key.RoboCopyLevel5());
-                    break;
+                log.ErrorMsg(key.RoboCopyLevel6());
 
-                case 4:
-                    log.WarnMsg(key.RoboCopyLevel4());
-                    break;
+            } else if (Bitops.IsSet(rc, 8)) {
 
-                case 2:
-                    log.WarnMsg(key.RoboCopyLevel3());
-                    break;
+                log.WarnMsg(key.RoboCopyLevel5());
 
-                case 0:
-                    log.WarnMsg(key.RoboCopyLevel1());
-                    break;
+            } else if (Bitops.IsSet(rc, 4)) {
 
-                default:
-                    log.InfoMsg(key.RoboCopyLevel2());
-                    break;
+                log.WarnMsg(key.RoboCopyLevel4());
+
+            } else if (Bitops.IsSet(rc, 2)) {
+
+                log.WarnMsg(key.RoboCopyLevel3());
+
+            } else if (Bitops.IsSet(rc, 1)) {
+
+                log.InfoMsg(key.RoboCopyLevel2());
+
+            } else if (rc == 0) {
+
+                log.WarnMsg(key.RoboCopyLevel1());
 
             }
 
