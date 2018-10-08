@@ -17,8 +17,9 @@ namespace XAS.Core.Utilities {
     /// 
     public class Shares: IDisposable {
 
+        private WshNetwork wsh = null;
+
         private readonly ILogger log = null;
-        private readonly WshNetwork wsh = null;
         private readonly IErrorHandler handler = null;
         private readonly IConfiguration config = null;
 
@@ -251,7 +252,7 @@ namespace XAS.Core.Utilities {
 
                     // TODO: dispose managed state (managed objects).
 
-                    this.wsh = null;
+                    wsh = null;
 
                 }
 
