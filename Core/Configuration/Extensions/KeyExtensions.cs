@@ -40,6 +40,30 @@ namespace XAS.Core.Configuration.Extensions {
             return "FileMissing";
         }
 
+        public static String RoboCopyLevel6(this Key junk) {
+            return "RoboCopyLevel6";
+        }
+
+        public static String RoboCopyLevel5(this Key junk) {
+            return "RoboCopyLevel5";
+        }
+
+        public static String RoboCopyLevel4(this Key junk) {
+            return "RoboCopyLevel4";
+        }
+
+        public static String RoboCopyLevel3(this Key junk) {
+            return "RoboCopyLevel3";
+        }
+
+        public static String RoboCopyLevel2(this Key junk) {
+            return "RoboCopyLevel2";
+        }
+
+        public static String RoboCopyLevel1(this Key junk) {
+            return "RoboCopyLevel1";
+        }
+
         // environment
 
         public static String Domain(this Key junk) {
@@ -195,6 +219,8 @@ namespace XAS.Core.Configuration.Extensions {
         public static String LockDriver(this Key junk) {
             return "LockDriver";
         }
+
+        // messages
 
     }
 

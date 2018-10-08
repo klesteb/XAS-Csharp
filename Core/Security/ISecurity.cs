@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security;
+using System.Collections.Generic;
 
 namespace XAS.Core.Security {
     
@@ -9,9 +10,11 @@ namespace XAS.Core.Security {
     /// 
     public interface ISecurity {
 
-        void RunElevated();
         Boolean IsElevated { get; }
+
+        void RunElevated();
         SecureString MakeSecureString(string inSecureString);
+        Int32 RunAs(String command, String args, out List<string> stdout, out List<string> stdin);
 
     }
 
