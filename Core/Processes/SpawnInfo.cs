@@ -41,6 +41,12 @@ namespace XAS.Core.Processes {
         public String Password { get; set; }
 
         /// <summary>
+        /// Get/Set the verb to run under.
+        /// </summary>
+        /// 
+        public String Verb { get;set; }
+
+        /// <summary>
         /// Get/Set wither to auto start the process, default is false.
         /// </summary>
         /// 
@@ -86,6 +92,7 @@ namespace XAS.Core.Processes {
         /// 
         public SpawnInfo() {
 
+            Verb = "";
             ExitRetries = 5;
             RestartDelay = 0;
             AutoStart = false;

@@ -13,7 +13,7 @@ namespace XAS.Core.Processes {
 
     public delegate void OnStdout(Int32 pid, String buffer);
     public delegate void OnStderr(Int32 pid, String buffer);
-    public delegate Boolean OnExit(Int32 pid, Int32 exitCode);
+    public delegate void OnExit(Int32 pid, Int32 exitCode);
 
     /// <summary>
     /// Spawn a process and keep it running.
@@ -94,6 +94,14 @@ namespace XAS.Core.Processes {
                 startInfo.Domain = spawnInfo.Domain;
                 startInfo.UserName = spawnInfo.Username;
                 startInfo.Password = secure.MakeSecureString(spawnInfo.Password);
+
+            }
+
+            // set the verb context
+
+            if (! String.IsNullOrEmpty(spawnInfo.Verb)) {
+
+                startInfo.Verb = spawnInfo.Verb;
 
             }
 
@@ -277,14 +285,6 @@ namespace XAS.Core.Processes {
             // call the exit handler callback
 
             if (OnExit != null) {
-
-                if (OnExit(id, exitCode)) {
-
-                    RestartHandler();
-
-                }
-
-            } else {
 
                 RestartHandler();
 

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Collections.Generic;
 
 using XAS.Core.Logging;
-using XAS.Core.Security;
+using XAS.Core.Processes;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
@@ -18,10 +19,12 @@ namespace XAS.Core.Utilities {
 
         private readonly ILogger log = null;
         private readonly String roboCopy = "";
-        private readonly String lockName = "";
-        private readonly ISecurity secure = null;
         private readonly IErrorHandler handler = null;
         private readonly IConfiguration config = null;
+        private readonly ILoggerFactory logFactory = null;
+
+        private Spawn spawn = null;
+        private ManualResetEvent spawnWait = null;
 
         /// <summary>
         /// Constructor.
@@ -37,80 +40,184 @@ namespace XAS.Core.Utilities {
 
             this.config = config;
             this.handler = handler;
-            this.secure = new Secure();
+            this.logFactory = logFactory;
             this.log = logFactory.Create(typeof(RoboCopy));
 
-            this.lockName = config.GetValue(section.Environment(), key.LockName());
             this.roboCopy = Path.Combine(
                 Environment.GetEnvironmentVariable("SystemRoot"), 
                 "System32", 
                 "Robocopy.exe"
             );
 
+            this.spawnWait = new ManualResetEvent(true);
+
         }
 
+        /// <summary>
+        /// Copy a file from source to destination.
+        /// </summary>
+        /// <param name="source">A directory path.</param>
+        /// <param name="destination">A directory path.</param>
+        /// <param name="filename">The name of the file to copy, can be a DOS wildcard.</param>
+        /// <returns>The exit code of the attempted action.</returns>
+        /// 
         public Int32 Copy(String source, String destination, String filename) {
 
             String format = "\"{0}\" \"{1}\" \"{2}\" /np /r:1";
             String args = String.Format(format, source, destination, filename);
-            String command = Environment.ExpandEnvironmentVariables(args);
 
-            return DoCommand(command);
+            return DoCommand(args);
 
         }
 
+        /// <summary>
+        /// Move a file from source to destination.
+        /// </summary>
+        /// <param name="source">A directory path.</param>
+        /// <param name="destination">A directory path.</param>
+        /// <param name="filename">The name of the file to move, can be a DOS wildcard.</param>
+        /// <returns>The exit code of the attempted action.</returns>
+        /// 
         public Int32 Move(String source, String destination, String filename) {
 
             String format = "\"{0}\" \"{1}\" \"{2}\" /mov /np /r:1";
             String args = String.Format(format, source, destination, filename);
-            String command = Environment.ExpandEnvironmentVariables(args);
 
-            return DoCommand(command);
+            return DoCommand(args);
 
         }
 
+        /// <summary>
+        /// Mirror the source to the destination.
+        /// </summary>
+        /// <param name="source">A directory path.</param>
+        /// <param name="destination">A directory path.</param>
+        /// <returns>The exit code of the attempted action.</returns>
+        /// 
         public Int32 Mirror(String source, String destination) {
 
             String format = "\"{0}\" \"{1}\" /mir /e /np /r:1";
             String args = String.Format(format, source, destination);
-            String command = Environment.ExpandEnvironmentVariables(args);
 
-            return DoCommand(command);
+            return DoCommand(args);
+
+        }
+
+        /// <summary>
+        /// Checks to see if the robocopy process is running.
+        /// </summary>
+        /// <returns>true if running.</returns>
+        /// 
+        public Boolean IsRunning() {
+
+            bool stat = false;
+
+            if (spawn != null) {
+
+                stat = spawn.Stat();
+
+            }
+
+            return stat;
+
+        }
+
+        /// <summary>
+        /// Abort the robocopy process.
+        /// </summary>
+        /// <returns>true if successful.</returns>
+        /// <remarks>
+        /// Aborting the robocop process, will not clean up after itself.
+        /// </remarks>
+        /// 
+        public Boolean Abort() {
+
+            bool stat = false;
+
+            if (spawn != null) {
+
+                spawn.Stop();
+
+                Thread.Sleep(60000);
+
+                if (spawn.Stat()) {
+
+                    spawn.Kill();
+
+                }
+
+                stat = true;
+
+            }
+
+            return stat;
 
         }
 
         #region Private Methods
 
-        private Int32 DoCommand(String command) {
+        private Int32 DoCommand(String args) {
+
+            log.Debug(String.Format("command = {0} {1}", roboCopy, args));
 
             Int32 stat = 0;
+            var key = config.Key;
+            var section = config.Section;
             var stdout = new List<string>();
             var stderr = new List<string>();
+            var spawnInfo = new SpawnInfo {
+                Command = String.Format("{0} {1}", roboCopy, args),
+                Verb = "RunAs",
+                AutoStart = false,
+                AutoRestart = false,
+                WorkingDirectory = config.GetValue(section.Environment(), key.TempDir())
+            };
 
-            log.Debug(String.Format("command = {0} {1}", roboCopy, command));
+            spawnWait.Set();
+            spawn = new Spawn(config, handler, logFactory, spawnInfo);
 
-            stat = secure.RunAs(roboCopy, command, out stdout, out stderr);
-            CheckStatus(stat);
+            spawn.OnStderr = delegate(Int32 pid, String line) {
 
-            if (stdout.Count > 0) {
+                stderr.Add(line);
 
-                foreach (string line in stdout) {
+            };
 
-                    log.Info(String.Format("    {0}", line));
+            spawn.OnStdout = delegate(Int32 pid, String line) {
+
+                stdout.Add(line);
+
+            };
+
+            spawn.OnExit = delegate(Int32 pid, Int32 exitCode) {
+
+                CheckStatus(stat);
+
+                if (stdout.Count > 0) {
+
+                    foreach (string line in stdout) {
+
+                        log.Info(String.Format("    {0}", line));
+
+                    }
 
                 }
 
-            }
+                if (stderr.Count > 0) {
 
-            if (stderr.Count > 0) {
+                    foreach (string line in stderr) {
 
-                foreach (string line in stderr) {
+                        log.Error(String.Format("    {0}", line));
 
-                    log.Error(String.Format("    {0}", line));
+                    }
 
                 }
 
-            }
+                spawnWait.Reset();
+
+            };
+
+            spawn.Start();
+            spawnWait.WaitOne();
 
             return stat;
 
