@@ -19,6 +19,7 @@ namespace XAS.Core.Utilities {
 
         private readonly ILogger log = null;
         private readonly String roboCopy = "";
+        private readonly Object _critical = null;
         private readonly IErrorHandler handler = null;
         private readonly IConfiguration config = null;
         private readonly ILoggerFactory logFactory = null;
@@ -49,6 +50,7 @@ namespace XAS.Core.Utilities {
                 "Robocopy.exe"
             );
 
+            this._critical = new object();
             this.spawnWait = new ManualResetEvent(true);
 
         }
@@ -190,29 +192,33 @@ namespace XAS.Core.Utilities {
 
             spawn.OnExit = delegate(Int32 pid, Int32 exitCode) {
 
-                CheckStatus(stat);
+                lock (_critical) {
 
-                if (stdout.Count > 0) {
+                    CheckStatus(stat);
 
-                    foreach (string line in stdout) {
+                    if (stdout.Count > 0) {
 
-                        log.Info(String.Format("    {0}", line));
+                        foreach (string line in stdout) {
 
-                    }
+                            log.Info(String.Format("    {0}", line));
 
-                }
-
-                if (stderr.Count > 0) {
-
-                    foreach (string line in stderr) {
-
-                        log.Error(String.Format("    {0}", line));
+                        }
 
                     }
 
-                }
+                    if (stderr.Count > 0) {
 
-                spawnWait.Reset();
+                        foreach (string line in stderr) {
+
+                            log.Error(String.Format("    {0}", line));
+
+                        }
+
+                    }
+
+                    spawnWait.Reset();
+
+                }
 
             };
 
