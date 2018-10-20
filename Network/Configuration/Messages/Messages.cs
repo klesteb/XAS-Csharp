@@ -37,7 +37,7 @@ namespace XAS.Network.Configuration.Messages {
             config.AddKey(section.Messages(), key.StompUnsubscribeException(), "An UNSUBSCRIBE must have a destination or id, or both.");
 
             config.AddKey(section.Messages(), key.ClientProblems(), "Host: {0}, Port: {1} has problems");
-            config.AddKey(section.Messages(), key.ClientConnect(), "Client {0} on port {2} has connected.");
+            config.AddKey(section.Messages(), key.ClientConnect(), "Client {0} on port {1} has connected.");
             config.AddKey(section.Messages(), key.ClientInactive(), "Client {0} on port {1} has been disconected for inactivity.");
             config.AddKey(section.Messages(), key.ClientDeadSocket(), "Clinet {0} on port {1} had been disconnected for a dead socker.");
             config.AddKey(section.Messages(), key.ClientSSLValidation(), "Client {0} on port {1} had been disconnected for bad ssl validation.");

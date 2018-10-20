@@ -12,10 +12,11 @@ using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Loaders;
-using XAS.Core.Configuration.Messages;
 using XAS.Core.Configuration.Extensions;
+using XAS.Network.Configuration.Messages;
 
 using DemoEchoServer.Configuration.Loaders;
+using DemoEchoServer.Configuration.Extensions;
 
 namespace DemoEchoServer {
 

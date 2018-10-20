@@ -10,8 +10,9 @@ using XAS.Core.Logging;
 using XAS.Core.Security;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
-using XAS.Core.Configuration.Extensions;
+using XAS.Core.Configuration.Messages;
 using XAS.App.Configuration.Extensions;
+using XAS.Core.Configuration.Extensions;
 
 namespace XAS.App {
 
@@ -58,10 +59,10 @@ namespace XAS.App {
 
             var key = config.Key;
             var section = config.Section;
-         
-            // default unhanlded exception handler
 
-            AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs args) {
+            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args) {
+
+                // default unhanlded exception handler
 
                 Exception ex = args.ExceptionObject as Exception;
                 int rc = handler.Exit(ex);
@@ -70,9 +71,10 @@ namespace XAS.App {
 
             };
 
-            // Load an assembly from a different path, then the applications directory or a sub directory thereof.
 
             AppDomain.CurrentDomain.AssemblyResolve += delegate(object sender, ResolveEventArgs args) {
+
+                // Load an assembly from a different path, then the applications directory or a sub directory thereof.
 
                 log.Debug(String.Format("Looking for {0}", args.Name));
 
@@ -97,6 +99,30 @@ namespace XAS.App {
                 }
 
                 return assembly;
+
+            };
+
+            AppDomain.CurrentDomain.AssemblyLoad += delegate(object sender, AssemblyLoadEventArgs args) {
+
+                // Check to see if there are any messages in the newly loaded assembly.
+
+                log.Debug(String.Format("loaded: {0}", args.LoadedAssembly.FullName));
+
+                var assembly = args.LoadedAssembly;
+                var interfaceType = typeof(IMessages);
+
+                var loaders = assembly.GetTypes()
+                    .Where(x => interfaceType.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
+                    .Select(x => Activator.CreateInstance(x));
+
+                foreach (var loader in loaders) {
+
+                    log.Debug(String.Format("found: {0}", loader));
+
+                    var messages = loader as IMessages;
+                    messages.Load(config);
+
+                }
 
             };
 

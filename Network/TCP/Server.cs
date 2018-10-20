@@ -14,7 +14,6 @@ using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
-using XAS.Network.Configuration.Messages;
 using XAS.Network.Configuration.Extensions;
 
 namespace XAS.Network.TCP {

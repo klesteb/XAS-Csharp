@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
+using System.Reflection;
 
 using XAS.Core.Locking;
 using XAS.Core.Configuration.Messages;
@@ -224,7 +224,13 @@ namespace XAS.Core.Configuration.Extensions {
             config.AddKey(section.Environment(), key.Trace(), false.ToString());
             config.AddKey(section.Environment(), key.LockDriver(), LockDriver.Mutex.ToString());
 
-            // find and load messages
+            LoadMessages(config);
+
+        }
+
+        public static void LoadMessages(this IConfiguration config) {
+
+            // find and load messages from currently loaded modules
             // taken from https://stackoverflow.com/questions/5120647/instantiate-all-classes-implementing-a-specific-interface
             // with modifications
 
@@ -237,6 +243,7 @@ namespace XAS.Core.Configuration.Extensions {
             foreach (var loader in loaders) {
 
                 //System.Console.WriteLine("found: {0}", loader);
+
                 var messages = loader as IMessages;
                 messages.Load(config);
 

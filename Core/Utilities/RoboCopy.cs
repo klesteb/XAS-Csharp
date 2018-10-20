@@ -12,7 +12,7 @@ using XAS.Core.Configuration.Extensions;
 namespace XAS.Core.Utilities {
 
     /// <summary>
-    /// A class to run robocopy.exe
+    /// A class to run robocopy.exe in a sub process.
     /// </summary>
     /// 
     public class RoboCopy {
@@ -50,7 +50,7 @@ namespace XAS.Core.Utilities {
                 "Robocopy.exe"
             );
 
-            this._critical = new object();
+            this._critical = new Object();
             this.spawnWait = new ManualResetEvent(true);
 
         }
@@ -109,6 +109,9 @@ namespace XAS.Core.Utilities {
         /// Checks to see if the robocopy process is running.
         /// </summary>
         /// <returns>true if running.</returns>
+        /// <remarks>
+        /// This method is only useful with multiple concurrent robocopy process.
+        /// </remarks>
         /// 
         public Boolean IsRunning() {
 
@@ -130,6 +133,7 @@ namespace XAS.Core.Utilities {
         /// <returns>true if successful.</returns>
         /// <remarks>
         /// Aborting the robocop process, will not clean up after itself.
+        /// This method is only useful with multiple concurrent robocopy process.
         /// </remarks>
         /// 
         public Boolean Abort() {
