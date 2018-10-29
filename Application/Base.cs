@@ -60,7 +60,7 @@ namespace XAS.App {
             var key = config.Key;
             var section = config.Section;
 
-            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args) {
+            AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs args) {
 
                 // default unhanlded exception handler
 
@@ -70,7 +70,6 @@ namespace XAS.App {
                 Environment.Exit(rc);
 
             };
-
 
             AppDomain.CurrentDomain.AssemblyResolve += delegate(object sender, ResolveEventArgs args) {
 
@@ -104,7 +103,7 @@ namespace XAS.App {
 
             AppDomain.CurrentDomain.AssemblyLoad += delegate(object sender, AssemblyLoadEventArgs args) {
 
-                // Check to see if there are any messages in the newly loaded assembly.
+                // Check to see if there are any message modules in the newly loaded assembly.
 
                 log.Debug(String.Format("loaded: {0}", args.LoadedAssembly.FullName));
 
