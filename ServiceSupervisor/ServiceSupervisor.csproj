@@ -71,13 +71,15 @@
     <Compile Include="Configuration\Extensions\KeyExtensions.cs" />
     <Compile Include="Configuration\Extensions\SectionExtensions.cs" />
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
+    <Compile Include="Model\Repositories.cs" />
+    <Compile Include="Model\Repository\Supervised.cs" />
     <Compile Include="Processors\Web.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="Web\BootStrapper.cs" />
     <Compile Include="Web\Configure.cs" />
-    <Compile Include="Schema\Supervise.cs" />
+    <Compile Include="Model\Schema\Supervise.cs" />
     <Compile Include="Web\Modules\SupervisorModule.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ServiceSupervisor.Schema {
+namespace ServiceSupervisor.Model.Schema {
 
     public class Supervise {
 
