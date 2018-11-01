@@ -88,6 +88,10 @@ namespace ServiceSupervisor.Configuration.Extensions {
             return "Environment";
         }
 
+        public static String SupervisorDomain(this Key junk) {
+            return "Domain";
+        }
+
     }
 
 }

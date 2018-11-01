@@ -30,7 +30,7 @@ namespace ServiceSupervisor.Web {
             var config = new ResourceConfiguration {
                 Resources = new List<Resource> {
                     new Resource {
-                        Href = "/dinosaurs",
+                        Href = "/supervisor",
                         Authenticate = true,
                         Mappings = new List<Mapping> {
                             new Mapping { Rel = "create", Action = "create" },
@@ -82,7 +82,7 @@ namespace ServiceSupervisor.Web {
                         }
                     },
                     new Resource {
-                        Href = "/dinosaurs/{id}",
+                        Href = "/supervisor/{id}",
                         Authenticate = true,
                         Templates = new List<Template> {
                             new Template { Name = "id", Type = "number" }

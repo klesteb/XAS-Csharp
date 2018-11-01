@@ -1,4 +1,4 @@
-﻿REST based access to the DemoDatabase. 
+﻿REST based access to the Supervisor. 
 
 There is no html interface, so you must set the "Accept" header, this should be either 
 "application/json" or "application/hal+json" to use a "discoverable" REST interface. All 
@@ -51,59 +51,89 @@ GET /
 
 Basic CRUD
 
-GET /dinosaurs
+GET /supervisor
 
-    returns a paged list of dinosaurs
+    returns a paged list of managed processes
 
-    curl -v http://<server>:<port>/dinosaurs -u <username>:<password> -H "Accept: application/hal+json"
+    curl -v http://<server>:<port>/supervisor -u <username>:<password> -H "Accept: application/hal+json"
 
 	status code: 200, 400
 
-GET /dinosaurs/list
+GET /supervisor/list
 
-    returns an unpaged list of dinosaurs
+    returns an unpaged list of managed process
 
-    curl -v http://<server>:<port>/groups/list -u <username>:<password> -H "Accept: application/hal+json"
+    curl -v http://<server>:<port>/supervisor/list -u <username>:<password> -H "Accept: application/hal+json"
 
     status code: 200, 400
 
-GET /dinosaurs/{id}
+GET /supervisor/{name}
 
-    returns a dinosaurs
+    returns a managed process
 
-    curl -v http://<server>:<port>/dinosaurs/1 -u <username>:<password> -H "Accept: application/hal+json"
+    curl -v http://<server>:<port>/supervisor/<name> -u <username>:<password> -H "Accept: application/hal+json"
 
     status code: 200, 400, 404
 
-POST /dinosaurs
+POST /supervisor
 
-    creates a new dinosaur
+    creates a new managed process
 
     set data={\"name\":\"%1\","height":%2,"status":"%3"}
-    curl -v http://<server>:<port>/dinosaurs -d "%data%" -u <username>:<password> -H "Content-type: application/json" -XPOST
+    curl -v http://<server>:<port>/supervisor -d "%data%" -u <username>:<password> -H "Content-type: application/json" -XPOST
 
 	The URL for this resource is returned in the HTTP Location header. A 422 means that the 
 	data could not be validated. The returned response will have the reason.
 
 	status code: 202, 400, 422
 
-PUT /dinosaurs/{id}
+PUT /supervisor/{name}
 
-    updates a dinosaur
+    updates a managed process
 
     set data={\"name\":\"%1\","height":%2,"status":"%3"}
-    curl -v http://<server>:<port>/dinosaurs/1 -d "%data%" -u <username>:<password> -H "Content-type: application/json" -XPUT
+    curl -v http://<server>:<port>/supervisor/<name> -d "%data%" -u <username>:<password> -H "Content-type: application/json" -XPUT
 
 	The URL for this resource is returned in the HTTP Location header. A 422 means that the 
 	data could not be validated. The returned response will have the reason.
 
 	status code: 202, 400, 422
 
-DELETE /dinosaur/{id}
+PUT /supervisor/save
 
-    removes a dinosaur
+    saves the current configuration
 
-    curl -v http://<server>:<port>/dinosaurs/1 -u <username>:<password> -H "Accept: application/hal+json" -XDELETE
+    curl -v http://<server>:<port>/supervisor/save -u <username>:<password> -H "Content-type: application/json" -XPUT
+
+	status code: 202, 400
+
+PUT /supervisor/stop/{name}
+
+	stops a managed process
+
+    curl -v http://<server>:<port>/supervisor/stop/<name> -u <username>:<password> -H "Content-type: application/json" -XPUT
+
+	The URL for this resource is returned in the HTTP Location header. A 422 means that the 
+	data could not be validated. The returned response will have the reason.
+
+	status code: 202, 400, 422
+
+PUT /supervisor/start/{name}
+
+	starts a managed process
+
+    curl -v http://<server>:<port>/supervisor/start/<name> -u <username>:<password> -H "Content-type: application/json" -XPUT
+
+	The URL for this resource is returned in the HTTP Location header. A 422 means that the 
+	data could not be validated. The returned response will have the reason.
+
+	status code: 202, 400, 422
+
+DELETE /supervisor/{name}
+
+    removes a managed process
+
+    curl -v http://<server>:<port>/supervisor/<name> -u <username>:<password> -H "Accept: application/hal+json" -XDELETE
 
     success returns a 204 code
 

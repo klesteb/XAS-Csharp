@@ -15,12 +15,9 @@ using XAS.Core.Configuration.Loaders;
 using XAS.Core.Configuration.Extensions;
 
 using ServiceSupervisor.Configuration.Loaders;
+using ServiceSupervisor.Configuration.Extensions;
 
 namespace ServiceSupervisor {
-
-    // basics from: http://engineering.laterooms.com/building-microservices-with-nancy-fx/
-    // configuration from: http://volkanpaksoy.com/archive/2015/11/11/building-a-simple-http-server-with-nancy/
-    // hal+json: https://github.com/wojtek-paszek/hateoas
 
     class Program {
 

@@ -6,16 +6,22 @@ using System.Linq.Expressions;
 using System.Collections.Generic;
 
 using XAS.Model.Paging;
+using XAS.Core.Logging;
+using XAS.Core.Exceptions;
+using XAS.Core.Configuration;
 
-namespace XAS.Model {
+namespace XAS.Model.Repository {
 
     /// <summary>
-    /// A Generic Repository, an abstract class that implements a Repository Pattern.
+    /// A Generic database Repository, a class that implements a Repository Pattern.
     /// </summary>
-    /// <typeparam name="T">A database entity object.</typeparam>
     /// 
-    public abstract class Repository<T>: IRespository<T> where T: class, new() {
+    public class Database<T>: IRespository<T> where T: class, new() {
 
+        private readonly ILogger log = null;
+        private readonly IConfiguration config = null;
+        private readonly IErrorHandler handler = null;
+ 
         /// <summary>
         /// Get/Set the DbContext.
         /// </summary>
@@ -33,7 +39,11 @@ namespace XAS.Model {
         /// </summary>
         /// <param name="context">A DbContext object</param>
         /// 
-        public Repository(DbContext context) {
+        public Database(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, DbContext context) {
+
+            this.config = config;
+            this.handler = handler;
+            this.log = logFactory.Create(this.GetType());
 
             this.Context = context;
             this.DbSet = context.Set<T>();
@@ -46,7 +56,7 @@ namespace XAS.Model {
         /// <param name="predicate"></param>
         /// <returns>The record.</returns>
         /// 
-        public virtual T Find(Expression<Func<T, bool>> predicate) {
+        public T Find(Expression<Func<T, bool>> predicate) {
 
             return this.DbSet.Where(predicate).SingleOrDefault();
 
@@ -58,7 +68,7 @@ namespace XAS.Model {
         /// <param name="predicate"></param>
         /// <returns>A list of records.</returns>
         /// 
-        public virtual IEnumerable<T> Search(Expression<Func<T, bool>> predicate = null) {
+        public IEnumerable<T> Search(Expression<Func<T, bool>> predicate = null) {
 
             IQueryable<T> query = this.DbSet;
 
@@ -78,7 +88,7 @@ namespace XAS.Model {
         /// </summary>
         /// <param name="entity"></param>
         /// 
-        public virtual void Create(T entity) {
+        public void Create(T entity) {
 
             this.DbSet.Add(entity);
 
@@ -89,7 +99,7 @@ namespace XAS.Model {
         /// </summary>
         /// <param name="id">The index of the record.</param>
         /// 
-        public virtual void Delete(object id) {
+        public void Delete(object id) {
 
             var entity = this.DbSet.Find(id);
 
@@ -108,7 +118,7 @@ namespace XAS.Model {
         /// </summary>
         /// <param name="entity"></param>
         /// 
-        public virtual void Update(T entity) {
+        public void Update(T entity) {
 
             this.DbSet.Attach(entity);
             this.Context.Entry(entity).State = EntityState.Modified;
@@ -170,7 +180,7 @@ namespace XAS.Model {
         /// </summary>
         /// <param name="entites">The entities to use.</param>
         ///
-        public virtual void Populate(IList<T> entites) {
+        public void Populate(IList<T> entites) {
 
             foreach (var entity in entites) {
 
@@ -186,7 +196,7 @@ namespace XAS.Model {
         /// <param name="predicate">The filter to use for the count.</param>
         /// <returns>The number of items found.</returns>
         ///
-        public virtual Int32 Count(Expression<Func<T, bool>> predicate = null) {
+        public Int32 Count(Expression<Func<T, bool>> predicate = null) {
 
             Int32 count = 0;
 

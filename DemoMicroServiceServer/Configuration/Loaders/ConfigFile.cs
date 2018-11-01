@@ -4,9 +4,9 @@ using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Loaders;
 
-using ServiceSupervisor.Configuration.Extensions;
+using DemoMicroServiceServer.Configuration.Extensions;
 
-namespace ServiceSupervisor.Configuration.Loaders {
+namespace DemoMicroServiceServer.Configuration.Loaders {
     
     public class ConfigFile: XAS.App.Configuration.Loaders.ConfigFile {
 

@@ -110,6 +110,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoEchoServer", "DemoEchoS
 		{4AA7CF73-52E6-4311-8197-B6EE0605CF94} = {4AA7CF73-52E6-4311-8197-B6EE0605CF94}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceSupervisor", "ServiceSupervisor\ServiceSupervisor.csproj", "{2EE77926-528B-4EC1-A543-50B68D0273D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -180,6 +182,10 @@ Global
 		{1289E8C9-A322-46A4-99C3-966195454F48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1289E8C9-A322-46A4-99C3-966195454F48}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1289E8C9-A322-46A4-99C3-966195454F48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EE77926-528B-4EC1-A543-50B68D0273D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EE77926-528B-4EC1-A543-50B68D0273D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EE77926-528B-4EC1-A543-50B68D0273D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EE77926-528B-4EC1-A543-50B68D0273D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

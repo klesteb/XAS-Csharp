@@ -77,15 +77,25 @@
     <Compile Include="Service.cs" />
     <Compile Include="Web\BootStrapper.cs" />
     <Compile Include="Web\Configure.cs" />
+    <Compile Include="Schema\Supervise.cs" />
+    <Compile Include="Web\Modules\SupervisorModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="xas-supervisord.ini" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Web\Modules\" />
     <Folder Include="Web\Requests\" />
     <Folder Include="Web\Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="api.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Model\Model.csproj">
+      <Project>{773E8FF6-01A7-42D4-93F1-9091A67D212C}</Project>
+      <Name>Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
