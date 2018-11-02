@@ -71,6 +71,7 @@
     <Compile Include="Configuration\Extensions\KeyExtensions.cs" />
     <Compile Include="Configuration\Extensions\SectionExtensions.cs" />
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
+    <Compile Include="Model\Manager.cs" />
     <Compile Include="Model\Repositories.cs" />
     <Compile Include="Model\Repository\Supervised.cs" />
     <Compile Include="Processors\Web.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Web\Configure.cs" />
     <Compile Include="Model\Schema\Supervise.cs" />
     <Compile Include="Web\Modules\SupervisorModule.cs" />
+    <Compile Include="Web\Services\Supervised.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -88,7 +90,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Web\Requests\" />
-    <Folder Include="Web\Services\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="api.txt" />
