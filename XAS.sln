@@ -112,6 +112,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoEchoServer", "DemoEchoS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceSupervisor", "ServiceSupervisor\ServiceSupervisor.csproj", "{2EE77926-528B-4EC1-A543-50B68D0273D4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceSupervisorCommon", "ServiceSupervisorCommon\ServiceSupervisorCommon.csproj", "{D082B10C-45B3-4809-81B3-99005EA4A38B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -186,6 +188,10 @@ Global
 		{2EE77926-528B-4EC1-A543-50B68D0273D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EE77926-528B-4EC1-A543-50B68D0273D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EE77926-528B-4EC1-A543-50B68D0273D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D082B10C-45B3-4809-81B3-99005EA4A38B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D082B10C-45B3-4809-81B3-99005EA4A38B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D082B10C-45B3-4809-81B3-99005EA4A38B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D082B10C-45B3-4809-81B3-99005EA4A38B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

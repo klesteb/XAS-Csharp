@@ -23,7 +23,7 @@ namespace ServiceSupervisor.Web.Services {
         private readonly Model.Manager manager = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
-        private readonly Web.Services.Supervised service = null;
+        private readonly Model.Services.Supervised service = null;
 
         /// <summary>
         /// Constructor.
@@ -43,7 +43,7 @@ namespace ServiceSupervisor.Web.Services {
             var repository = new Model.Repositories(config, handler, logFactory);
 
             this.manager = new Model.Manager(repository);
-            this.service = new Web.Services.Supervised(config, handler, logFactory);
+            this.service = new Model.Services.Supervised(config, handler, logFactory);
             this.log = logFactory.Create(typeof(Supervised));
 
             log.Trace("Initialized DinoService()");

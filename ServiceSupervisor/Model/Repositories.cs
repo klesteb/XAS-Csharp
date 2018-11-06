@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -19,6 +20,14 @@ namespace ServiceSupervisor.Model {
 
             this.Supervised = new Supervised(config, handler, logFactory);
 
+        }
+
+        public void Save() {
+        
+        }
+
+        public void DoTransaction(Action method) {
+        
         }
 
     }

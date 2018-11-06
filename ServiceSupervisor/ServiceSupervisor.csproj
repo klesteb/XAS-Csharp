@@ -48,6 +48,9 @@
     <Reference Include="Nancy.Validation.FluentValidation">
       <HintPath>..\packages\Nancy.Validation.FluentValidation.1.4.1\lib\net40\Nancy.Validation.FluentValidation.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceSupervisorCommon">
+      <HintPath>..\ServiceSupervisorCommon\bin\Debug\ServiceSupervisorCommon.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceProcess" />
@@ -74,6 +77,8 @@
     <Compile Include="Model\Manager.cs" />
     <Compile Include="Model\Repositories.cs" />
     <Compile Include="Model\Repository\Supervised.cs" />
+    <Compile Include="Model\Schema\RunStatus.cs" />
+    <Compile Include="Model\Services\Supervised.cs" />
     <Compile Include="Processors\Web.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
