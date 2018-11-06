@@ -10,4 +10,6 @@ namespace ServiceSupervisorCommon.DataStructures {
 
     }
 
+    public class SuperviseUpdate: SupervisePost { }
+
 }

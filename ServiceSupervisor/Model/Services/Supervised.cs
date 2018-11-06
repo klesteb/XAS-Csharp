@@ -60,22 +60,36 @@ namespace ServiceSupervisor.Model.Services {
 
         }
 
-        public Int32 Create(Repositories repo, SuperviseDTI dti) {
+        public String Create(Repositories repo, SuperviseDTI dti) {
 
             var record = MoveDTI(repo, dti);
+
             repo.Supervised.Create(record);
             repo.Save();
 
-            return record.Id;
+            return record.Name;
 
         }
 
-        public Boolean Delete(Repositories repo, Int32 id) {
+        public Boolean Delete(Repositories repo, String name) {
 
-            repo.Supervised.Delete(id);
-            repo.Save();
+            bool stat = false;
+            var datum = repo.Supervised.Search(r => (r.Name == name));
 
-            return true;
+            if (datum != null) {
+
+                foreach (var data in datum) {
+
+                    repo.Supervised.Delete(data);
+                    stat = true;
+
+                }
+
+                repo.Save();
+
+            }
+
+            return stat;
 
         }
 

@@ -87,6 +87,7 @@
     <Compile Include="Web\Configure.cs" />
     <Compile Include="Model\Schema\Supervise.cs" />
     <Compile Include="Web\Modules\SupervisorModule.cs" />
+    <Compile Include="Web\Services\ISupervised.cs" />
     <Compile Include="Web\Services\Supervised.cs" />
   </ItemGroup>
   <ItemGroup>
