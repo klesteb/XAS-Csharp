@@ -14,6 +14,7 @@ using XAS.Core.Configuration;
 using XAS.Rest.Server.Errors;
 
 using ServiceSupervisor.Web.Services;
+using ServiceSupervisorCommon.DataStructures;
 
 namespace ServiceSupervisor.Web.Modules {
 
@@ -33,7 +34,7 @@ namespace ServiceSupervisor.Web.Modules {
         public static Link List = new Link("list", "/" + root + "/list", "List");
         public static Link Paged = new Link("paged", "/" + root + "/{?page,pageSize,sortBy,sortDir}", "Paged");
 
-        public SupervisorModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISupervisorService service): base(root) {
+        public SupervisorModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISupervised service): base(root) {
 
             log = logFactory.Create(typeof(SupervisorModule));
             log.Trace("Entering SupervisorModule()");
@@ -44,9 +45,9 @@ namespace ServiceSupervisor.Web.Modules {
 
                 log.InfoMsg("GET", root, this.Context.CurrentUser.UserName);
 
-                var criteria = this.Bind<JobPagedCriteria>();
+                var criteria = this.Bind<Model.Services.Supervised.SupervisedPagedCriteria>();
 
-                return Negotiate.WithModel(service.GetPage(criteria));
+                return Negotiate.WithModel(service.Paged(criteria));
 
             };
 
@@ -56,13 +57,13 @@ namespace ServiceSupervisor.Web.Modules {
                 this.RequiresAuthentication();
 
                 string name = p.name;
-                JobDTO scheduled = null;
+                SuperviseDTO data = null;
 
                 log.InfoMsg("GET3", root, name, this.Context.CurrentUser.UserName);
 
-                if ((scheduled = service.GetJob(id)) != null) {
+                if ((data = service.Get(name)) != null) {
 
-                    return Negotiate.WithModel(scheduled);
+                    return Negotiate.WithModel(data);
 
                 }
 
@@ -74,13 +75,13 @@ namespace ServiceSupervisor.Web.Modules {
 
                 this.RequiresAuthentication();
 
-                List<JobDTO> scheduled = null;
+                List<SuperviseDTO> datum = null;
 
                 log.InfoMsg("GET3", root, "list", this.Context.CurrentUser.UserName);
 
-                if ((scheduled = service.GetJobs()) != null) {
+                if ((datum = service.List()) != null) {
 
-                    return Negotiate.WithModel(scheduled);
+                    return Negotiate.WithModel(datum);
 
                 }
 
@@ -94,8 +95,8 @@ namespace ServiceSupervisor.Web.Modules {
 
                 log.InfoMsg("POST", root, this.Context.CurrentUser.UserName);
 
-                int id = 0;
-                var binding = this.Bind<ScheduleRequest>();
+                SuperviseDTO data = null;
+                var binding = this.Bind<SupervisePost>();
                 log.Debug(String.Format("Binding: {0}", Utils.Dump(binding)));
 
                 var results = this.Validate(binding);
@@ -103,16 +104,13 @@ namespace ServiceSupervisor.Web.Modules {
 
                 if (results.IsValid) {
 
-                    var dti = MoveRequest(service, binding);
-                    log.Debug(String.Format("DTI: {0}", Utils.Dump(dti)));
-
                     try {
 
-                        if ((id = service.CreateScheduled(dti)) > 0) {
+                        if ((data = service.Create(binding)) != null) {
 
                             return Negotiate
                                 .WithStatusCode(HttpStatusCode.Accepted)
-                                .WithHeader("Location", String.Format("/{0}/{1}", root, id));
+                                .WithHeader("Location", String.Format("/{0}/{1}", root, data.Name));
 
                         }
 
@@ -156,9 +154,10 @@ namespace ServiceSupervisor.Web.Modules {
                 this.RequiresAuthentication();
 
                 string name = p.name;
+                SuperviseDTO data = null;
                 log.InfoMsg("PUT", root, name, this.Context.CurrentUser.UserName);
 
-                var binding = this.Bind<JobUpdate>();
+                var binding = this.Bind<SuperviseUpdate>();
                 log.Debug(String.Format("Binding: {0}", Utils.Dump(binding)));
 
                 var results = this.Validate(binding);
@@ -168,11 +167,11 @@ namespace ServiceSupervisor.Web.Modules {
 
                     try {
 
-                        if (service.UpdateJob(id, binding)) {
+                        if ((data = service.Update(name, binding)) != null) {
 
                             return Negotiate
                                 .WithStatusCode(HttpStatusCode.Accepted)
-                                .WithHeader("Location", String.Format("/{0}/{1}", root, id));
+                                .WithHeader("Location", String.Format("/{0}/{1}", root, name));
 
                         }
 
@@ -183,11 +182,16 @@ namespace ServiceSupervisor.Web.Modules {
                             .WithHeader("Content-Type", "application/problem+json")
                             .WithStatusCode(HttpStatusCode.UnprocessableEntity);
 
-                    } catch (DbUpdateException) {
+                    } catch (Exception ex) {
+
+                        var junk = ServiceErrorDefinition.GeneralError;
+
+                        handler.Exceptions(ex);
 
                         return Negotiate
-                            .WithStatusCode(HttpStatusCode.NoContent)
-                            .WithHeader("Location", String.Format("/{0}/{1}", root, id));
+                            .WithModel(ServiceErrorUtilities.ExtractFromException(ex, junk))
+                            .WithStatusCode(HttpStatusCode.UnprocessableEntity)
+                            .WithHeader("Content-Type", "application/problem+json");
 
                     }
 
@@ -213,47 +217,31 @@ namespace ServiceSupervisor.Web.Modules {
                 string name = p.name;
                 log.InfoMsg("PUT4", root, "start", name, this.Context.CurrentUser.UserName);
 
-                var binding = this.Bind<ActionRequest>();
-                log.Debug(String.Format("Binding: {0}", Utils.Dump(binding)));
+                try {
 
-                var results = this.Validate(binding);
-                log.Debug(String.Format("Results: {0}", Utils.Dump(results)));
-
-                if (results.IsValid) {
-
-                    try {
-
-                        if (service.StartScheduled(id, binding)) {
-
-                            return Negotiate
-                                .WithStatusCode(HttpStatusCode.Accepted)
-                                .WithHeader("Location", String.Format("/{0}/{1}", root, id));
-
-                        }
-
-                        log.WarnMsg("PUT_NoStart", root, "start", name, this.Context.CurrentUser.UserName);
+                    if (service.Start(name)) {
 
                         return Negotiate
-                            .WithModel(ServiceErrorDefinition.NotAcceptable)
-                            .WithStatusCode(HttpStatusCode.UnprocessableEntity)
-                            .WithHeader("Content-Type", "application/problem+json");
-
-                    } catch (DbUpdateException) {
-
-                        return Negotiate
-                            .WithStatusCode(HttpStatusCode.NoContent)
-                            .WithHeader("Location", String.Format("/{0}/{1}", root, id));
+                            .WithStatusCode(HttpStatusCode.Accepted)
+                            .WithHeader("Location", String.Format("/{0}/{1}", root, name));
 
                     }
 
-                } else {
-
-                    log.ErrorMsg("PUT_NoValidate", root, "start", name, this.Context.CurrentUser.UserName);
-
-                    var validationError = ServiceErrorUtilities.ValidationErrors(results);
+                    log.WarnMsg("PUT_NoStart", root, "start", name, this.Context.CurrentUser.UserName);
 
                     return Negotiate
-                        .WithModel(validationError)
+                        .WithModel(ServiceErrorDefinition.NotAcceptable)
+                        .WithStatusCode(HttpStatusCode.UnprocessableEntity)
+                        .WithHeader("Content-Type", "application/problem+json");
+
+                } catch (Exception ex) {
+
+                    var junk = ServiceErrorDefinition.GeneralError;
+
+                    handler.Exceptions(ex);
+
+                    return Negotiate
+                        .WithModel(ServiceErrorUtilities.ExtractFromException(ex, junk))
                         .WithStatusCode(HttpStatusCode.UnprocessableEntity)
                         .WithHeader("Content-Type", "application/problem+json");
 
@@ -268,51 +256,44 @@ namespace ServiceSupervisor.Web.Modules {
                 string name = p.name;
                 log.InfoMsg("PUT4", root, "stop", name, this.Context.CurrentUser.UserName);
 
-                var binding = this.Bind<ActionRequest>();
-                log.Debug(String.Format("Binding: {0}", Utils.Dump(binding)));
+                try {
 
-                var results = this.Validate(binding);
-                log.Debug(String.Format("Results: {0}", Utils.Dump(results)));
-
-                if (results.IsValid) {
-
-                    try {
-
-                        if (service.StopScheduled(id, binding)) {
-
-                            return Negotiate
-                                .WithStatusCode(HttpStatusCode.Accepted)
-                                .WithHeader("Location", String.Format("/{0}/{1}", root, id));
-
-                        }
-
-                        log.WarnMsg("PUT_NoStop", root, "stop", name, this.Context.CurrentUser.UserName);
+                    if (service.Stop(name)) {
 
                         return Negotiate
-                            .WithModel(ServiceErrorDefinition.NotAcceptable)
-                            .WithStatusCode(HttpStatusCode.UnprocessableEntity)
-                            .WithHeader("Content-Type", "application/problem+json");
-
-                    } catch (DbUpdateException) {
-
-                        return Negotiate
-                            .WithStatusCode(HttpStatusCode.NoContent)
-                            .WithHeader("Location", String.Format("/{0}/{1}", root, id));
+                            .WithStatusCode(HttpStatusCode.Accepted)
+                            .WithHeader("Location", String.Format("/{0}/{1}", root, name));
 
                     }
 
-                } else {
-
-                    log.ErrorMsg("PUT_NoValidate", root, "stop", name, this.Context.CurrentUser.UserName);
-
-                    var validationError = ServiceErrorUtilities.ValidationErrors(results);
+                    log.WarnMsg("PUT_NoStop", root, "stop", name, this.Context.CurrentUser.UserName);
 
                     return Negotiate
-                        .WithModel(validationError)
+                        .WithModel(ServiceErrorDefinition.NotAcceptable)
+                        .WithStatusCode(HttpStatusCode.UnprocessableEntity)
+                        .WithHeader("Content-Type", "application/problem+json");
+
+                } catch (Exception ex) {
+
+                    var junk = ServiceErrorDefinition.GeneralError;
+
+                    handler.Exceptions(ex);
+
+                    return Negotiate
+                        .WithModel(ServiceErrorUtilities.ExtractFromException(ex, junk))
                         .WithStatusCode(HttpStatusCode.UnprocessableEntity)
                         .WithHeader("Content-Type", "application/problem+json");
 
                 }
+
+            };
+
+            Put["/save"] = p => {
+
+                this.RequiresAuthentication();
+
+                return Negotiate
+                    .WithStatusCode(HttpStatusCode.Accepted);
 
             };
 
@@ -324,11 +305,11 @@ namespace ServiceSupervisor.Web.Modules {
 
                 log.InfoMsg("DELETE", root, name, this.Context.CurrentUser.UserName);
 
-                //if (service.DeleteJob(id)) {
+                if (service.Delete(name)) {
 
-                //    return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
+                    return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
 
-                //}
+                }
 
                 log.WarnMsg("DELETE_NoDelete", root, name, this.Context.CurrentUser.UserName);
 
@@ -398,29 +379,6 @@ namespace ServiceSupervisor.Web.Modules {
             };
 
         }
-
-        //public JobDTI MoveRequest(IScheduleService service, ScheduleRequest request) {
-
-        //    string runLevel = "Highest";
-        //    string logonType = "Password";
-
-        //    return new JobDTI {
-        //        Args = request.Args,
-        //        Name = request.Name,
-        //        Command = request.Command,
-        //        Requestor = request.Requestor,
-        //        Description = request.Description,
-        //        GroupKey = service.GetGroup(request.Group),
-        //        RunLevelKey = service.GetRunLevel(runLevel),
-        //        WorkingDirectory = request.WorkingDirectory,
-        //        RunAfter = Convert.ToInt32(request.RunAfter),
-        //        TargetKey = service.GetTarget(request.Target),
-        //        LogonTypeKey = service.GetLogonType(logonType),
-        //        StartRunTime = Convert.ToDateTime(request.StartRunTime),
-        //        ExecutionTimeLimit = Convert.ToInt32(request.ExecutionTimeLimit),
-        //    };
-        //
-        //}
 
     }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using XAS.Model.Paging;
 using XAS.Core.Logging;
+using XAS.Core.Extensions;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
@@ -67,7 +68,7 @@ namespace ServiceSupervisor.Web.Services {
 
             using (var repo = manager.Repository as Model.Repositories) {
 
-                var dti = MoveBinding(repo, binding);
+                var dti = MoveBinding(binding);
 
                 if ((name = service.Create(repo, dti)) != null) {
 
@@ -87,7 +88,7 @@ namespace ServiceSupervisor.Web.Services {
 
             using (var repo = manager.Repository as Model.Repositories) {
 
-                var dti = MoveBinding(repo, binding);
+                var dti = MoveBinding(binding);
 
                 if (service.Update(repo, name, dti)) {
 
@@ -142,16 +143,85 @@ namespace ServiceSupervisor.Web.Services {
 
         }
 
+        public Boolean Start(String name) {
+
+            bool stat = false;
+
+            return stat;
+
+        }
+
+        public Boolean Stop(String name) {
+
+            bool stat = false;
+
+            return stat;
+
+        }
+
         #region Private Methods
 
-        private SuperviseDTI MoveBinding(Model.Repositories repo, SupervisePost binding) {
+        private SuperviseDTI MoveBinding(SupervisePost binding) {
 
             return new SuperviseDTI {
+                Verb = binding.Verb,
+                Name = binding.Name,
+                Domain = binding.Domain,
+                Username = binding.Username,
+                Password = binding.Password,
+                AutoStart = binding.AutoStart.ToBoolean(),
+                ExitRetries = binding.ExitRetries.ToInt32(),
+                ExitCodes = ParseExitCodes(binding.ExitCodes),
+                WorkingDirectory = binding.WorkingDirectory,
+                Environment = ParseEnvironment(binding.Environment)
             };
 
         }
 
+        private List<Int32> ParseExitCodes(String buffer) {
+
+            var exitCodes = new List<Int32>();
+
+            if (buffer != "") {
+
+                String[] codes = buffer.Split(',');
+
+                foreach (string code in codes) {
+
+                    exitCodes.Add(code.ToInt32());
+
+                }
+
+            }
+
+            return exitCodes;
+
+        }
+
+        private Dictionary<String, String> ParseEnvironment(String buffer) {
+
+            var environment = new Dictionary<String, String>();
+
+            if (buffer != "") {
+
+                String[] chunks = buffer.Split(';');
+
+                foreach (string chunk in chunks) {
+
+                    String[] parts = chunk.Split('=');
+
+                    environment.Add(parts[0].Trim(), parts[1].Trim());
+
+                }
+
+            }
+
+            return environment;
+
+        }
+
         #endregion
+
     }
 
 }

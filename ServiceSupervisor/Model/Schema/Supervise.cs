@@ -14,7 +14,7 @@ namespace ServiceSupervisor.Model.Schema {
         public String Domain { get; set; }
         public String Username { get; set; }
         public String Password { get; set; }
-        public Int32 ExitCount { get; set; }
+        public Int32 RetryCount { get; set; }
         public RunStatus Status { get; set; }
         public Boolean AutoStart { get; set; }
         public Int32 ExitRetries { get; set; }

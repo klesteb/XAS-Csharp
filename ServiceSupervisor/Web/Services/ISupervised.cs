@@ -8,11 +8,13 @@ namespace ServiceSupervisor.Web.Services {
 
     public interface ISupervised {
 
+        List<SuperviseDTO> List();
+        Boolean Stop(String name);
+        Boolean Start(String name);
+        Boolean Delete(String name);
         SuperviseDTO Get(String name);
         SuperviseDTO Create(SupervisePost binding);
         SuperviseDTO Update(String name, SuperviseUpdate binding);
-        Boolean Delete(String name);
-        List<SuperviseDTO> List();
         IPagedList<SuperviseDTO> Paged(Model.Services.Supervised.SupervisedPagedCriteria criteria);
 
     }
