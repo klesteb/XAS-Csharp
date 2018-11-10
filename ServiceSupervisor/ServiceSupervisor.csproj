@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FluentValidation">
+      <HintPath>..\packages\FluentValidation.7.6.104\lib\net45\FluentValidation.dll</HintPath>
+    </Reference>
     <Reference Include="Nancy">
       <HintPath>..\packages\Nancy.1.4.4\lib\net40\Nancy.dll</HintPath>
     </Reference>
@@ -89,14 +92,14 @@
     <Compile Include="Web\Modules\SupervisorModule.cs" />
     <Compile Include="Web\Services\ISupervised.cs" />
     <Compile Include="Web\Services\Supervised.cs" />
+    <Compile Include="Web\Validation\SupervisePostValidation.cs" />
+    <Compile Include="Web\Validation\SuperviseUpdateValidation.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="xas-supervisord.ini" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Web\Requests\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="api.txt" />
   </ItemGroup>

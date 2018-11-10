@@ -163,32 +163,88 @@ namespace ServiceSupervisor.Model.Services {
         private SuperviseDTO NewDTO(Repositories repo, Schema.Supervise data) {
 
             return new SuperviseDTO {
+                Verb = data.Verb,
+                Name = data.Name,
+                Status = (Int32)data.Status,
+                Domain = data.Domain,
+                Username = data.Username,
+                Password = data.Password,
+                RetryCount = data.RetryCount,
+                AutoStart = data.AutoStart,
+                ExitRetries = data.ExitRetries,
+                AutoRestart = data.AutoRestart,
+                ExitCodes = data.ExitCodes,
+                WorkingDirectory = data.WorkingDirectory,
+                Environment = data.Environment
             };
 
         }
 
-        private Supervise MoveDTI(Repositories repo, SuperviseDTI dti) {
+        private Supervise MoveDTI(Repositories repo, SuperviseDTI data) {
 
             return new Supervise {
+                Verb = data.Verb,
+                Name = data.Name,
+                Status = RunStatus.Stopped,
+                Domain = data.Domain,
+                Username = data.Username,
+                Password = data.Password,
+                RetryCount = 0,
+                AutoStart = data.AutoStart,
+                ExitRetries = data.ExitRetries,
+                AutoRestart = data.AutoRestart,
+                ExitCodes = data.ExitCodes,
+                WorkingDirectory = data.WorkingDirectory,
+                Environment = data.Environment
             };
 
         }
 
-        private Supervise MergeDTI(Repositories repo, Supervise record, SuperviseDTI dti) {
+        private Supervise MergeDTI(Repositories repo, Supervise record, SuperviseDTI data) {
 
-            //Int32 height = Convert.ToInt32(dti.Height);
+            record.Verb = (data.Verb != "")
+                ? data.Verb
+                : record.Verb;
 
-            //record.Name = (dti.Name != "")
-            //    ? dti.Name
-            //    : record.Name;
+            record.Name = (data.Name != "")
+                ? data.Name
+                : record.Name;
 
-            //record.Status = (dti.Status != "")
-            //    ? dti.Status
-            //    : record.Status;
+            record.Domain = (data.Domain != "")
+                ? data.Domain
+                : record.Domain;
 
-            //record.Height = (height != 0)
-            //    ? height
-            //    : record.Height;
+            record.Username = (data.Username != "")
+                ? data.Username
+                : record.Username;
+
+            record.Password = (data.Password != "")
+                ? data.Password
+                : record.Password;
+
+            record.AutoStart = (data.AutoStart != record.AutoStart)
+                ? data.AutoStart
+                : record.AutoStart;
+
+            record.ExitRetries = (data.ExitRetries != record.ExitRetries)
+                ? data.ExitRetries
+                : record.ExitRetries;
+
+            record.AutoRestart = (data.AutoRestart != record.AutoRestart)
+                ? data.AutoRestart
+                : record.AutoRestart;
+
+            record.ExitCodes = (data.ExitCodes.Count() > 0)
+                ? data.ExitCodes
+                : record.ExitCodes;
+
+            record.WorkingDirectory = (data.WorkingDirectory != "")
+                ? data.WorkingDirectory
+                : record.WorkingDirectory;
+
+            record.Environment = (data.Environment.Count() > 0)
+                ? data.Environment
+                : record.Environment;
 
             return record;
 

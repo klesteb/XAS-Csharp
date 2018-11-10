@@ -146,63 +146,63 @@ namespace ServiceSupervisor.Web {
 
             var config = new HalConfiguration();
 
-            config.For<ResourceConfiguration>()
-                .Links(RootModule.Self.CreateLink("self"))
-                .Links(DinosaurModule.Dinosaurs.CreateLink("dinosaurs"))
-            ;
+            //config.For<ResourceConfiguration>()
+            //    .Links(RootModule.Self.CreateLink("self"))
+            //    .Links(DinosaurModule.Dinosaurs.CreateLink("dinosaurs"))
+            //;
 
-            config.For<DinosaurDTO>()
-                .Links((model) => DinosaurModule.Self.CreateLink("self", new {
-                    id = model.Id
-                }))
-                .Links((model) => DinosaurModule.Update.CreateLink("update", new {
-                    id = model.Id
-                }))
-                .Links((model) => DinosaurModule.Remove.CreateLink("delete", new {
-                    id = model.Id
-                }))
-            ;
+            //config.For<DinosaurDTO>()
+            //    .Links((model) => DinosaurModule.Self.CreateLink("self", new {
+            //        id = model.Id
+            //    }))
+            //    .Links((model) => DinosaurModule.Update.CreateLink("update", new {
+            //        id = model.Id
+            //    }))
+            //    .Links((model) => DinosaurModule.Remove.CreateLink("delete", new {
+            //        id = model.Id
+            //    }))
+            //;
 
-            config.For<PagedList<DinosaurDTO>>()
-                .Links(RootModule.Root.CreateLink("root"))
-                .Links(DinosaurModule.Create.CreateLink("create"))
-                .Embeds("dinosaurs", (x) => x.Data)
-                .Links(
-                    (model, ctx) => DinosaurModule.Paged.CreateLink(
-                        "self",
-                        new {
-                            page = model.PageNumber,
-                            pageSize = model.PageSize,
-                            sortBy = (model.SortedBy != null) ? string.Join(",", model.SortedBy) : "",
-                            sortDir = string.Join("", model.SortedDir.Select(kvp => (kvp.Value == ListSortDirection.Ascending) ? "asc" : "desc"))
-                        }
-                    )
-                )
-                .Links(
-                    (model, ctx) => DinosaurModule.Paged.CreateLink(
-                        "prev",
-                        new {
-                            page = model.PageNumber - 1,
-                            pageSize = model.PageSize,
-                            sortBy = (model.SortedBy != null) ? string.Join(",", model.SortedBy) : "",
-                            sortDir = string.Join("", model.SortedDir.Select(kvp => (kvp.Value == ListSortDirection.Ascending) ? "asc" : "desc"))
-                        }
-                    ),
-                    (model, ctx) => model.PageNumber > 1
-                )
-                .Links(
-                    (model, ctx) => DinosaurModule.Paged.CreateLink(
-                        "next",
-                        new {
-                            page = model.PageNumber + 1,
-                            pageSize = model.PageSize,
-                            sortBy = (model.SortedBy != null) ? string.Join(",", model.SortedBy) : "",
-                            sortDir = string.Join("", model.SortedDir.Select(kvp => (kvp.Value == ListSortDirection.Ascending) ? "asc" : "desc"))
-                        }
-                    ),
-                    (model, ctx) => model.PageNumber < model.TotalPages
-                )
-            ;
+            //config.For<PagedList<DinosaurDTO>>()
+            //    .Links(RootModule.Root.CreateLink("root"))
+            //    .Links(DinosaurModule.Create.CreateLink("create"))
+            //    .Embeds("dinosaurs", (x) => x.Data)
+            //    .Links(
+            //        (model, ctx) => DinosaurModule.Paged.CreateLink(
+            //            "self",
+            //            new {
+            //                page = model.PageNumber,
+            //                pageSize = model.PageSize,
+            //                sortBy = (model.SortedBy != null) ? string.Join(",", model.SortedBy) : "",
+            //                sortDir = string.Join("", model.SortedDir.Select(kvp => (kvp.Value == ListSortDirection.Ascending) ? "asc" : "desc"))
+            //            }
+            //        )
+            //    )
+            //    .Links(
+            //        (model, ctx) => DinosaurModule.Paged.CreateLink(
+            //            "prev",
+            //            new {
+            //                page = model.PageNumber - 1,
+            //                pageSize = model.PageSize,
+            //                sortBy = (model.SortedBy != null) ? string.Join(",", model.SortedBy) : "",
+            //                sortDir = string.Join("", model.SortedDir.Select(kvp => (kvp.Value == ListSortDirection.Ascending) ? "asc" : "desc"))
+            //            }
+            //        ),
+            //        (model, ctx) => model.PageNumber > 1
+            //    )
+            //    .Links(
+            //        (model, ctx) => DinosaurModule.Paged.CreateLink(
+            //            "next",
+            //            new {
+            //                page = model.PageNumber + 1,
+            //                pageSize = model.PageSize,
+            //                sortBy = (model.SortedBy != null) ? string.Join(",", model.SortedBy) : "",
+            //                sortDir = string.Join("", model.SortedDir.Select(kvp => (kvp.Value == ListSortDirection.Ascending) ? "asc" : "desc"))
+            //            }
+            //        ),
+            //        (model, ctx) => model.PageNumber < model.TotalPages
+            //    )
+            //;
 
             return config;
 

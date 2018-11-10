@@ -2,9 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 
-using Polly;
-using Polly.Retry;
-
 using XAS.Core.Locking;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
@@ -19,10 +16,6 @@ namespace XAS.Core.Spooling {
     /// </remarks>
     /// 
     public class Spooler: ISpooler {
-
-        private Int32 retries = 0;
-        private Int32 timeout = 0;
-        private RetryPolicy retry = null;
 
         private readonly ILocker locker = null;
         private readonly IConfiguration config = null;
@@ -49,29 +42,13 @@ namespace XAS.Core.Spooling {
         /// Gets/Sets the number of retries to write the spool file.
         /// </summary>
         /// 
-        public Int32 Retries {
-            get { return retries; }
-            set {
-                retries = value;
-                retry = Policy
-                    .Handle<IOException>()
-                    .WaitAndRetry(retries, retryAttempt => TimeSpan.FromSeconds(this.Timeout));
-            }
-        }
+        public Int32 Retries { get; set; }
 
         /// <summary>
         /// Gets/Sets the timeout to wait when writing a spool files fails.
         /// </summary>
         /// 
-        public Int32 Timeout { 
-            get { return timeout; }
-            set {
-                timeout = value;
-                retry = Policy
-                    .Handle<IOException>()
-                    .WaitAndRetry(retries, retryAttempt => TimeSpan.FromSeconds(timeout));
-            }
-        }
+        public Int32 Timeout { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -251,7 +228,7 @@ namespace XAS.Core.Spooling {
             uint seqnum = 1;
             string filename = Path.Combine(this.Directory, this.Seqfile);
 
-            retry.Execute(() => {
+            Retry.WhileException<int>(Retries, Timeout, () => {
 
                 if (File.Exists(filename)) {
 
@@ -281,7 +258,9 @@ namespace XAS.Core.Spooling {
 
                 }
 
-            });
+                return 0;
+
+            }, typeof(System.IO.IOException));
 
             return seqnum;
 

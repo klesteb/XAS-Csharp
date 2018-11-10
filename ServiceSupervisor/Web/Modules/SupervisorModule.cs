@@ -36,9 +36,12 @@ namespace ServiceSupervisor.Web.Modules {
 
         public SupervisorModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISupervised service): base(root) {
 
+            var key = config.Key;
+            var section = config.Section;
+
             log = logFactory.Create(typeof(SupervisorModule));
             log.Trace("Entering SupervisorModule()");
-
+ 
             Get["/"] = _ => {
 
                 this.RequiresAuthentication();
@@ -293,7 +296,7 @@ namespace ServiceSupervisor.Web.Modules {
                 this.RequiresAuthentication();
 
                 return Negotiate
-                    .WithStatusCode(HttpStatusCode.Accepted);
+                    .WithStatusCode(HttpStatusCode.NotImplemented);
 
             };
 
@@ -356,7 +359,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 string name = p.name;
 
-                log.InfoMsg("OPTIONS4", root, name, "start", "anonymous");
+                log.InfoMsg("OPTIONS4", root, "start", name,"anonymous");
 
                 return Negotiate
                     .WithHeader("Allow", "PUT, OPTIONS")
@@ -369,7 +372,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 string name = p.name;
 
-                log.InfoMsg("OPTIONS4", root, name, "stop", "anonymous");
+                log.InfoMsg("OPTIONS4", root, "stop", name, "anonymous");
 
                 return Negotiate
                     .WithHeader("Allow", "PUT, OPTIONS")

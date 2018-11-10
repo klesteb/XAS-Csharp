@@ -37,6 +37,7 @@ The following HTTP status codes are used:
 	411 – LengthRequired
 	422 – UnprocessableEntity
 	500 – InternalServerError
+	501 - NotImplemented
 	503 – ServiceUnavailable
 
 Queries
