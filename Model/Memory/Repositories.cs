@@ -1,35 +1,27 @@
 ﻿using System;
-using System.Data.Entity;
-using System.Data.Entity.Validation;
-using System.Data.Entity.Infrastructure;
 
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
-using XAS.Core.Configuration.Extensions;
-using XAS.Model.Configuration.Extension;
 
 namespace XAS.Model.Memory {
 
     /// <summary>
-    /// A class to manage DbContext.
+    /// A class to manage repositories.
     /// </summary>
     /// 
-    public class Repositories: IDisposable {
+    public class Repositories: IRepositories {
 
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
 
         /// <summary>
-        /// Get/Set the DbContext.
-        /// </summary>
-        /// 
-        public DbContext Context { get; set; }
-        
-        /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="config"></param>
+        /// <param name="handler"></param>
+        /// <param name="logFactory"></param>
         /// 
         public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 

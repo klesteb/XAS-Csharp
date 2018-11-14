@@ -16,7 +16,7 @@ namespace XAS.Model.Database {
     /// A Generic database Repository, a class that implements a Repository Pattern.
     /// </summary>
     /// 
-    public class Repository<T>: IRespository<T> where T: class, new() {
+    public class Repository<T>: IRepository<T> where T: class, new() {
 
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;

@@ -71,9 +71,11 @@
     <Compile Include="Configuration\Extensions\KeyExtensions.cs" />
     <Compile Include="Configuration\Messages\Messages.cs" />
     <Compile Include="Database\Context.cs" />
+    <Compile Include="IDBM.cs" />
+    <Compile Include="IManager.cs" />
+    <Compile Include="IRepositories.cs" />
+    <Compile Include="Memory\Manager.cs" />
     <Compile Include="Memory\Repositories.cs" />
-    <Compile Include="Database\IDBM.cs" />
-    <Compile Include="Database\IManager.cs" />
     <Compile Include="Database\Initializer.cs" />
     <Compile Include="Database\Manager.cs" />
     <Compile Include="Paging\Criteria.cs" />

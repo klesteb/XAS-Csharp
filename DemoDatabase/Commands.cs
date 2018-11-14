@@ -2,6 +2,7 @@
 using System.Linq;
 
 using XAS.App;
+using XAS.Model;
 using XAS.Core.Logging;
 using XAS.App.Exceptions;
 using XAS.Model.Database;

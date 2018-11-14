@@ -3,6 +3,7 @@ using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Data.Entity.Infrastructure;
 
+using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -15,7 +16,7 @@ namespace XAS.Model.Database {
     /// A class to manage DbContext.
     /// </summary>
     /// 
-    public class Repositories: IDisposable {
+    public class Repositories: IRepositories {
 
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
@@ -46,7 +47,7 @@ namespace XAS.Model.Database {
         /// Save the current database context.
         /// </summary>
         /// 
-        public virtual void Save() {
+        public void Save() {
 
             var key = config.Key;
             var section = config.Section;
@@ -107,7 +108,7 @@ namespace XAS.Model.Database {
         /// </summary>
         /// <param name="method">The method to perform.</param>
         /// 
-        public virtual void DoTransaction(Action method) {
+        public void DoTransaction(Action method) {
 
             using (var transaction = this.Context.Database.BeginTransaction()) {
 
@@ -130,6 +131,7 @@ namespace XAS.Model.Database {
         }
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         /// <summary>
