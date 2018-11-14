@@ -5,27 +5,35 @@ using XAS.Core.Configuration;
 namespace ServiceSupervisor.Configuration.Extensions {
 
     /// <summary>
-    /// Key extension for the DemoMicroServiceServer.
+    /// Key extension for the ServiceSupervisor.
     /// </summary>
     /// 
     public static class KeyExtensions {
 
         // messages
 
-        public static String GET(this Key junk) {
-            return "Processing GET(/{0}) for {1}";
+        public static String GET3(this Key junk) {
+            return "GET3";
         }
 
-        public static String GETS(this Key junk) {
-            return "Processing GET(/{0}/{1}) for {2}";
+        public static String PUT4(this Key junk) {
+            return "PUT4";
         }
 
-        public static String OPTION(this Key junk) {
-            return "Processing OPTIONS(/{0}/{1}) for {2}";
+        public static String OPTIONS3(this Key junk) {
+            return "OPTIONS3";
         }
 
-        public static String OPTIONS(this Key junk) {
-            return "Processing OPTIONS(/{0}) for {1}";
+        public static String OPTIONS4(this Key junk) {
+            return "OPTIONS4";
+        }
+
+        public static String PUT_NoStart(this Key junk) {
+            return "PUT_NoStart";
+        }
+
+        public static String PUT_NoStop(this Key junk) {
+            return "PUT_NoStop";
         }
 
         // config file - web

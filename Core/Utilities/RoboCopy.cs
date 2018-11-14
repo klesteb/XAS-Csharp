@@ -98,7 +98,7 @@ namespace XAS.Core.Utilities {
         /// 
         public Int32 Mirror(String source, String destination) {
 
-            String format = "\"{0}\" \"{1}\" /mir /e /np /r:1";
+            String format = "\"{0}\" \"{1}\" /mir /fft /e /np /r:1";
             String args = String.Format(format, source, destination);
 
             return DoCommand(args);

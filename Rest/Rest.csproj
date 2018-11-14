@@ -101,6 +101,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\AppRootPath.cs" />
     <Compile Include="Server\BootStrapper.cs" />
+    <Compile Include="Server\Configuration\Extensions\KeyExtensions.cs" />
+    <Compile Include="Server\Configuration\Messages\Messages.cs" />
     <Compile Include="Server\Errors\CustomErrorHandler.cs" />
     <Compile Include="Server\Errors\Exceptions\GeneralServiceErrorException.cs" />
     <Compile Include="Server\Errors\Exceptions\InternalServerErrorException.cs" />

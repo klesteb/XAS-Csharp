@@ -12,18 +12,32 @@ using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Rest.Server.Errors;
+using XAS.Rest.Server.Configuration.Extensions;
 
 using ServiceSupervisor.Web.Services;
 using ServiceSupervisorCommon.DataStructures;
+using ServiceSupervisor.Configuration.Extensions;
 
 namespace ServiceSupervisor.Web.Modules {
 
+    /// <summary>
+    /// Web interface to supervisor.
+    /// </summary>
+    /// 
     public class SupervisorModule: NancyModule {
 
         private readonly ILogger log = null;
 
+        /// <summary>
+        /// URL root.
+        /// </summary>
+        /// 
         public const string root = "supervisor";
 
+        /// <summary>
+        /// HAL links.
+        /// </summary>
+        /// 
         public static Link Self = new Link("self", "/" + root + "/{name}", "Edit");
         public static Link Create = new Link("create", "/" + root + "/", "Create");
         public static Link Remove = new Link("delete", "/" + root + "/{name}", "Delete");
@@ -34,6 +48,14 @@ namespace ServiceSupervisor.Web.Modules {
         public static Link List = new Link("list", "/" + root + "/list", "List");
         public static Link Paged = new Link("paged", "/" + root + "/{?page,pageSize,sortBy,sortDir}", "Paged");
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="handler"></param>
+        /// <param name="logFactory"></param>
+        /// <param name="service"></param>
+        /// 
         public SupervisorModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISupervised service): base(root) {
 
             var key = config.Key;
@@ -46,7 +68,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 this.RequiresAuthentication();
 
-                log.InfoMsg("GET", root, this.Context.CurrentUser.UserName);
+                log.InfoMsg(key.GET(), root, this.Context.CurrentUser.UserName);
 
                 var criteria = this.Bind<Model.Services.Supervised.SupervisedPagedCriteria>();
 
@@ -62,7 +84,7 @@ namespace ServiceSupervisor.Web.Modules {
                 string name = p.name;
                 SuperviseDTO data = null;
 
-                log.InfoMsg("GET3", root, name, this.Context.CurrentUser.UserName);
+                log.InfoMsg(key.GET3(), root, name, this.Context.CurrentUser.UserName);
 
                 if ((data = service.Get(name)) != null) {
 
@@ -80,7 +102,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 List<SuperviseDTO> datum = null;
 
-                log.InfoMsg("GET3", root, "list", this.Context.CurrentUser.UserName);
+                log.InfoMsg(key.GET3(), root, "list", this.Context.CurrentUser.UserName);
 
                 if ((datum = service.List()) != null) {
 
@@ -96,7 +118,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 this.RequiresAuthentication();
 
-                log.InfoMsg("POST", root, this.Context.CurrentUser.UserName);
+                log.InfoMsg(key.POST(), root, this.Context.CurrentUser.UserName);
 
                 SuperviseDTO data = null;
                 var binding = this.Bind<SupervisePost>();
@@ -117,7 +139,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                         }
 
-                        log.WarnMsg("POST_NoCreate", root, this.Context.CurrentUser.UserName);
+                        log.WarnMsg(key.POST_NoCreate(), root, this.Context.CurrentUser.UserName);
 
                         return Negotiate
                             .WithModel(ServiceErrorDefinition.NotAcceptable)
@@ -139,7 +161,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 } else {
 
-                    log.WarnMsg("POST_NoValidate", root, this.Context.CurrentUser.UserName);
+                    log.WarnMsg(key.POST_NoValidate(), root, this.Context.CurrentUser.UserName);
 
                     var validationError = ServiceErrorUtilities.ValidationErrors(results);
 
@@ -158,7 +180,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 string name = p.name;
                 SuperviseDTO data = null;
-                log.InfoMsg("PUT", root, name, this.Context.CurrentUser.UserName);
+                log.InfoMsg(key.PUT(), root, name, this.Context.CurrentUser.UserName);
 
                 var binding = this.Bind<SuperviseUpdate>();
                 log.Debug(String.Format("Binding: {0}", Utils.Dump(binding)));
@@ -178,7 +200,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                         }
 
-                        log.WarnMsg("PUT_NoUpdate", root, name, this.Context.CurrentUser.UserName);
+                        log.WarnMsg(key.PUT_NoUpdate(), root, name, this.Context.CurrentUser.UserName);
 
                         return Negotiate
                             .WithModel(ServiceErrorDefinition.NotAcceptable)
@@ -200,7 +222,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 } else {
 
-                    log.WarnMsg("PUT_NoValidate", root, name, this.Context.CurrentUser.UserName);
+                    log.WarnMsg(key.PUT_NoValidate(), root, name, this.Context.CurrentUser.UserName);
 
                     var validationError = ServiceErrorUtilities.ValidationErrors(results);
 
@@ -218,7 +240,7 @@ namespace ServiceSupervisor.Web.Modules {
                 this.RequiresAuthentication();
 
                 string name = p.name;
-                log.InfoMsg("PUT4", root, "start", name, this.Context.CurrentUser.UserName);
+                log.InfoMsg(key.PUT4(), root, "start", name, this.Context.CurrentUser.UserName);
 
                 try {
 
@@ -230,7 +252,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                     }
 
-                    log.WarnMsg("PUT_NoStart", root, "start", name, this.Context.CurrentUser.UserName);
+                    log.WarnMsg(key.PUT_NoStart(), root, "start", name, this.Context.CurrentUser.UserName);
 
                     return Negotiate
                         .WithModel(ServiceErrorDefinition.NotAcceptable)
@@ -257,7 +279,7 @@ namespace ServiceSupervisor.Web.Modules {
                 this.RequiresAuthentication();
 
                 string name = p.name;
-                log.InfoMsg("PUT4", root, "stop", name, this.Context.CurrentUser.UserName);
+                log.InfoMsg(key.PUT4(), root, "stop", name, this.Context.CurrentUser.UserName);
 
                 try {
 
@@ -269,7 +291,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                     }
 
-                    log.WarnMsg("PUT_NoStop", root, "stop", name, this.Context.CurrentUser.UserName);
+                    log.WarnMsg(key.PUT_NoStop(), root, "stop", name, this.Context.CurrentUser.UserName);
 
                     return Negotiate
                         .WithModel(ServiceErrorDefinition.NotAcceptable)
@@ -306,7 +328,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 string name = p.name;
 
-                log.InfoMsg("DELETE", root, name, this.Context.CurrentUser.UserName);
+                log.InfoMsg(key.DELETE(), root, name, this.Context.CurrentUser.UserName);
 
                 if (service.Delete(name)) {
 
@@ -314,7 +336,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 }
 
-                log.WarnMsg("DELETE_NoDelete", root, name, this.Context.CurrentUser.UserName);
+                log.WarnMsg(key.DELETE_NoDelete(), root, name, this.Context.CurrentUser.UserName);
 
                 return Negotiate.WithStatusCode(HttpStatusCode.NotFound);
 
@@ -322,7 +344,7 @@ namespace ServiceSupervisor.Web.Modules {
 
             Options["/"] = p => {
 
-                log.InfoMsg("OPTIONS", root, "anonymous");
+                log.InfoMsg(key.OPTIONS(), root, "anonymous");
 
                 return Negotiate
                     .WithHeader("Allow", "GET, POST, OPTIONS")
@@ -333,7 +355,7 @@ namespace ServiceSupervisor.Web.Modules {
 
             Options["/save"] = p => {
 
-                log.InfoMsg("OPTIONS3", root, "save", "anonymous");
+                log.InfoMsg(key.OPTIONS3(), root, "save", "anonymous");
 
                 return Negotiate
                     .WithHeader("Allow", "PUT, OPTIONS")
@@ -346,7 +368,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 string name = p.name;
 
-                log.InfoMsg("OPTIONS3", root, name, "anonymous");
+                log.InfoMsg(key.OPTIONS3(), root, name, "anonymous");
 
                 return Negotiate
                     .WithHeader("Allow", "GET, DELETE, PUT, OPTIONS")
@@ -359,7 +381,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 string name = p.name;
 
-                log.InfoMsg("OPTIONS4", root, "start", name,"anonymous");
+                log.InfoMsg(key.OPTIONS4(), root, "start", name,"anonymous");
 
                 return Negotiate
                     .WithHeader("Allow", "PUT, OPTIONS")
@@ -372,7 +394,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 string name = p.name;
 
-                log.InfoMsg("OPTIONS4", root, "stop", name, "anonymous");
+                log.InfoMsg(key.OPTIONS4(), root, "stop", name, "anonymous");
 
                 return Negotiate
                     .WithHeader("Allow", "PUT, OPTIONS")
