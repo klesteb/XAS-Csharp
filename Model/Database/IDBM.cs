@@ -1,5 +1,5 @@
 ﻿
-namespace XAS.Model {
+namespace XAS.Model.Database {
 
     /// <summary>
     /// Interface of methods to populate a database structure.

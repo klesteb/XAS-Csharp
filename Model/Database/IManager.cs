@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data.Entity;
 
-namespace XAS.Model {
+namespace XAS.Model.Database {
 
     public interface IManager {
 

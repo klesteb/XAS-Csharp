@@ -10,13 +10,13 @@ using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
-namespace XAS.Model.Repository {
+namespace XAS.Model.Memory {
 
     /// <summary>
     /// A Generic in memory database Repository, a class that implements a Repository Pattern.
     /// </summary>
     /// 
-    public class Memory<T>: IRespository<T> where T : class, new() {
+    public class Repository<T>: IRespository<T> where T : class, new() {
 
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
@@ -30,7 +30,7 @@ namespace XAS.Model.Repository {
         /// <param name="handler"></param>
         /// <param name="logFactory"></param>
         /// 
-        public Memory(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
+        public Repository(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
             this.config = config;
             this.handler = handler;

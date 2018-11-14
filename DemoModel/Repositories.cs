@@ -12,14 +12,14 @@ namespace DemoModel {
     /// Define the interface to the repositories.
     /// </summary>
     ///
-    public class Repositories: XAS.Model.Repositories {
+    public class Repositories: XAS.Model.Database.Repositories {
 
         public DinosaurRepository Dinosaurs { get; private set; }
 
         public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, DbContext context): 
             base(config, handler, logFactory, context) {
 
-            this.Dinosaurs = new DinosaurRepository(context);
+            this.Dinosaurs = new DinosaurRepository(config, handler, logFactory,context);
 
         }
 

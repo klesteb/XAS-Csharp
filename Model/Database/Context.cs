@@ -6,7 +6,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
 
-namespace XAS.Model {
+namespace XAS.Model.Database {
 
     public class Context: DbContext {
 

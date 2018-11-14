@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using XAS.Model;
 using XAS.Core.Logging;
+using XAS.Model.Database;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
@@ -26,7 +26,7 @@ namespace DemoModel {
 
         }
         
-        public void Populate(XAS.Model.Context db) {
+        public void Populate(XAS.Model.Database.Context db) {
 
             // Seed the database.
 

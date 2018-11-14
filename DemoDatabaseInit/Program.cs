@@ -2,11 +2,11 @@
 using System.IO;
 using System.Collections.Generic;
 
-using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Alerting;
 using XAS.Core.Security;
 using XAS.Core.Spooling;
+using XAS.Model.Database;
 using XAS.Core.Exceptions;
 using XAS.Core.Extensions;
 using XAS.Core.Configuration;

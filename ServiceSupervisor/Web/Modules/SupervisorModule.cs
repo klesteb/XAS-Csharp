@@ -51,10 +51,10 @@ namespace ServiceSupervisor.Web.Modules {
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="config"></param>
-        /// <param name="handler"></param>
-        /// <param name="logFactory"></param>
-        /// <param name="service"></param>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name="service">An ISupervised object.</param>
         /// 
         public SupervisorModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISupervised service): base(root) {
 

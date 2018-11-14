@@ -9,16 +9,32 @@ using ServiceSupervisor.Configuration.Extensions;
 
 namespace ServiceSupervisor.Configuration.Loaders {
     
+    /// <summary>
+    /// Load a configuration from a Windows .ini file.
+    /// </summary>
+    /// 
     public class ConfigFile: XAS.App.Configuration.Loaders.ConfigFile {
 
         private readonly ILogger log = null;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name="iniFile">An IniFile object.</param>
+        /// 
         public ConfigFile(IErrorHandler handler, ILoggerFactory logFactory, IniFile iniFile): base(handler, logFactory, iniFile) {
 
             this.log = logFactory.Create(typeof(ConfigFile));
 
         }
 
+        /// <summary>
+        /// Load the configuration file into the configuration.
+        /// </summary>
+        /// <param name="config">A IConfiguration object.</param>
+        /// 
         public override void Load(IConfiguration config) {
 
             base.Load(config);

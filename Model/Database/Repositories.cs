@@ -9,7 +9,7 @@ using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 using XAS.Model.Configuration.Extension;
 
-namespace XAS.Model {
+namespace XAS.Model.Database {
 
     /// <summary>
     /// A class to manage DbContext.

@@ -106,7 +106,7 @@ PUT /supervisor/save
 
     curl -v http://<server>:<port>/supervisor/save -u <username>:<password> -H "Content-type: application/json" -XPUT
 
-	status code: 202, 400
+	status code: 501
 
 PUT /supervisor/stop/{name}
 

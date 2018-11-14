@@ -63,7 +63,7 @@ namespace ServiceSupervisor.Web {
 
             base.ConfigureApplicationContainer(container);
 
-            //container.Register<IDinoService, DinoService>().AsMultiInstance();
+            container.Register<ISupervised, Supervised>();
             container.Register(typeof(IResourceConfiguration), Configure.ResourceConfiguration());
             container.Register(typeof(IProvideHalTypeConfiguration), Configure.HypermediaConfiguration());
 

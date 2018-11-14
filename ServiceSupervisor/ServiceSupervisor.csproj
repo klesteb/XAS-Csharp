@@ -83,6 +83,7 @@
     <Compile Include="Model\Repository\Supervised.cs" />
     <Compile Include="Model\Schema\RunStatus.cs" />
     <Compile Include="Model\Services\Supervised.cs" />
+    <Compile Include="Processors\Supervisor.cs" />
     <Compile Include="Processors\Web.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
