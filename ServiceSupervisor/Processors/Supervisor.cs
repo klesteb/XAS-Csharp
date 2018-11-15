@@ -1,14 +1,9 @@
 ﻿using System;
 
-using XAS.Rest.Server;
+using XAS.Model;
 using XAS.Core.Logging;
-using XAS.Core.Security;
 using XAS.Core.Exceptions;
-using XAS.Core.Extensions;
 using XAS.Core.Configuration;
-using XAS.Core.Configuration.Extensions;
-
-using ServiceSupervisor.Configuration.Extensions;
 
 namespace ServiceSupervisor.Processors {
 
@@ -23,6 +18,8 @@ namespace ServiceSupervisor.Processors {
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
 
+        protected IManager manager = null;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -30,13 +27,15 @@ namespace ServiceSupervisor.Processors {
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
         /// 
-        public Supervisor(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
+        public Supervisor(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
 
             var key = config.Key;
             var section = config.Section;
 
             this.config = config;
             this.handler = handler;
+            this.manager = manager;
+
             this.log = logFactory.Create(typeof(Supervisor));
 
             // get config stuff

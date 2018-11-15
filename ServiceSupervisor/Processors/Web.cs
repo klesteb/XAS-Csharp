@@ -1,5 +1,6 @@
 ﻿using System;
 
+using XAS.Model;
 using XAS.Rest.Server;
 using XAS.Core.Logging;
 using XAS.Core.Security;
@@ -29,8 +30,9 @@ namespace ServiceSupervisor.Processors {
         /// <param name="config">An IConfiguration object.</param>
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name="manager"></param>
         /// 
-        public Web(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
+        public Web(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
 
             var key = config.Key;
             var section = config.Section;
@@ -51,7 +53,7 @@ namespace ServiceSupervisor.Processors {
             var authenticate = new Authenticate();
             var userValidator = new UserValidator(authenticate, domain);
             var appRootProvider = new AppRootPathProvider { RootPath = rootPath };
-            var bootStrapper = new ServiceSupervisor.Web.BootStrapper(config, handler, logFactory, userValidator, appRootProvider);
+            var bootStrapper = new ServiceSupervisor.Web.BootStrapper(config, handler, logFactory, userValidator, appRootProvider, manager);
 
             // launch the server
 

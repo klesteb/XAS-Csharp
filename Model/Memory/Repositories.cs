@@ -19,11 +19,12 @@ namespace XAS.Model.Memory {
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="config"></param>
-        /// <param name="handler"></param>
-        /// <param name="logFactory"></param>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name="context">A generic object.</param>
         /// 
-        public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
+        public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, Object context) {
 
             this.config = config;
             this.handler = handler;

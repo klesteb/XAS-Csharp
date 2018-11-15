@@ -78,6 +78,7 @@
     <Compile Include="Configuration\Extensions\SectionExtensions.cs" />
     <Compile Include="Configuration\Loaders\ConfigFile.cs" />
     <Compile Include="Configuration\Messages\Messages.cs" />
+    <Compile Include="Model\Loader.cs" />
     <Compile Include="Model\Manager.cs" />
     <Compile Include="Model\Repositories.cs" />
     <Compile Include="Model\Repository\Supervised.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="Web\BootStrapper.cs" />
     <Compile Include="Web\Configure.cs" />
     <Compile Include="Model\Schema\Supervise.cs" />

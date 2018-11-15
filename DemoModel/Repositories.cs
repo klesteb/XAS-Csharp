@@ -19,7 +19,7 @@ namespace DemoModel {
         public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, DbContext context): 
             base(config, handler, logFactory, context) {
 
-            this.Dinosaurs = new DinosaurRepository(config, handler, logFactory,context);
+            this.Dinosaurs = new DinosaurRepository(config, handler, logFactory, context);
 
         }
 

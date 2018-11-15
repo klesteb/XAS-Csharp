@@ -21,32 +21,23 @@ namespace XAS.Model.Database {
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
- 
-        /// <summary>
-        /// Get/Set the DbContext.
-        /// </summary>
-        /// 
-        protected DbContext Context { get; private set; }
 
-        /// <summary>
-        /// Get/Set the DbSet.
-        /// </summary>
-        /// 
-        protected DbSet<T> DbSet { get; private set; }
+        private DbSet<T> dbSet = null;
+        private DbContext context = null;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="context">A DbContext object</param>
         /// 
-        public Repository(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, DbContext context) {
+        public Repository(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, Object context) {
 
             this.config = config;
             this.handler = handler;
             this.log = logFactory.Create(this.GetType());
 
-            this.Context = context;
-            this.DbSet = context.Set<T>();
+            this.context = context as DbContext;
+            this.dbSet = this.context.Set<T>();
 
         }
 
@@ -58,7 +49,7 @@ namespace XAS.Model.Database {
         /// 
         public T Find(Expression<Func<T, bool>> predicate) {
 
-            return this.DbSet.Where(predicate).SingleOrDefault();
+            return dbSet.Where(predicate).SingleOrDefault();
 
         }
 
@@ -70,7 +61,7 @@ namespace XAS.Model.Database {
         /// 
         public IEnumerable<T> Search(Expression<Func<T, bool>> predicate = null) {
 
-            IQueryable<T> query = this.DbSet;
+            IQueryable<T> query = dbSet;
 
             if (predicate != null) {
 
@@ -90,7 +81,7 @@ namespace XAS.Model.Database {
         /// 
         public void Create(T entity) {
 
-            this.DbSet.Add(entity);
+            dbSet.Add(entity);
 
         }
 
@@ -101,15 +92,15 @@ namespace XAS.Model.Database {
         /// 
         public void Delete(object id) {
 
-            var entity = this.DbSet.Find(id);
+            var entity = dbSet.Find(id);
 
-            if (this.Context.Entry(entity).State == EntityState.Detached) {
+            if (context.Entry(entity).State == EntityState.Detached) {
 
-                this.DbSet.Attach(entity);
+                dbSet.Attach(entity);
 
             }
 
-            this.DbSet.Remove(entity);
+            dbSet.Remove(entity);
 
         }
 
@@ -120,8 +111,8 @@ namespace XAS.Model.Database {
         /// 
         public void Update(T entity) {
 
-            this.DbSet.Attach(entity);
-            this.Context.Entry(entity).State = EntityState.Modified;
+            dbSet.Attach(entity);
+            context.Entry(entity).State = EntityState.Modified;
 
         }
 
@@ -184,7 +175,7 @@ namespace XAS.Model.Database {
 
             foreach (var entity in entites) {
 
-                this.DbSet.Add(entity);
+                dbSet.Add(entity);
 
             }
 
@@ -202,11 +193,11 @@ namespace XAS.Model.Database {
 
             if (predicate == null) {
 
-                count = this.DbSet.Count();
+                count = dbSet.Count();
 
             } else {
 
-                count = this.DbSet.Count(predicate);
+                count = dbSet.Count(predicate);
 
             }
 

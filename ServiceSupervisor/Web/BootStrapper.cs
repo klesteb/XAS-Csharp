@@ -5,6 +5,7 @@ using Nancy.Bootstrapper;
 using Nancy.Hal.Configuration;
 using Nancy.Authentication.Basic;
 
+using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -12,6 +13,7 @@ using XAS.Rest.Server.Extensions;
 using XAS.Rest.Server.Repository;
 
 using ServiceSupervisor.Web.Services;
+using ServiceSupervisor.Model;
 
 namespace ServiceSupervisor.Web {
 
@@ -21,11 +23,13 @@ namespace ServiceSupervisor.Web {
     /// 
     public class BootStrapper: XAS.Rest.Server.BootStrapper {
 
+        protected IManager manager = null;
         private readonly ILogger log = null;
 
-        public BootStrapper(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IUserValidator userValidator, IRootPathProvider rootPathProvider): 
+        public BootStrapper(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IUserValidator userValidator, IRootPathProvider rootPathProvider, IManager manager): 
             base(config, handler, logFactory, userValidator, rootPathProvider) {
 
+            this.manager = manager;
             this.log = logFactory.Create(typeof(BootStrapper));
 
         }
@@ -64,6 +68,7 @@ namespace ServiceSupervisor.Web {
             base.ConfigureApplicationContainer(container);
 
             container.Register<ISupervised, Supervised>();
+            container.Register(typeof(IManager), manager);
             container.Register(typeof(IResourceConfiguration), Configure.ResourceConfiguration());
             container.Register(typeof(IProvideHalTypeConfiguration), Configure.HypermediaConfiguration());
 

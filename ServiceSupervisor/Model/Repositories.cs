@@ -1,5 +1,6 @@
 ﻿using System;
 
+using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -12,14 +13,14 @@ namespace ServiceSupervisor.Model {
     /// Define the interface to the repositories.
     /// </summary>
     ///
-    public class Repositories: IDisposable {
+    public class Repositories: IRepositories {
 
         public Supervised Supervised { get; private set; }
 
-        public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
+        public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, Object context) {
 
-            this.Supervised = new Supervised(config, handler, logFactory);
-
+            this.Supervised = new Supervised(config, handler, logFactory, context);
+ 
         }
 
         public void Save() {
@@ -31,6 +32,7 @@ namespace ServiceSupervisor.Model {
         }
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing) {
@@ -38,6 +40,8 @@ namespace ServiceSupervisor.Model {
                 if (disposing) {
                     // TODO: dispose managed state (managed objects).
                 }
+
+                this.Supervised.Clear();
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.

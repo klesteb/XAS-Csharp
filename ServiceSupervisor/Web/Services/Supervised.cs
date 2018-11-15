@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
+using XAS.Model;
 using XAS.Model.Paging;
 using XAS.Core.Logging;
 using XAS.Core.Extensions;
@@ -18,7 +20,7 @@ namespace ServiceSupervisor.Web.Services {
     public class Supervised: ISupervised {
 
         private readonly ILogger log = null;
-        private readonly Model.Manager manager = null;
+        private readonly IManager manager = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
         private readonly Model.Services.Supervised service = null;
@@ -30,16 +32,15 @@ namespace ServiceSupervisor.Web.Services {
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
         /// 
-        public Supervised(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
+        public Supervised(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
 
             this.config = config;
             this.handler = handler;
+            this.manager = manager;
 
             var key = config.Key;
             var section = config.Section;
 
-            var repository = new Model.Repositories(config, handler, logFactory);
-            this.manager = new Model.Manager(repository);
             this.service = new Model.Services.Supervised(config, handler, logFactory);
             this.log = logFactory.Create(typeof(Supervised));
 
@@ -171,52 +172,10 @@ namespace ServiceSupervisor.Web.Services {
                 Password = binding.Password,
                 AutoStart = binding.AutoStart.ToBoolean(),
                 ExitRetries = binding.ExitRetries.ToInt32(),
-                ExitCodes = ParseExitCodes(binding.ExitCodes),
+                ExitCodes = Utils.ParseExitCodes(binding.ExitCodes),
                 WorkingDirectory = binding.WorkingDirectory,
-                Environment = ParseEnvironment(binding.Environment)
+                Environment = Utils.ParseEnvironment(binding.Environment)
             };
-
-        }
-
-        private List<Int32> ParseExitCodes(String buffer) {
-
-            var exitCodes = new List<Int32>();
-
-            if (buffer != "") {
-
-                String[] codes = buffer.Split(',');
-
-                foreach (string code in codes) {
-
-                    exitCodes.Add(code.ToInt32());
-
-                }
-
-            }
-
-            return exitCodes;
-
-        }
-
-        private Dictionary<String, String> ParseEnvironment(String buffer) {
-
-            var environment = new Dictionary<String, String>();
-
-            if (buffer != "") {
-
-                String[] chunks = buffer.Split(';');
-
-                foreach (string chunk in chunks) {
-
-                    String[] parts = chunk.Split('=');
-
-                    environment.Add(parts[0].Trim(), parts[1].Trim());
-
-                }
-
-            }
-
-            return environment;
 
         }
 

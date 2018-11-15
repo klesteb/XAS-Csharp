@@ -1,11 +1,13 @@
 ﻿
+using XAS.Model;
+
 namespace ServiceSupervisor.Model {
 
-    public class Manager {
+    public class Manager: IManager {
 
-        public Repositories Repository { get; set; }
+        public IRepositories Repository { get; set; }
 
-        public Manager(Repositories repository) {
+        public Manager(IRepositories repository) {
 
             this.Repository = repository;
 

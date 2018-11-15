@@ -13,7 +13,7 @@ using XAS.Model.Configuration.Extension;
 namespace XAS.Model.Database {
 
     /// <summary>
-    /// A class to manage DbContext.
+    /// A class to manage repositories.
     /// </summary>
     /// 
     public class Repositories: IRepositories {
@@ -22,22 +22,18 @@ namespace XAS.Model.Database {
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
 
-        /// <summary>
-        /// Get/Set the DbContext.
-        /// </summary>
-        /// 
-        public DbContext Context { get; set; }
+        private DbContext context { get; set; }
         
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="context">A DbContext object.</param>
         /// 
-        public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, DbContext context) {
+        public Repositories(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, Object context) {
 
             this.config = config;
             this.handler = handler;
-            this.Context = context;
+            this.context = context as DbContext;
 
             log = logFactory.Create(typeof(Repositories));
 
@@ -54,7 +50,7 @@ namespace XAS.Model.Database {
 
             try {
 
-                this.Context.SaveChanges();
+                context.SaveChanges();
 
             } catch (DbEntityValidationException e) {
 
@@ -110,7 +106,7 @@ namespace XAS.Model.Database {
         /// 
         public void DoTransaction(Action method) {
 
-            using (var transaction = this.Context.Database.BeginTransaction()) {
+            using (var transaction = context.Database.BeginTransaction()) {
 
                 try {
 
@@ -147,7 +143,7 @@ namespace XAS.Model.Database {
 
                     // TODO: dispose managed state (managed objects).
 
-                    this.Context.Dispose();
+                    context.Dispose();
 
                 }
 

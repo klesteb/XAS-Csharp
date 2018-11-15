@@ -9,6 +9,7 @@ using XAS.Model.Paging;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
+using System.Threading;
 
 namespace XAS.Model.Memory {
 
@@ -21,22 +22,24 @@ namespace XAS.Model.Memory {
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
-        private readonly ConcurrentBag<T> database = null;
+
+        private ConcurrentBag<T> database = null;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="config"></param>
-        /// <param name="handler"></param>
-        /// <param name="logFactory"></param>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name="context">A ConcurrentBag object.</param>
         /// 
-        public Repository(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
+        public Repository(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, Object context) {
 
             this.config = config;
             this.handler = handler;
             this.log = logFactory.Create(this.GetType());
 
-            this.database = new ConcurrentBag<T>();
+            this.database = context as ConcurrentBag<T>;
 
         }
 
@@ -171,6 +174,20 @@ namespace XAS.Model.Memory {
             }
 
             return count;
+
+        }
+
+        /// <summary>
+        /// Clear the database of items.
+        /// </summary>
+        /// 
+        public void Clear() {
+
+            // taken from: https://stackoverflow.com/questions/5377296/how-to-remove-all-items-from-concurrentbag
+            //
+
+            var emptyBag = new ConcurrentBag<T>();
+            Interlocked.Exchange<ConcurrentBag<T>>(ref database, emptyBag);
 
         }
 

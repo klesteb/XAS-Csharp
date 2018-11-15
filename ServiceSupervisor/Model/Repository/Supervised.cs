@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 using XAS.Model.Memory;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
@@ -10,7 +11,9 @@ namespace ServiceSupervisor.Model.Repository {
 
     public class Supervised: Repository<Supervise> {
 
-        public Supervised(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory): base(config, handler, logFactory) { }
+        public Supervised(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, Object context) :
+            base(config, handler, logFactory, context) {
+        }
 
     }
 
