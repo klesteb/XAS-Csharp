@@ -35,7 +35,7 @@ namespace ServiceSupervisor {
 
             var context = Model.Loader.Database(config);
             var repository = new Model.Repositories(config, handler, logFactory, context);
-            var manager = new Model.Manager(repository);
+            var manager = new Model.Manager(context, repository);
 
             this.web = new Processors.Web(config, handler, logFactory, manager);
             this.supervisor = new Processors.Supervisor(config, handler, logFactory, manager);

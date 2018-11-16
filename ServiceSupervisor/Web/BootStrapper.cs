@@ -12,8 +12,7 @@ using XAS.Core.Configuration;
 using XAS.Rest.Server.Extensions;
 using XAS.Rest.Server.Repository;
 
-using ServiceSupervisor.Web.Services;
-using ServiceSupervisor.Model;
+using ServiceSupervisor.Services;
 
 namespace ServiceSupervisor.Web {
 
@@ -67,7 +66,7 @@ namespace ServiceSupervisor.Web {
 
             base.ConfigureApplicationContainer(container);
 
-            container.Register<ISupervised, Supervised>();
+            container.Register<ISuperviseService, SuperviseService>();
             container.Register(typeof(IManager), manager);
             container.Register(typeof(IResourceConfiguration), Configure.ResourceConfiguration());
             container.Register(typeof(IProvideHalTypeConfiguration), Configure.HypermediaConfiguration());

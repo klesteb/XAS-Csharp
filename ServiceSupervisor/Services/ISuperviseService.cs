@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using XAS.Model.Paging;
 using ServiceSupervisorCommon.DataStructures;
 
-namespace ServiceSupervisor.Web.Services {
+namespace ServiceSupervisor.Services {
 
-    public interface ISupervised {
+    public interface ISuperviseService {
 
         List<SuperviseDTO> List();
         Boolean Stop(String name);

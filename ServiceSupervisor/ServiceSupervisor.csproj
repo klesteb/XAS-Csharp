@@ -94,8 +94,8 @@
     <Compile Include="Web\Configure.cs" />
     <Compile Include="Model\Schema\Supervise.cs" />
     <Compile Include="Web\Modules\SupervisorModule.cs" />
-    <Compile Include="Web\Services\ISupervised.cs" />
-    <Compile Include="Web\Services\Supervised.cs" />
+    <Compile Include="Services\ISuperviseService.cs" />
+    <Compile Include="Services\SuperviseService.cs" />
     <Compile Include="Web\Validation\SupervisePostValidation.cs" />
     <Compile Include="Web\Validation\SuperviseUpdateValidation.cs" />
   </ItemGroup>

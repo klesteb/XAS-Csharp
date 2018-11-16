@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 
 using XAS.Model;
 using XAS.Model.Paging;
@@ -11,13 +10,13 @@ using XAS.Core.Configuration;
 
 using ServiceSupervisorCommon.DataStructures;
 
-namespace ServiceSupervisor.Web.Services {
+namespace ServiceSupervisor.Services {
 
     /// <summary>
     /// A repository service.
     /// </summary>
     /// 
-    public class Supervised: ISupervised {
+    public class SuperviseService: ISuperviseService {
 
         private readonly ILogger log = null;
         private readonly IManager manager = null;
@@ -31,8 +30,9 @@ namespace ServiceSupervisor.Web.Services {
         /// <param name="config">An IConfiguration object.</param>
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name ="manager">An IManager object.</param>
         /// 
-        public Supervised(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
+        public SuperviseService(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
 
             this.config = config;
             this.handler = handler;
@@ -42,9 +42,9 @@ namespace ServiceSupervisor.Web.Services {
             var section = config.Section;
 
             this.service = new Model.Services.Supervised(config, handler, logFactory);
-            this.log = logFactory.Create(typeof(Supervised));
+            this.log = logFactory.Create(typeof(SuperviseService));
 
-            log.Trace("Initialized DinoService()");
+            log.Trace("Initialized SuperviseService()");
 
         }
 

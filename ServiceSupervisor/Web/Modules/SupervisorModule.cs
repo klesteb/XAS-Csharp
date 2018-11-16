@@ -14,7 +14,7 @@ using XAS.Core.Configuration;
 using XAS.Rest.Server.Errors;
 using XAS.Rest.Server.Configuration.Extensions;
 
-using ServiceSupervisor.Web.Services;
+using ServiceSupervisor.Services;
 using ServiceSupervisorCommon.DataStructures;
 using ServiceSupervisor.Configuration.Extensions;
 
@@ -56,7 +56,7 @@ namespace ServiceSupervisor.Web.Modules {
         /// <param name="logFactory">An ILoggerFactory object.</param>
         /// <param name="service">An ISupervised object.</param>
         /// 
-        public SupervisorModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISupervised service): base(root) {
+        public SupervisorModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISuperviseService service): base(root) {
 
             var key = config.Key;
             var section = config.Section;
@@ -122,10 +122,10 @@ namespace ServiceSupervisor.Web.Modules {
 
                 SuperviseDTO data = null;
                 var binding = this.Bind<SupervisePost>();
-                log.Debug(String.Format("Binding: {0}", Utils.Dump(binding)));
+                log.Debug(String.Format("Binding: {0}", XAS.Core.Utils.Dump(binding)));
 
                 var results = this.Validate(binding);
-                log.Debug(String.Format("Results: {0}", Utils.Dump(results)));
+                log.Debug(String.Format("Results: {0}", XAS.Core.Utils.Dump(results)));
 
                 if (results.IsValid) {
 
@@ -183,10 +183,10 @@ namespace ServiceSupervisor.Web.Modules {
                 log.InfoMsg(key.PUT(), root, name, this.Context.CurrentUser.UserName);
 
                 var binding = this.Bind<SuperviseUpdate>();
-                log.Debug(String.Format("Binding: {0}", Utils.Dump(binding)));
+                log.Debug(String.Format("Binding: {0}", XAS.Core.Utils.Dump(binding)));
 
                 var results = this.Validate(binding);
-                log.Debug(String.Format("Results: {0}", Utils.Dump(results)));
+                log.Debug(String.Format("Results: {0}", XAS.Core.Utils.Dump(results)));
 
                 if (results.IsValid) {
 
