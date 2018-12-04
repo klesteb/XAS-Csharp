@@ -381,27 +381,24 @@ namespace XAS.App {
         /// 
         public void OnConsoleKeyPress(object sender, ConsoleCancelEventArgs e) {
 
+            int rc = 2;
+            Thread t = null;
             var key = config.Key;
             var section = config.Section;
+
+            SignalHandler();
 
             // taken from https://www.codeproject.com/articles/16164/managed-application-shutdown
             // with modifications. surprising how hard this is. 
 
             if (e.SpecialKey == ConsoleSpecialKey.ControlBreak) {
 
-                Thread t = new Thread(delegate () {
+                t = new Thread(delegate () {
 
-                    SignalHandler();
-
-                    string format = config.GetValue(section.Messages(), key.ProcessInterrupt());
-                    log.WarnMsg(format, "ControlBreak");
-
-                    Environment.Exit(1);
+                    log.WarnMsg(key.ProcessInterrupt(), "ControlBreak");
 
                 });
 
-                t.Start();
-                t.Join();
 
             }
 
@@ -409,20 +406,18 @@ namespace XAS.App {
 
                 e.Cancel = true;
 
-                Thread t = new Thread(delegate () {
+                t = new Thread(delegate () {
 
-                    SignalHandler();
-
-                    string format = config.GetValue(section.Messages(), key.ProcessInterrupt());
-                    log.WarnMsg(format, "ControlC");
-
-                    Environment.Exit(2);
+                    log.WarnMsg(key.ProcessInterrupt(), "ControlC");
 
                 });
 
-                t.Start();
-
             }
+
+            t.Start();
+            t.Join();
+
+            Environment.Exit(rc);
 
         }
 
