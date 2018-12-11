@@ -63,11 +63,21 @@ namespace XAS.App {
             AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs args) {
 
                 // default unhanlded exception handler
+                // taken from: https://www.codeproject.com/articles/16164/managed-application-shutdown
+                // with modifications, not even sure this is needed anymore. so is this a case of
+                // Cargo Cult Programming or Pascals Wager...
 
-                Exception ex = args.ExceptionObject as Exception;
-                int rc = handler.Exit(ex);
+                Thread t = new Thread(delegate() {
 
-                Environment.Exit(rc);
+                    Exception ex = args.ExceptionObject as Exception;
+                    int rc = handler.Exit(ex);
+
+                    Environment.Exit(rc);
+
+                });
+
+                t.Start();
+                t.Join();
 
             };
 
@@ -381,24 +391,27 @@ namespace XAS.App {
         /// 
         public void OnConsoleKeyPress(object sender, ConsoleCancelEventArgs e) {
 
-            int rc = 2;
-            Thread t = null;
             var key = config.Key;
             var section = config.Section;
 
-            SignalHandler();
-
+            // default ^C and ^Break handler
             // taken from https://www.codeproject.com/articles/16164/managed-application-shutdown
-            // with modifications. surprising how hard this is. 
+            // with modifications. surprising how hard this is, also not sure if it is even needed
+            // anymore. so is this a case of Cargo Cult Programming or Pascals Wager...
+
+            SignalHandler();
 
             if (e.SpecialKey == ConsoleSpecialKey.ControlBreak) {
 
-                t = new Thread(delegate () {
+                Thread t = new Thread(delegate () {
 
                     log.WarnMsg(key.ProcessInterrupt(), "ControlBreak");
+                    Environment.Exit(2);
 
                 });
 
+                t.Start();
+                t.Join();
 
             }
 
@@ -406,18 +419,14 @@ namespace XAS.App {
 
                 e.Cancel = true;
 
-                t = new Thread(delegate () {
+                new Thread(delegate() {
 
                     log.WarnMsg(key.ProcessInterrupt(), "ControlC");
+                    Environment.Exit(2);
 
-                });
+                }).Start();
 
             }
-
-            t.Start();
-            t.Join();
-
-            Environment.Exit(rc);
 
         }
 
