@@ -12,7 +12,7 @@ namespace ServiceSupervisor {
 
     [WindowsService("xas-supervisord",
         DisplayName = "XAS Supervisor",
-        Description = "A service to provide supervisor services",
+        Description = "A service that provides supervisor services",
         EventSource = "XasSupervisord",
         EventLog = "Application",
         AutoLog = false,

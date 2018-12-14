@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Threading;
 
 using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
+
+using ServiceSupervisor.Supervisor;
+using System.Threading.Tasks;
 
 namespace ServiceSupervisor.Processors {
 
@@ -14,11 +18,12 @@ namespace ServiceSupervisor.Processors {
     public class Supervisor {
 
         private readonly ILogger log = null;
-        private readonly ISupervisor server = null;
+        private readonly Handler server = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
+        private readonly CancellationTokenSource cancelSource = null;
 
-        protected IManager manager = null;
+        private Task<Int32> task = null;
 
         /// <summary>
         /// Constructor.
@@ -34,13 +39,15 @@ namespace ServiceSupervisor.Processors {
 
             this.config = config;
             this.handler = handler;
-            this.manager = manager;
+            this.cancelSource = new CancellationTokenSource();
 
             this.log = logFactory.Create(typeof(Supervisor));
 
             // get config stuff
-            
+
             // launch the server
+
+            this.server = new Handler(config, handler, logFactory, manager, cancelSource);
 
         }
 
@@ -51,7 +58,9 @@ namespace ServiceSupervisor.Processors {
         public void Start() {
 
             log.Trace("Entering Start()");
-            server.Start();
+
+            task = Task.Run(() => server.ProcessAsync(), cancelSource.Token);
+
             log.Trace("Leaving Start()");
 
         }
@@ -62,8 +71,13 @@ namespace ServiceSupervisor.Processors {
         /// 
         public void Stop() {
 
+            Task[] tasks = { task };
+
             log.Trace("Entering Stop()");
-            server.Stop();
+
+            cancelSource.Cancel();
+            Task.WaitAll(tasks);
+
             log.Trace("Leaving Stop()");
 
         }
@@ -74,8 +88,13 @@ namespace ServiceSupervisor.Processors {
         /// 
         public void Pause() {
 
+            Task[] tasks = { task };
+
             log.Trace("Entering Pause()");
-            server.Pause();
+
+            cancelSource.Cancel();
+            Task.WaitAll(tasks);
+
             log.Trace("Leaving Pause()");
 
         }
@@ -87,7 +106,9 @@ namespace ServiceSupervisor.Processors {
         public void Continue() {
 
             log.Trace("Entering Continue()");
-            server.Continue();
+
+            task = Task.Run(() => server.ProcessAsync(), cancelSource.Token);
+
             log.Trace("Leaving Continue()");
 
         }
@@ -98,8 +119,13 @@ namespace ServiceSupervisor.Processors {
         /// 
         public void Shutdown() {
 
+            Task[] tasks = { task };
+
             log.Trace("Entering Shutdown()");
-            server.Shutdown();
+
+            cancelSource.Cancel();
+            Task.WaitAll(tasks);
+
             log.Trace("Leaving Shutdown()");
 
         }
