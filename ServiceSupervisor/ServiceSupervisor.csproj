@@ -89,7 +89,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />
-    <Compile Include="Supervisor\ISupervisor.cs" />
     <Compile Include="Supervisor\Handler.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Web\BootStrapper.cs" />
