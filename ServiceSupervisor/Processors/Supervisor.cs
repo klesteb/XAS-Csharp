@@ -23,7 +23,7 @@ namespace ServiceSupervisor.Processors {
         private readonly IErrorHandler handler = null;
         private readonly CancellationTokenSource cancelSource = null;
 
-        private Task<Int32> task = null;
+        private Task task = null;
 
         /// <summary>
         /// Constructor.
@@ -59,7 +59,8 @@ namespace ServiceSupervisor.Processors {
 
             log.Trace("Entering Start()");
 
-            task = Task.Run(() => server.ProcessAsync(), cancelSource.Token);
+            task = new Task(server.Process, cancelSource.Token, TaskCreationOptions.LongRunning);
+            task.Start();
 
             log.Trace("Leaving Start()");
 
@@ -107,7 +108,8 @@ namespace ServiceSupervisor.Processors {
 
             log.Trace("Entering Continue()");
 
-            task = Task.Run(() => server.ProcessAsync(), cancelSource.Token);
+            task = new Task(server.Process, cancelSource.Token, TaskCreationOptions.LongRunning);
+            task.Start();
 
             log.Trace("Leaving Continue()");
 

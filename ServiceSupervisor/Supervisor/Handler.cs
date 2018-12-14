@@ -40,12 +40,9 @@ namespace ServiceSupervisor.Supervisor {
  
         }
 
-        public async Task<Int32> ProcessAsync() {
-
-            int rc = 0;
+        public void Process() {
 
 
-            return rc;
 
         }
 
