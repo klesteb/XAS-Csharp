@@ -5,7 +5,6 @@ using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
-using System.Threading.Tasks;
 
 namespace ServiceSupervisor.Supervisor {
 
