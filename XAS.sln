@@ -68,6 +68,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CONTRIBUTING.md = CONTRIBUTING.md
 		LICENSE.md = LICENSE.md
 		README.md = README.md
+		xas.snk = xas.snk
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoModel", "DemoModel\DemoModel.csproj", "{700012D0-ACDC-4ABA-94EC-7D8C44E7E805}"
@@ -119,6 +120,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceSupervisor", "Servic
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceSupervisorCommon", "ServiceSupervisorCommon\ServiceSupervisorCommon.csproj", "{D082B10C-45B3-4809-81B3-99005EA4A38B}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupCore", "SetupCore\SetupCore.vdproj", "{AC739B03-A6AB-4915-B484-291CB37000BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -198,6 +201,8 @@ Global
 		{D082B10C-45B3-4809-81B3-99005EA4A38B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D082B10C-45B3-4809-81B3-99005EA4A38B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D082B10C-45B3-4809-81B3-99005EA4A38B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC739B03-A6AB-4915-B484-291CB37000BD}.Debug|Any CPU.ActiveCfg = Debug
+		{AC739B03-A6AB-4915-B484-291CB37000BD}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
