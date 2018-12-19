@@ -188,6 +188,7 @@ namespace DemoApp {
                 text.Add("");
                 text.Add("    0 - success");
                 text.Add("    1 - failure");
+                text.Add("    2 - terminated");
                 text.Add("");
                 text.Add("SEE ALSO");
                 text.Add("");

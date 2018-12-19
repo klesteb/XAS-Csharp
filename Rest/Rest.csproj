@@ -96,13 +96,13 @@
     <Compile Include="Client\Exceptions\ResponseException.cs" />
     <Compile Include="Client\Serializers\ApplicationHALDeserializer.cs" />
     <Compile Include="Client\Serializers\ApplicationProblemDeserializer.cs" />
-    <Compile Include="Client\Serializers\HtmlDeserializer.cs" />
+    <Compile Include="Client\Serializers\TextHtmlDeserializer.cs" />
     <Compile Include="Client\Serializers\Lib\HalParser.cs" />
     <Compile Include="Client\Serializers\Lib\HalResponse.cs" />
     <Compile Include="Client\Serializers\Lib\JsonResponse.cs" />
     <Compile Include="Client\Serializers\Lib\LinkObject.cs" />
     <Compile Include="Client\Serializers\Lib\StateValue.cs" />
-    <Compile Include="Client\Serializers\TextDeserializer.cs" />
+    <Compile Include="Client\Serializers\TextPlainDeserializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\AppRootPath.cs" />
     <Compile Include="Server\BootStrapper.cs" />
