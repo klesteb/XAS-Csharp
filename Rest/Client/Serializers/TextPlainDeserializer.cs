@@ -8,7 +8,7 @@ namespace XAS.Rest.Client.Serializers {
     /// Deserialze a text/plain document.
     /// </summary>
     /// 
-    public class TextDeserializer: IDeserializer {
+    public class TextPlainDeserializer: IDeserializer {
 
         public string RootElement { get; set; }
         public string DateFormat { get; set; }

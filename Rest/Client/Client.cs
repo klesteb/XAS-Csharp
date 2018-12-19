@@ -41,8 +41,8 @@ namespace XAS.Rest.Client {
 
             client = new RestSharp.RestClient();
 
-            client.AddHandler("text/html", new HtmlDeserializer());
-            client.AddHandler("text/plain", new TextDeserializer());
+            client.AddHandler("text/html", new TextHtmlDeserializer());
+            client.AddHandler("text/plain", new TextPlainDeserializer());
             client.AddHandler("application/hal+json", new ApplicationHalDeserializer());
             client.AddHandler("application/problem+json", new ApplicationProblemDeserializer());
 

@@ -7,10 +7,10 @@ using RestSharp.Deserializers;
 namespace XAS.Rest.Client.Serializers {
 
     /// <summary>
-    /// Deserialze a text/html document into a DOM representation.
+    /// Deserialze a text/html document into a HtmlAgilityPack DOM representation.
     /// </summary>
     /// 
-    public class HtmlDeserializer: IDeserializer {
+    public class TextHtmlDeserializer: IDeserializer {
 
         public string RootElement { get; set; }
         public string DateFormat { get; set; }
