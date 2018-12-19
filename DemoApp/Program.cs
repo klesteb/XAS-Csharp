@@ -59,7 +59,7 @@ namespace DemoApp {
 
                 var iniFile = new IniFile(configFile);
                 loader = new ConfigFile(errorHandler, logFactory, iniFile);
-                
+
             }
 
             var secure = new Secure();
@@ -71,142 +71,147 @@ namespace DemoApp {
 
         }
 
-        public class App: XAS.App.Console {
+    }
 
-            private ILoader configFile = null;
+    public class App: XAS.App.Console {
 
-            public App(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure, ILoader loader):
-                base(config, errorHandler, logFactory, secure) {
+        private ILoader configFile = null;
 
-                this.configFile = loader;
+        public App(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure, ILoader loader) :
+            base(config, errorHandler, logFactory, secure) {
 
-            }
+            this.configFile = loader;
 
-            public override int RunApp(string[] args) {
+        }
 
-                var key = config.Key;
-                var section = config.Section;
-                bool debug = config.GetValue(section.Environment(), key.Debug()).ToBoolean();
+        public override int RunApp(string[] args) {
 
-                if (debug) {
+            var key = config.Key;
+            var section = config.Section;
+            bool debug = config.GetValue(section.Environment(), key.Debug()).ToBoolean();
 
-                    config.Dump();
+            if (debug) {
 
-                }
-
-                return base.RunApp(args);
+                config.Dump();
 
             }
 
-            public override String GetUsage() {
+            return base.RunApp(args);
 
-                return "Usage: DemoApp\n   or: DemoApp --help";
+        }
 
-            }
+        public override String GetUsage() {
 
-            public override Options GetOptions() {
+            return "Usage: DemoApp\n   or: DemoApp --help";
 
-                var key = config.Key;
-                var section = config.Section;
-                var options = base.GetOptions();
+        }
 
-                string helpText = String.Format(
-                    "use an alternative configuration file, default: \"{0}\"",
-                    config.GetValue(section.Environment(), key.CfgFile())
-                );
+        public override Options GetOptions() {
 
-                options.Add("cfg-file=", helpText, (v) => {
-                    if (File.Exists(v)) {
-                        config.UpdateKey(section.Environment(), key.CfgFile(), v);
-                        if (configFile != null) {
-                            configFile.Load(config);
-                        } else {
-                            var iniFile = new IniFile(v);
-                            configFile = new ConfigFile(handler, logFactory, iniFile);
-                            configFile.Load(config);
-                        }
+            var key = config.Key;
+            var section = config.Section;
+            var options = base.GetOptions();
+
+            string helpText = String.Format(
+                "use an alternative configuration file, default: \"{0}\"",
+                config.GetValue(section.Environment(), key.CfgFile())
+            );
+
+            options.Add("cfg-file=", helpText, (v) => {
+                if (File.Exists(v)) {
+                    config.UpdateKey(section.Environment(), key.CfgFile(), v);
+                    if (configFile != null) {
+                        configFile.Load(config);
                     } else {
-                        string format = config.GetValue(section.Messages(), key.FileMissing());
-                        throw new ConfigFileMissingException(String.Format(format, v));
+                        var iniFile = new IniFile(v);
+                        configFile = new ConfigFile(handler, logFactory, iniFile);
+                        configFile.Load(config);
                     }
-                });
-
-                return options;
-
-            }
-
-            public override String[] GetManual() {
-
-                var key = config.Key;
-                var section = config.Section;
-                string cfgFile = config.GetValue(section.Environment(), key.CfgFile());
-                List<string> text = new List<string>();
-                List<string> options = GetOptionsText();
-
-                text.Add("");
-                text.Add("NAME");
-                text.Add("");
-                text.Add("    DemoApp - A demo application using XAS.App");
-                text.Add("");
-                text.Add("SYNPOSIS");
-                text.Add("");
-                text.Add("    DemoApp [--help] [--manual] [--version]");
-                text.Add("");
-                text.Add("DESCRIPTION");
-                text.Add("");
-                text.Add("    This program is a demo command line application using XAS.App.");
-                text.Add("");
-                text.Add("OPTIONS and ARGUMENTS");
-                text.Add("");
-                text.Add("    Options:");
-
-                foreach (var line in options) {
-
-                    text.Add(String.Format("      {0}", line));
+                } else {
+                    string format = config.GetValue(section.Messages(), key.FileMissing());
+                    throw new ConfigFileMissingException(String.Format(format, v));
                 }
+            });
 
-                text.Add("");
-                text.Add("CONFIGURATION");
-                text.Add("");
-                text.Add("    The default configuration file is \"" + cfgFile + "\", and contains the following stanzas:");
-                text.Add("");
-                text.Add("        [application]");
-                text.Add("        alerts = true");
-                text.Add("        facility = systems");
-                text.Add("        priority = low");
-                text.Add("        trace = false");
-                text.Add("        debug = false");
-                text.Add("        log-type = file");
-                text.Add("        log-file = " + config.GetValue(section.Environment(), key.LogFile()));
-                text.Add("        log-conf = " + config.GetValue(section.Environment(), key.LogConf()));
-                text.Add("");
-                text.Add("    This is the basic options that every program has, they can be overridden on the command line.");
-                text.Add("    The above are the defaults and this stanza is not really needed. But it does allow you to easily");
-                text.Add("    configure a service.");
-                text.Add("");
-                text.Add("EXIT CODES");
-                text.Add("");
-                text.Add("    0 - success");
-                text.Add("    1 - failure");
-                text.Add("    2 - terminated");
-                text.Add("");
-                text.Add("SEE ALSO");
-                text.Add("");
-                text.Add("AUTHOR");
-                text.Add("");
-                text.Add("    Kevin L. Esteb - kevin@kesteb.us");
-                text.Add("");
-                text.Add("COPYRIGHT AND LICENSE");
-                text.Add("");
-                text.Add("    Copyright (c) 2018 Kevin L. Esteb");
-                text.Add("");
+            return options;
 
-                return text.ToArray();
+        }
 
+        public override String[] GetManual() {
+
+            var key = config.Key;
+            var section = config.Section;
+            string cfgFile = config.GetValue(section.Environment(), key.CfgFile());
+            List<string> text = new List<string>();
+            List<string> options = GetOptionsText();
+
+            text.Add("");
+            text.Add("NAME");
+            text.Add("");
+            text.Add("    DemoApp - A demo application using XAS.App");
+            text.Add("");
+            text.Add("SYNPOSIS");
+            text.Add("");
+            text.Add("    DemoApp [--help] [--manual] [--version]");
+            text.Add("");
+            text.Add("DESCRIPTION");
+            text.Add("");
+            text.Add("    This program is a demo command line application using XAS.App.");
+            text.Add("");
+            text.Add("OPTIONS and ARGUMENTS");
+            text.Add("");
+            text.Add("    Options:");
+
+            foreach (var line in options) {
+
+                text.Add(String.Format("      {0}", line));
             }
+
+            text.Add("");
+            text.Add("CONFIGURATION");
+            text.Add("");
+            text.Add("    The default configuration file is \"" + cfgFile + "\", and contains the following stanzas:");
+            text.Add("");
+            text.Add("        [application]");
+            text.Add("        alerts = true");
+            text.Add("        facility = systems");
+            text.Add("        priority = low");
+            text.Add("        trace = false");
+            text.Add("        debug = false");
+            text.Add("        log-type = file");
+            text.Add("        log-file = " + config.GetValue(section.Environment(), key.LogFile()));
+            text.Add("        log-conf = " + config.GetValue(section.Environment(), key.LogConf()));
+            text.Add("");
+            text.Add("    This is the basic options that every program has, they can be overridden on the command line.");
+            text.Add("    The above are the defaults and this stanza is not really needed. But it does allow you to easily");
+            text.Add("    configure a service.");
+            text.Add("");
+            text.Add("EXIT CODES");
+            text.Add("");
+            text.Add("    0 - success");
+            text.Add("    1 - failure");
+            text.Add("    2 - terminated");
+            text.Add("");
+            text.Add("SEE ALSO");
+            text.Add("");
+            text.Add("AUTHOR");
+            text.Add("");
+            text.Add("    Kevin L. Esteb - kevin@kesteb.us");
+            text.Add("");
+            text.Add("COPYRIGHT AND LICENSE");
+            text.Add("");
+            text.Add("    Copyright (c) 2018 Kevin L. Esteb");
+            text.Add("");
+            text.Add("   This is free software you can redistribute it and/or modify it under");
+            text.Add("   the terms of the Artistic License 2.0. For details, see the full text");
+            text.Add("   of the license at http://www.perlfoundation.org/artistic_license_2_0.");
+            text.Add("");
+
+            return text.ToArray();
 
         }
 
     }
 
 }
+

@@ -75,154 +75,159 @@ namespace DemoEchoServer {
 
         }
 
-        public class App: XAS.App.Service {
+    }
 
-            private ILoader configFile = null;
-            private readonly ISecurity secure = null;
+    public class App:XAS.App.Service {
 
-            public App(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure, ILoader loader) :
-                base(config, errorHandler, logFactory, secure) {
+        private ILoader configFile = null;
+        private readonly ISecurity secure = null;
 
-                this.secure = secure;
-                this.configFile = loader;
+        public App(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure, ILoader loader) :
+            base(config, errorHandler, logFactory, secure) {
 
-            }
+            this.secure = secure;
+            this.configFile = loader;
 
-            public override Int32 RunApp(String[] args) {
+        }
 
-                this.WindowsService = new Service(config, handler, logFactory, secure);
+        public override Int32 RunApp(String[] args) {
 
-                return base.RunApp(args);
+            this.WindowsService = new Service(config, handler, logFactory, secure);
 
-            }
+            return base.RunApp(args);
 
-            public override String GetUsage() {
+        }
 
-                return "Usage: DemoEchoServer\n   or: DemoEchoServer --help";
+        public override String GetUsage() {
 
-            }
+            return "Usage: DemoEchoServer\n   or: DemoEchoServer --help";
 
-            public override Options GetOptions() {
+        }
 
-                var key = config.Key;
-                var section = config.Section;
-                var options = base.GetOptions();
+        public override Options GetOptions() {
 
-                string helpText = String.Format(
-                     "use an alternative configuration file, default: \"{0}\"",
-                     config.GetValue(section.Environment(), key.CfgFile())
-                 );
+            var key = config.Key;
+            var section = config.Section;
+            var options = base.GetOptions();
 
-                options.Add("cfg-file=", helpText, (v) => {
-                    if (File.Exists(v)) {
-                        config.UpdateKey(section.Environment(), key.CfgFile(), v);
-                        if (configFile != null) {
-                            configFile.Load(config);
-                        } else {
-                            var iniFile = new IniFile(v);
-                            configFile = new ConfigFile(handler, logFactory, iniFile);
-                            configFile.Load(config);
-                        }
+            string helpText = String.Format(
+                 "use an alternative configuration file, default: \"{0}\"",
+                 config.GetValue(section.Environment(), key.CfgFile())
+             );
+
+            options.Add("cfg-file=", helpText, (v) => {
+                if (File.Exists(v)) {
+                    config.UpdateKey(section.Environment(), key.CfgFile(), v);
+                    if (configFile != null) {
+                        configFile.Load(config);
                     } else {
-                        string format = config.GetValue(section.Messages(), key.FileMissing());
-                        throw new ConfigFileMissingException(String.Format(format, v));
+                        var iniFile = new IniFile(v);
+                        configFile = new ConfigFile(handler, logFactory, iniFile);
+                        configFile.Load(config);
                     }
-                });
-
-                return options;
-
-            }
-
-            public override String[] GetManual() {
-
-                var key = config.Key;
-                var section = config.Section;
-                string cfgFile = config.GetValue(section.Environment(), key.CfgFile());
-                List<string> text = new List<string>();
-                List<string> options = GetOptionsText();
-
-                text.Add("");
-                text.Add("NAME");
-                text.Add("");
-                text.Add("    DemoEchoService - A demo echo service");
-                text.Add("");
-                text.Add("SYNPOSIS");
-                text.Add("");
-                text.Add("    sc start DemoEchoService ");
-                text.Add("");
-                text.Add("    DemoEchoService [--help] [--manual] [--version]");
-                text.Add("");
-                text.Add("DESCRIPTION");
-                text.Add("");
-                text.Add("    This program is a demo echo service using XAS.Core, XAS.App and XAS.Network.");
-                text.Add("");
-                text.Add("OPTIONS and ARGUMENTS");
-                text.Add("");
-
-                foreach (var line in options) {
-
-                    text.Add(String.Format("      {0}", line));
+                } else {
+                    string format = config.GetValue(section.Messages(), key.FileMissing());
+                    throw new ConfigFileMissingException(String.Format(format, v));
                 }
+            });
 
-                text.Add("");
-                text.Add("CONFIGURATION");
-                text.Add("");
-                text.Add("    The default configuration file is \"" + cfgFile + "\", and contains the following stanzas:");
-                text.Add("");
-                text.Add("        [application]");
-                text.Add("        alerts = true");
-                text.Add("        facility = systems");
-                text.Add("        priority = low");
-                text.Add("        trace = false");
-                text.Add("        debug = false");
-                text.Add("        log-type = file");
-                text.Add("        log-file = " + config.GetValue(section.Environment(), key.LogFile()));
-                text.Add("        log-conf = " + config.GetValue(section.Environment(), key.LogConf()));
-                text.Add("");
-                text.Add("    This is the basic options that every program has, they can be overridden on the command line.");
-                text.Add("    The above are the defaults and this stanza is not really needed. But it does allow you to easily");
-                text.Add("    configure a service.");
-                text.Add("");
-                text.Add("        [server]");
-                text.Add("        port = 7                    - the port to use.");
-                text.Add("        backlog = 10                - the listening sockets connection back log.");
-                text.Add("        max-connections = 0         - the number of clients that can be handled, 0 means unlimited.");
-                text.Add("        address = 127.0.0.1         - the address to listen on.");
-                text.Add("        client-timeout = 60         - the client inactivity timeout, 0 means none.");
-                text.Add("        reaper-interval = 60        - the client reaper interval.");
-                text.Add("");
-                text.Add("    Configuration for the TCP Server. The above are the defaults for the server.");
-                text.Add("");
-                text.Add("        [ssl]");
-                text.Add("        enable = false              - toggles wither to use SSL.");
-                text.Add("        verify-peer = false         - toggles wither to verify the client.");
-                text.Add("        certificate = \"\"            - the certificate to use.");
-                text.Add("");
-                text.Add("    Configuration for SSL handling. The above are the defaults for SSL.");
-                text.Add("");
-                text.Add("EXIT CODES");
-                text.Add("");
-                text.Add("    0 - success");
-                text.Add("    1 - failure");
-                text.Add("    2 - terminated");
-                text.Add("");
-                text.Add("SEE ALSO");
-                text.Add("");
-                text.Add("AUTHOR");
-                text.Add("");
-                text.Add("    Kevin L. Esteb - kevin@kesteb.us");
-                text.Add("");
-                text.Add("COPYRIGHT AND LICENSE");
-                text.Add("");
-                text.Add("    Copyright (c) 2018 Kevin L. Esteb");
-                text.Add("");
+            return options;
 
-                return text.ToArray();
+        }
 
+        public override String[] GetManual() {
+
+            var key = config.Key;
+            var section = config.Section;
+            string cfgFile = config.GetValue(section.Environment(), key.CfgFile());
+            List<string> text = new List<string>();
+            List<string> options = GetOptionsText();
+
+            text.Add("");
+            text.Add("NAME");
+            text.Add("");
+            text.Add("    DemoEchoService - A demo echo service");
+            text.Add("");
+            text.Add("SYNPOSIS");
+            text.Add("");
+            text.Add("    sc start DemoEchoService ");
+            text.Add("");
+            text.Add("    DemoEchoService [--help] [--manual] [--version]");
+            text.Add("");
+            text.Add("DESCRIPTION");
+            text.Add("");
+            text.Add("    This program is a demo echo service using XAS.Core, XAS.App and XAS.Network.");
+            text.Add("");
+            text.Add("OPTIONS and ARGUMENTS");
+            text.Add("");
+
+            foreach (var line in options) {
+
+                text.Add(String.Format("      {0}", line));
             }
+
+            text.Add("");
+            text.Add("CONFIGURATION");
+            text.Add("");
+            text.Add("    The default configuration file is \"" + cfgFile + "\", and contains the following stanzas:");
+            text.Add("");
+            text.Add("        [application]");
+            text.Add("        alerts = true");
+            text.Add("        facility = systems");
+            text.Add("        priority = low");
+            text.Add("        trace = false");
+            text.Add("        debug = false");
+            text.Add("        log-type = file");
+            text.Add("        log-file = " + config.GetValue(section.Environment(), key.LogFile()));
+            text.Add("        log-conf = " + config.GetValue(section.Environment(), key.LogConf()));
+            text.Add("");
+            text.Add("    This is the basic options that every program has, they can be overridden on the command line.");
+            text.Add("    The above are the defaults and this stanza is not really needed. But it does allow you to easily");
+            text.Add("    configure a service.");
+            text.Add("");
+            text.Add("        [server]");
+            text.Add("        port = 7                    - the port to use.");
+            text.Add("        backlog = 10                - the listening sockets connection back log.");
+            text.Add("        max-connections = 0         - the number of clients that can be handled, 0 means unlimited.");
+            text.Add("        address = 127.0.0.1         - the address to listen on.");
+            text.Add("        client-timeout = 60         - the client inactivity timeout, 0 means none.");
+            text.Add("        reaper-interval = 60        - the client reaper interval.");
+            text.Add("");
+            text.Add("    Configuration for the TCP Server. The above are the defaults for the server.");
+            text.Add("");
+            text.Add("        [ssl]");
+            text.Add("        enable = false              - toggles wither to use SSL.");
+            text.Add("        verify-peer = false         - toggles wither to verify the client.");
+            text.Add("        certificate = \"\"            - the certificate to use.");
+            text.Add("");
+            text.Add("    Configuration for SSL handling. The above are the defaults for SSL.");
+            text.Add("");
+            text.Add("EXIT CODES");
+            text.Add("");
+            text.Add("    0 - success");
+            text.Add("    1 - failure");
+            text.Add("    2 - terminated");
+            text.Add("");
+            text.Add("SEE ALSO");
+            text.Add("");
+            text.Add("AUTHOR");
+            text.Add("");
+            text.Add("    Kevin L. Esteb - kevin@kesteb.us");
+            text.Add("");
+            text.Add("COPYRIGHT AND LICENSE");
+            text.Add("");
+            text.Add("    Copyright (c) 2018 Kevin L. Esteb");
+            text.Add("");
+            text.Add("   This is free software you can redistribute it and/or modify it under");
+            text.Add("   the terms of the Artistic License 2.0. For details, see the full text");
+            text.Add("   of the license at http://www.perlfoundation.org/artistic_license_2_0.");
+            text.Add("");
+
+            return text.ToArray();
 
         }
 
     }
 
 }
+

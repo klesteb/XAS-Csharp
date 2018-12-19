@@ -60,102 +60,107 @@ namespace DemoDatabaseInit {
 
         }
 
-        public class App: XAS.App.Console {
+    }
 
-            private ILoader configFile = null;
+    public class App: XAS.App.Console {
 
-            public App(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure, ILoader loader) :
-                base(config, errorHandler, logFactory, secure) {
+        private ILoader configFile = null;
 
-                this.configFile = loader;
+        public App(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure, ILoader loader) :
+            base(config, errorHandler, logFactory, secure) {
 
-            }
+            this.configFile = loader;
 
-            public override Int32 RunApp(String[] args) {
+        }
 
-                Int32 rc = 0;
-                string model = "DemoDatabase";
+        public override Int32 RunApp(String[] args) {
 
-                var dbm = new DBM(config, handler, logFactory);
-                var initializer = new Initializer(dbm);
-                var context = new DemoModel.Context(initializer, model);
-                var repository = new DemoModel.Repositories(config, handler, logFactory, context);
-                var manager = new Manager(context, repository);
+            Int32 rc = 0;
+            string model = "DemoDatabase";
 
-                using (var repo = manager.Repository as DemoModel.Repositories) {
+            var dbm = new DBM(config, handler, logFactory);
+            var initializer = new Initializer(dbm);
+            var context = new DemoModel.Context(initializer, model);
+            var repository = new DemoModel.Repositories(config, handler, logFactory, context);
+            var manager = new Manager(context, repository);
 
-                    var count = repo.Dinosaurs.Count();
+            using (var repo = manager.Repository as DemoModel.Repositories) {
 
-                }
-
-                return rc;
+                var count = repo.Dinosaurs.Count();
 
             }
 
-            public override String GetUsage() {
+            return rc;
 
-                return "Usage: DemoDatabaseInit\n   or: DemoDatabaseInit --help";
+        }
 
+        public override String GetUsage() {
+
+            return "Usage: DemoDatabaseInit\n   or: DemoDatabaseInit --help";
+
+        }
+
+        public override String[] GetManual() {
+
+            var key = config.Key;
+            var section = config.Section;
+            string cfgFile = config.GetValue(section.Environment(), key.CfgFile());
+            List<string> text = new List<string>();
+            List<string> options = GetOptionsText();
+
+            text.Add("");
+            text.Add("NAME");
+            text.Add("");
+            text.Add("    DemoDatabaseInit - Initialize the demo database");
+            text.Add("");
+            text.Add("SYNPOSIS");
+            text.Add("");
+            text.Add("    DemoDatabaseInit [--help] [--manual] [--version]");
+            text.Add("");
+            text.Add("DESCRIPTION");
+            text.Add("");
+            text.Add("    This program will initialize the demo database. By default, this will be");
+            text.Add("    created in your %APPDATA% directory as a local SQL Server database. If you");
+            text.Add("    want it somewhere else you need to create a blank database. If you want a ");
+            text.Add("    different type of database you will need to modify the app.config and possible");
+            text.Add("    recompile the code.");
+            text.Add("");
+            text.Add("OPTIONS and ARGUMENTS");
+            text.Add("");
+            text.Add("    Options:");
+
+            foreach (var line in options) {
+
+                text.Add(String.Format("      {0}", line));
             }
 
-            public override String[] GetManual() {
+            text.Add("");
+            text.Add("EXIT CODES");
+            text.Add("");
+            text.Add("    0 - success");
+            text.Add("    1 - failure");
+            text.Add("    2 - terminated");
+            text.Add("");
+            text.Add("SEE ALSO");
+            text.Add("");
+            text.Add("AUTHOR");
+            text.Add("");
+            text.Add("    Kevin L. Esteb - kevin@kesteb.us");
+            text.Add("");
+            text.Add("COPYRIGHT AND LICENSE");
+            text.Add("");
+            text.Add("    Copyright (c) 2018 Kevin L. Esteb");
+            text.Add("");
+            text.Add("   This is free software you can redistribute it and/or modify it under");
+            text.Add("   the terms of the Artistic License 2.0. For details, see the full text");
+            text.Add("   of the license at http://www.perlfoundation.org/artistic_license_2_0.");
+            text.Add("");
 
-                var key = config.Key;
-                var section = config.Section;
-                string cfgFile = config.GetValue(section.Environment(), key.CfgFile());
-                List<string> text = new List<string>();
-                List<string> options = GetOptionsText();
-
-                text.Add("");
-                text.Add("NAME");
-                text.Add("");
-                text.Add("    DemoDatabaseInit - Initialize the demo database");
-                text.Add("");
-                text.Add("SYNPOSIS");
-                text.Add("");
-                text.Add("    DemoDatabaseInit [--help] [--manual] [--version]");
-                text.Add("");
-                text.Add("DESCRIPTION");
-                text.Add("");
-                text.Add("    This program will initialize the demo database. By default, this will be");
-                text.Add("    created in your %APPDATA% directory as a local SQL Server database. If you");
-                text.Add("    want it somewhere else you need to create a blank database. If you want a ");
-                text.Add("    different type of database you will need to modify the app.config and possible");
-                text.Add("    recompile the code.");
-                text.Add("");
-                text.Add("OPTIONS and ARGUMENTS");
-                text.Add("");
-                text.Add("    Options:");
-
-                foreach (var line in options) {
-
-                    text.Add(String.Format("      {0}", line));
-                }
-
-                text.Add("");
-                text.Add("EXIT CODES");
-                text.Add("");
-                text.Add("    0 - success");
-                text.Add("    1 - failure");
-                text.Add("    2 - terminated");
-                text.Add("");
-                text.Add("SEE ALSO");
-                text.Add("");
-                text.Add("AUTHOR");
-                text.Add("");
-                text.Add("    Kevin L. Esteb - kevin@kesteb.us");
-                text.Add("");
-                text.Add("COPYRIGHT AND LICENSE");
-                text.Add("");
-                text.Add("    Copyright (c) 2018 Kevin L. Esteb");
-                text.Add("");
-
-                return text.ToArray();
-
-            }
+            return text.ToArray();
 
         }
 
     }
 
 }
+

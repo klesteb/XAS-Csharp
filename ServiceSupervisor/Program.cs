@@ -209,6 +209,10 @@ namespace ServiceSupervisor {
             text.Add("");
             text.Add("    Copyright (c) 2018 Kevin L. Esteb");
             text.Add("");
+            text.Add("   This is free software you can redistribute it and/or modify it under");
+            text.Add("   the terms of the Artistic License 2.0. For details, see the full text");
+            text.Add("   of the license at http://www.perlfoundation.org/artistic_license_2_0.");
+            text.Add("");
 
             return text.ToArray();
 
