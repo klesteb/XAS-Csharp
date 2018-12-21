@@ -18,7 +18,7 @@ namespace XAS.Network.TCP {
     /// An implementation of a basic TCP network client with SSL support.
     /// </summary>
     /// 
-    public abstract class Client: IDisposable {
+    public class Client: IDisposable {
 
         private readonly ILogger log = null;
         private XAS.Network.TCP.Context context = null;
@@ -113,6 +113,38 @@ namespace XAS.Network.TCP {
         public Boolean IsConnectionSuccessful { get; private set; }
 
         /// <summary>
+        /// Get/Set the delegate for handling connections.
+        /// </summary>
+        /// 
+        public OnClientConnect OnConnect { get; set; }
+
+        /// <summary>
+        /// Get/Set the delegate for handling when data was sent.
+        /// </summary>
+        /// <remarks>An internal delegate is called, which does nothing.</remarks>
+        /// 
+        public OnClientDataSent OnDataSent { get; set; }
+
+        /// <summary>
+        /// Get/Set the delegate for handling disconnects.
+        /// </summary>
+        /// 
+        public OnClientDisconnect OnDisconnect { get; set; }
+
+        /// <summary>
+        /// Get/Set the delegate for when exceptions happen.
+        /// </summary>
+        /// <remarks>An internal delegate is called, which invokes ErrorHandler.Exception().</remarks>
+        /// 
+        public OnClientException OnException { get; set; }
+
+        /// <summary>
+        /// Get/Set the delegate for when data is recieved.
+        /// </summary>
+        /// 
+        public OnClientDataReceived OnDataReceived { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// 
@@ -141,7 +173,11 @@ namespace XAS.Network.TCP {
             this.IsConnectionSuccessful = false;
             this.Cancellation = new CancellationTokenSource();
 
-            log = logFactory.Create(typeof(Client));
+            this.OnDataSent += MyOnDataSent;
+            this.OnException += MyOnException;
+            this.OnDisconnect += MyOnDisconnect;
+
+            this.log = logFactory.Create(typeof(Client));
 
         }
 
@@ -149,10 +185,11 @@ namespace XAS.Network.TCP {
         /// Connect to the server.
         /// </summary>
         /// 
-        public void Connect() {
+        public Boolean Connect() {
 
             log.Trace("Entering Connect()");
 
+            bool stat = false;
             var key = config.Key;
             var section = config.Section;
 
@@ -189,7 +226,13 @@ namespace XAS.Network.TCP {
 
                         }
 
-                        this.OnConnect();
+                        if (OnConnect != null) {
+
+                            this.OnConnect();
+
+                        }
+
+                        stat = true;
 
                     }
 
@@ -206,6 +249,8 @@ namespace XAS.Network.TCP {
             }
 
             log.Trace("Leaving Connect()");
+
+            return stat;
 
         }
 
@@ -303,42 +348,37 @@ namespace XAS.Network.TCP {
 
         }
 
-        #region Abstract Methods
-
-        /// <summary>
-        /// Abstract method to handle a connection with the server.
-        /// </summary>
-        /// 
-        public abstract void OnConnect();
-
-        /// <summary>
-        /// Abstract method to be called after data has been sent to the server.
-        /// </summary>
-        /// 
-        public abstract void OnDataSent();
-
-        /// <summary>
-        /// Abstract method to handle a disconnect from the server.
-        /// </summary>
-        /// 
-        public abstract void OnDisconnect();
-
-        /// <summary>
-        /// Abstract method to handle exceptions.
-        /// </summary>
-        /// <param name="ex">The exception.</param>
-        /// 
-        public abstract void OnException(Exception ex);
-
-        /// <summary>
-        /// Abstract method to handle the received date from the server.
-        /// </summary>
-        /// <param name="buffer">A byte array.</param>
-        /// 
-        public abstract void OnDataReceived(Byte[] buffer);
-
-        #endregion
         #region Private Methods
+
+        private void MyOnException(Exception ex) {
+
+            log.Trace("Entering MyOnException()");
+
+            handler.Exceptions(ex);
+
+            log.Trace("Leaving MyOnException()");
+
+        }
+
+        private void MyOnDataSent() {
+
+            log.Trace("Entering MyOnDataSent()");
+
+            // do nothing.
+
+            log.Trace("Leaving MyOnDataSent()");
+
+        }
+
+        private void MyOnDisconnect() {
+
+            log.Trace("Entering MyOnDisconnect()");
+
+            // do nothing.
+
+            log.Trace("Leaving MyOnDisconnect()");
+
+        }
 
         private void WaitForData() {
 
@@ -449,7 +489,11 @@ namespace XAS.Network.TCP {
                 context.Stream.EndWrite(asyn);
                 context.Stream.Flush();
 
-                this.OnDataSent();
+                if (this.OnDataSent != null) {
+
+                    this.OnDataSent();
+
+                }
 
             } catch (Exception ex) {
 

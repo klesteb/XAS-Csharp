@@ -18,10 +18,6 @@ using XAS.Network.Configuration.Extensions;
 
 namespace XAS.Network.TCP {
 
-    public delegate void OnDataSent(Int32 id);
-    public delegate void OnException(Int32 id, Exception ex);
-    public delegate void OnDataReceived(Int32 id, byte[] buffer);
-
     /// <summary>
     /// A basic async TCP server with ssl.
     /// </summary>
@@ -117,7 +113,7 @@ namespace XAS.Network.TCP {
         /// Get/Set the delegate to call when data has been sent.
         /// </summary>
         /// 
-        public OnDataSent OnDataSent { get; set; }
+        public OnServerDataSent OnDataSent { get; set; }
 
         /// <summary>
         /// Get/Set the delegate to call whan an exception has occurred.
@@ -126,13 +122,13 @@ namespace XAS.Network.TCP {
         /// A internal exception handler is enbled. It logs the exception.
         /// </remarks>
         /// 
-        public OnException OnException { get; set; }
+        public OnServerException OnException { get; set; }
 
         /// <summary>
         /// Get/Set the delegate to call when data has been received.
         /// </summary>
         /// 
-        public OnDataReceived OnDataReceived { get; set; }
+        public OnServerDataReceived OnDataReceived { get; set; }
 
         /// <summary>
         /// Constructor.

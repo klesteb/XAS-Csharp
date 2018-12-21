@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
+using XAS.Core;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -14,7 +15,7 @@ namespace XAS.Network.STOMP {
     /// A STOMP Client class.
     /// </summary>
     //
-    public abstract class Client: TCP.Client, IDisposable {
+    public class Client: TCP.Client {
 
         private Parser parser = null;
         private Task dispatchTask = null;
@@ -55,6 +56,36 @@ namespace XAS.Network.STOMP {
         public String Subscription { get; set; }
 
         /// <summary>
+        /// Get/Set the delegate for handling a STOMP Connected frame.
+        /// </summary>
+        /// 
+        public OnStompConnected OnStompConnected { get; set; }
+
+        /// <summary>
+        /// Get/Set the delegate for handling a STOMP Message frame.
+        /// </summary>
+        /// 
+        public OnStompMessage OnStompMessage {get; set; }
+
+        /// <summary>
+        /// Get/Set the delegate for handling a STOMP Receipt frame.
+        /// </summary>
+        /// 
+        public OnStompReceipt OnStompReceipt { get; set; }
+
+        /// <summary>
+        /// Get/Set the delegate for handling s STOMP Error frame.
+        /// </summary>
+        /// 
+        public OnStompError OnStompError { get; set; }
+
+        /// <summary>
+        /// Get/Set the delegate for handling a STOMP NOOP frame.
+        /// </summary>
+        /// 
+        public OnStompNoop OnStompNoop { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="level">The STOMP version level to use.</param>
@@ -80,6 +111,10 @@ namespace XAS.Network.STOMP {
 
             this.dispatchEvent = new AutoResetEvent(false);
 
+            base.OnConnect = OnConnect;
+            base.OnDisconnect = OnDisconnect;
+            base.OnDataReceived = OnDataReceived;
+
             log = logFactory.Create(typeof(Client));
 
         }
@@ -97,45 +132,7 @@ namespace XAS.Network.STOMP {
 
         }
 
-        #region Abstract Methods
-
-        /// <summary>
-        /// Abstract method for the OnConnected event.
-        /// </summary>
-        /// <param name="frame">A STOMP connected frame.</param>
-        ///
-        public abstract void OnConnected(Frame frame);
-
-        /// <summary>
-        /// Abstract method for the OnMessage event.
-        /// </summary>
-        /// <param name="frame">A STOMP message frame.</param>
-        /// 
-        public abstract void OnMessage(Frame frame);
-
-        /// <summary>
-        /// Abstract method for the OnReceipt event.
-        /// </summary>
-        /// <param name="frame">A STOMP receipt frame.</param>
-        /// 
-        public abstract void OnReceipt(Frame frame);
-
-        /// <summary>
-        /// Abstract method for the OnError event.
-        /// </summary>
-        /// <param name="frame">A STOMP error frame.</param>
-        /// 
-        public abstract void OnError(Frame frame);
-
-        /// <summary>
-        /// Abstract method for the OnNoop event.
-        /// </summary>
-        /// <param name="frame">A STOMP keepalive frame.</param>
-        /// 
-        public abstract void OnNoop(Frame frame);
-
-        #endregion
-        #region Override Methods
+        #region Delegate Methods
 
         /// <summary>
         /// Handles the callback for the initial connection to the server.
@@ -144,7 +141,7 @@ namespace XAS.Network.STOMP {
         /// Handles the abstract method from TCP.Client.
         /// </remarks>
         /// 
-        public override void OnConnect() {
+        public new void OnConnect() {
 
             log.Trace("Entering OnConnect()");
 
@@ -165,22 +162,6 @@ namespace XAS.Network.STOMP {
         }
 
         /// <summary>
-        /// Handles the callback for when data is written to the network.
-        /// </summary>
-        /// <remarks>
-        /// Handles the abstract method from TCP.Client.
-        /// </remarks>
-        /// 
-        public override void OnDataSent() {
-
-            log.Trace("Entering OnDataSent()");
-
-
-            log.Trace("Leaving OnDataSent()");
-
-        }
-
-        /// <summary>
         /// Handles the callback for when data i received from the network.
         /// </summary>
         /// <remarks>
@@ -188,7 +169,7 @@ namespace XAS.Network.STOMP {
         /// </remarks>
         /// <param name="buffer">The byte array read from the socket.</param>
         /// 
-        public override void OnDataReceived(Byte[] buffer) {
+        public new void OnDataReceived(Byte[] buffer) {
 
             log.Trace("Entering OnDataReceived()");
 
@@ -214,32 +195,17 @@ namespace XAS.Network.STOMP {
         /// Handles the abstract method from TCP.Client.
         /// </remarks>
         /// 
-        public override void OnDisconnect() {
+        public new void OnDisconnect() {
 
             log.Trace("Entering OnDisconnect()");
+            Int32[] retries = { 60, 120, 240, 480, 960, 1920, 3840 };
 
             this.Cancellation.Cancel(true);
             this.StopDispatch();
 
+            Retry.UntilTrue(retries, Connect);
+
             log.Trace("Leaving OnDisconnect()");
-
-        }
-
-        /// <summary>
-        /// Handles the callback for when an exception happens in the TCP.Client layer.
-        /// </summary>
-        /// <remarks>
-        /// Handles the abstract method from TCP.Client.
-        /// </remarks>
-        /// <param name="ex">The thrown exception.</param>
-        /// 
-        public override void OnException(Exception ex) {
-
-            log.Trace("Entering OnException()");
-
-            handler.Exceptions(ex);
-
-            log.Trace("Leaving OnException()");
 
         }
 
@@ -299,27 +265,27 @@ namespace XAS.Network.STOMP {
                     switch (frame.Command) {
                         case "CONNECTED":
                             log.Debug("Dispatch() - received a \"CONNECTED\" message");
-                            this.OnConnected(frame);
+                            this.OnStompConnected(frame);
                             break;
 
                         case "MESSAGE":
                             log.Debug("Dispatch() - received a \"MESSAGE\" message");
-                            this.OnMessage(frame);
+                            this.OnStompMessage(frame);
                             break;
 
                         case "RECEIPT":
                             log.Debug("Dispatch() - received a \"RECEIPT\" message");
-                            this.OnReceipt(frame);
+                            this.OnStompReceipt(frame);
                             break;
 
                         case "ERROR":
                             log.Debug("Dispatch() - received a \"ERROR\" message");
-                            this.OnError(frame);
+                            this.OnStompError(frame);
                             break;
 
                         default:
                             log.Debug("Dispatch() - received a \"NOOP\" message");
-                            this.OnNoop(frame);
+                            this.OnStompNoop(frame);
                             break;
 
                     }

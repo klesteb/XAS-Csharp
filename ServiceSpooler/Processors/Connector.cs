@@ -50,6 +50,12 @@ namespace ServiceSpooler.Processors {
             this.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
             this.Port = config.GetValue(section.MessageQueue(), key.MQPort(), mqPort).ToInt32();
 
+            this.OnStompNoop += OnNoop;
+            this.OnStompError += OnError;
+            this.OnStompMessage += OnMessage;
+            this.OnStompReceipt += OnReceipt;
+            this.OnStompConnected += OnConnected;
+
             this.log = logFactory.Create(typeof(Connector));
 
         }
@@ -200,12 +206,14 @@ namespace ServiceSpooler.Processors {
 
         }
 
+        #region Delegate Methods
+
         /// <summary>
         /// Handle a STOMP CONNECTED response.
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public override void OnConnected(Frame frame) {
+        public void OnConnected(Frame frame) {
 
             var key = config.Key;
             var section = config.Section;
@@ -226,7 +234,7 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public override void OnReceipt(Frame frame) {
+        public void OnReceipt(Frame frame) {
 
             var key = config.Key;
             var section = config.Section;
@@ -270,7 +278,7 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public override void OnError(Frame frame) {
+        public void OnError(Frame frame) {
 
             var key = config.Key;
             var section = config.Section;
@@ -305,7 +313,7 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public override void OnMessage(Frame frame) {
+        public void OnMessage(Frame frame) {
 
             log.Trace("Entering OnMessage()");
 
@@ -320,7 +328,7 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public override void OnNoop(Frame frame) {
+        public void OnNoop(Frame frame) {
 
             log.Trace("Entering OnNoop()");
 
@@ -329,6 +337,8 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering OnNoop()");
 
         }
+
+        #endregion
 
     }
 

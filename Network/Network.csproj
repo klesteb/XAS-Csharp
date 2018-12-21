@@ -65,11 +65,13 @@
     <Compile Include="FTP\Client.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="STOMP\Client.cs" />
+    <Compile Include="STOMP\Delegates.cs" />
     <Compile Include="STOMP\Frame.cs" />
     <Compile Include="STOMP\Parser.cs" />
     <Compile Include="STOMP\Stomp.cs" />
     <Compile Include="TCP\Client.cs" />
     <Compile Include="TCP\Context.cs" />
+    <Compile Include="TCP\Delegates.cs" />
     <Compile Include="TCP\Extensions.cs" />
     <Compile Include="TCP\Server.cs" />
     <Compile Include="TCP\State.cs" />
