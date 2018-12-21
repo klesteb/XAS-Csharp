@@ -111,9 +111,9 @@ namespace XAS.Network.STOMP {
 
             this.dispatchEvent = new AutoResetEvent(false);
 
-            base.OnConnect = OnConnect;
-            base.OnDisconnect = OnDisconnect;
-            base.OnDataReceived = OnDataReceived;
+            base.OnConnect += OnConnect;
+            base.OnDisconnect += OnDisconnect;
+            base.OnDataReceived += OnDataReceived;
 
             log = logFactory.Create(typeof(Client));
 
