@@ -181,7 +181,6 @@ namespace ServiceSpooler.Processors {
 
             }
 
-            this.Cancellation.Cancel(true);
             this.StopEnqueueOrphans();
             this.ConnectionEvent.Reset();
 
@@ -203,7 +202,6 @@ namespace ServiceSpooler.Processors {
 
             }
 
-            this.Cancellation.Cancel(true);
             this.StopEnqueueOrphans();
             this.ConnectionEvent.Reset();
 
@@ -246,7 +244,6 @@ namespace ServiceSpooler.Processors {
 
             }
 
-            this.Cancellation.Cancel(true);
             this.StopEnqueueOrphans();
             this.ConnectionEvent.Reset();
 
@@ -367,6 +364,7 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering StopEnqueueOrphans()");
 
+            this.Cancellation.Cancel(true);
             Task.WaitAny(tasks.ToArray());
 
             log.Trace("Leaving StopEnqueueOrphans()");

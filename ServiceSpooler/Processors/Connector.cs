@@ -151,9 +151,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Stop()");
 
-            this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
-            this.Disconnect();
-            this.ConnectionEvent.Reset();
+            if (this.IsConnectionSuccessful) {
+
+                this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
+                this.Disconnect();
+                this.ConnectionEvent.Reset();
+
+            }
 
             log.Trace("Leaving Stop()");
 
@@ -167,9 +171,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Pause()");
 
-            this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
-            this.Disconnect();
-            this.ConnectionEvent.Reset();
+            if (this.IsConnectionSuccessful) {
+
+                this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
+                this.Disconnect();
+                this.ConnectionEvent.Reset();
+
+            }
 
             log.Trace("Leaving Pause()");
 
@@ -198,9 +206,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Shutdown()");
 
-            this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
-            this.Disconnect();
-            this.ConnectionEvent.Reset();
+            if (this.IsConnectionSuccessful) {
+
+                this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
+                this.Disconnect();
+                this.ConnectionEvent.Reset();
+
+            }
 
             log.Trace("Leaving Shutdown()");
 

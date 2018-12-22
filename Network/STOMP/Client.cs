@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
-using XAS.Core;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -112,6 +111,7 @@ namespace XAS.Network.STOMP {
             this.dispatchEvent = new AutoResetEvent(false);
 
             base.OnConnect += OnConnect;
+            base.OnException += OnException;
             base.OnDisconnect += OnDisconnect;
             base.OnDataReceived += OnDataReceived;
 
@@ -133,6 +133,16 @@ namespace XAS.Network.STOMP {
         }
 
         #region Delegate Methods
+
+        private new void OnException(Exception ex) {
+
+            log.Trace("Entering OnException()");
+
+            //this.Cancellation.Cancel();
+
+            log.Trace("Leaving OnException()");
+
+        }
 
         /// <summary>
         /// Handles the callback for the initial connection to the server.
@@ -198,12 +208,8 @@ namespace XAS.Network.STOMP {
         public new void OnDisconnect() {
 
             log.Trace("Entering OnDisconnect()");
-            Int32[] retries = { 60, 120, 240, 480, 960, 1920, 3840 };
 
-            this.Cancellation.Cancel(true);
             this.StopDispatch();
-
-            Retry.UntilTrue(retries, Connect);
 
             log.Trace("Leaving OnDisconnect()");
 
@@ -216,6 +222,12 @@ namespace XAS.Network.STOMP {
 
             log.Trace("Entering StartDispatch()");
 
+            if (this.Cancellation.IsCancellationRequested) {
+
+                this.Cancellation = new CancellationTokenSource();
+
+            }
+
             this.dispatchTask = new Task(this.Dispatch, this.Cancellation.Token, TaskCreationOptions.LongRunning);
             this.dispatchTask.Start();
 
@@ -227,10 +239,15 @@ namespace XAS.Network.STOMP {
 
             log.Trace("Entering StopDispatch()");
 
-            Task[] tasks = { this.dispatchTask };
+            if (this.dispatchTask != null) {
 
-            this.dispatchEvent.Set();
-            Task.WaitAll(tasks);
+                Task[] tasks = { this.dispatchTask };
+
+                this.Cancellation.Cancel(true);
+                this.dispatchEvent.Set();
+                Task.WaitAll(tasks);
+
+            }
 
             log.Trace("Leaving StopDispatch()");
 

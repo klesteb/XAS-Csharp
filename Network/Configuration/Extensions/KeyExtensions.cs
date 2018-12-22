@@ -54,6 +54,14 @@ namespace XAS.Network.Configuration.Extensions {
             return "ClientSSLValidation";
         }
 
+        public static String ServerDisconnect(this Key junk) {
+            return "ServerDisconnect";
+        }
+
+        public static String ServerConnect(this Key junk) {
+            return "ServerConnect";
+        }
+
     }
 
 }

@@ -19,7 +19,7 @@ namespace ServiceSpooler {
         Description = "This manages spool files and directories for the XAS environment.",
         EventSource = "XasSpooler",
         EventLog = "Application",
-        AutoLog = true,
+        AutoLog = false,
         StartMode = ServiceStartMode.Manual
     )]
 
@@ -87,9 +87,16 @@ namespace ServiceSpooler {
             this.monitor.DequeueEvent = this.dequeueEvent;
             this.monitor.ConnectionEvent = this.connectionEvent;
 
-            watchers.Start();
+            this.connector.Cancellation = this.cancelToken;
+
             connector.Start();
-            monitor.Start();
+
+            if (! this.cancelToken.IsCancellationRequested) {
+
+                watchers.Start();
+                monitor.Start();
+
+            }
 
         }
 
@@ -100,8 +107,8 @@ namespace ServiceSpooler {
             this.cancelToken.Cancel();
 
             this.watchers.Pause();
-            this.connector.Pause();
             this.monitor.Pause();
+            this.connector.Pause();
 
         }
 
@@ -115,11 +122,11 @@ namespace ServiceSpooler {
             this.watchers.Cancellation = this.cancelToken;
             this.watchers.Continue();
 
-            this.connector.Cancellation = this.cancelToken;
-            this.connector.Continue();
-
             this.monitor.Cancellation = this.cancelToken;
             this.monitor.Continue();
+
+            this.connector.Cancellation = this.cancelToken;
+            this.connector.Continue();
 
         }
 
@@ -130,8 +137,8 @@ namespace ServiceSpooler {
             this.cancelToken.Cancel();
 
             this.watchers.Stop();
-            this.connector.Stop();
             this.monitor.Stop();
+            this.connector.Stop();
 
         }
 
@@ -142,8 +149,8 @@ namespace ServiceSpooler {
             this.cancelToken.Cancel();
 
             this.watchers.Shutdown();
-            this.connector.Shutdown();
             this.monitor.Shutdown();
+            this.connector.Shutdown();
 
         }
 

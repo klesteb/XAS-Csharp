@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
+using XAS.Core;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -156,7 +157,7 @@ namespace XAS.Network.TCP {
 
             this.Port = 7;              // echo-stream server
             this.BufferSize = 1024;
-            this.Server = "localhost";
+            this.Server = "127.0.0.1";
 
             this.Timeout = 30;
 
@@ -173,9 +174,10 @@ namespace XAS.Network.TCP {
             this.IsConnectionSuccessful = false;
             this.Cancellation = new CancellationTokenSource();
 
-            this.OnDataSent += MyOnDataSent;
-            this.OnException += MyOnException;
-            this.OnDisconnect += MyOnDisconnect;
+            this.OnConnect += InternalOnConnect;
+            this.OnDataSent += InternalOnDataSent;
+            this.OnException += InternalOnException;
+            this.OnDisconnect += InternalOnDisconnect;
 
             this.log = logFactory.Create(typeof(Client));
 
@@ -203,34 +205,30 @@ namespace XAS.Network.TCP {
                 context.Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
                 context.Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
-                context.Socket.BeginConnect(this.Server, this.Port, connectCallback, context);
+                context.Socket.BeginConnect(Server, Port, connectCallback, context);
 
-                if (this.timeoutEvent.WaitOne(timeout, false)) {
+                if (timeoutEvent.WaitOne(timeout, false)) {
 
-                    if (this.IsConnectionSuccessful) {
+                    if (IsConnectionSuccessful) {
 
-                        log.Debug(String.Format("Connect() - Connected to {0}", this.Server));
+                        log.Debug(String.Format("Connect() - Connected to {0}", Server));
 
-                        if (this.Keepalive) {
+                        if (Keepalive) {
 
-                            context.Socket.SetKeepaliveValues(this.KeepaliveTimeout, this.KeepaliveInterval);
+                            context.Socket.SetKeepaliveValues(KeepaliveTimeout, KeepaliveInterval);
 
                         }
 
                         context.Connected = true;
                         context.Stream = new NetworkStream(context.Socket);
 
-                        if (this.UseSSL) {
+                        if (UseSSL) {
 
-                            this.SetSslOptions();
-
-                        }
-
-                        if (OnConnect != null) {
-
-                            this.OnConnect();
+                            SetSslOptions();
 
                         }
+
+                        OnConnect();
 
                         stat = true;
 
@@ -244,7 +242,7 @@ namespace XAS.Network.TCP {
                 
             } catch (Exception ex) {
 
-                this.OnException(ex);
+                OnException(ex);
 
             }
 
@@ -277,7 +275,8 @@ namespace XAS.Network.TCP {
             }
 
             context.Connected = false;
-            this.IsConnectionSuccessful = false;
+            IsConnectionSuccessful = false;
+            OnDisconnect();
 
             log.Trace("Leaving Diconnect()");
 
@@ -292,7 +291,7 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering Send()");
 
-            if (!this.Cancellation.Token.IsCancellationRequested) {
+            if (! Cancellation.IsCancellationRequested) {
 
                 if (context.Connected && (context.Stream != null)) {
 
@@ -315,9 +314,9 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering Receive()");
 
-            if (!this.Cancellation.Token.IsCancellationRequested) {
+            if (! Cancellation.IsCancellationRequested) {
 
-                this.WaitForData();
+                WaitForData();
 
             }
 
@@ -348,37 +347,65 @@ namespace XAS.Network.TCP {
 
         }
 
-        #region Private Methods
+        #region Delegate Methods
 
-        private void MyOnException(Exception ex) {
+        private void InternalOnConnect() {
 
-            log.Trace("Entering MyOnException()");
+            log.Trace("Entering InternalOnConnect()");
+
+            var key = config.Key;
+
+            log.InfoMsg(key.ServerConnect(), this.Server, this.Port);
+
+            log.Trace("Leaving InternalOnConnect()");
+
+        }
+
+        private void InternalOnException(Exception ex) {
+
+            log.Trace("Entering InternalOnException()");
 
             handler.Exceptions(ex);
 
-            log.Trace("Leaving MyOnException()");
+            log.Trace("Leaving InternalOnException()");
 
         }
 
-        private void MyOnDataSent() {
+        private void InternalOnDataSent() {
 
-            log.Trace("Entering MyOnDataSent()");
+            log.Trace("Entering InternalOnDataSent()");
 
             // do nothing.
 
-            log.Trace("Leaving MyOnDataSent()");
+            log.Trace("Leaving InternalOnDataSent()");
 
         }
 
-        private void MyOnDisconnect() {
+        private void InternalOnDisconnect() {
 
-            log.Trace("Entering MyOnDisconnect()");
+            log.Trace("Entering InternalOnDisconnect()");
 
-            // do nothing.
+            var key = config.Key;
+            Int32[] retries = { 60, 120, 240, 480, 960, 1920, 3840 };
 
-            log.Trace("Leaving MyOnDisconnect()");
+            log.ErrorMsg(key.ServerDisconnect(), this.Server);
+
+            if (! this.Cancellation.IsCancellationRequested) {
+
+                if (Retry.UntilTrue(retries, Connect)) {
+
+                    log.InfoMsg(key.ServerConnect(), this.Server, this.Port);
+
+                }
+
+            }
+
+            log.Trace("Leaving InternalOnDisconnect()");
 
         }
+
+        #endregion
+        #region Callback Handling
 
         private void WaitForData() {
 
@@ -453,7 +480,6 @@ namespace XAS.Network.TCP {
                     log.Debug("ReadCallback() - read == 0");
 
                     this.Disconnect();
-                    this.OnDisconnect();
 
                 }
 
@@ -489,11 +515,7 @@ namespace XAS.Network.TCP {
                 context.Stream.EndWrite(asyn);
                 context.Stream.Flush();
 
-                if (this.OnDataSent != null) {
-
-                    this.OnDataSent();
-
-                }
+                this.OnDataSent();
 
             } catch (Exception ex) {
 
@@ -504,6 +526,9 @@ namespace XAS.Network.TCP {
             log.Trace("Leaving WriteCallback()");
 
         }
+
+        #endregion
+        #region SSL Handling
 
         private void SetSslOptions() {
 

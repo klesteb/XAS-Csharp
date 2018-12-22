@@ -78,11 +78,15 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Stop()");
 
-            Task[] tasks = { this.dequeueTask };
+            if (this.dequeueTask != null) {
 
-            this.Cancellation.Cancel(true);
-            this.DequeueEvent.Set();
-            Task.WaitAny(tasks);
+                Task[] tasks = { this.dequeueTask };
+
+                this.Cancellation.Cancel(true);
+                this.DequeueEvent.Set();
+                Task.WaitAny(tasks);
+
+            }
 
             log.Trace("Leaving Stop()");
 
@@ -96,11 +100,15 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Pause()");
 
-            Task[] tasks = { this.dequeueTask };
+            if (this.dequeueTask != null) {
 
-            this.Cancellation.Cancel(true);
-            this.DequeueEvent.Set();
-            Task.WaitAny(tasks);
+                Task[] tasks = { this.dequeueTask };
+
+                this.Cancellation.Cancel(true);
+                this.DequeueEvent.Set();
+                Task.WaitAny(tasks);
+
+            }
 
             log.Trace("Leaving Pause()");
 
@@ -129,11 +137,15 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Shutdown()");
 
-            Task[] tasks = { this.dequeueTask };
+            if (this.dequeueTask != null) {
 
-            this.Cancellation.Cancel(true);
-            this.DequeueEvent.Set();
-            Task.WaitAny(tasks);
+                Task[] tasks = { this.dequeueTask };
+
+                this.Cancellation.Cancel(true);
+                this.DequeueEvent.Set();
+                Task.WaitAny(tasks);
+
+            }
 
             log.Trace("Leaving Shutdown()");
 
