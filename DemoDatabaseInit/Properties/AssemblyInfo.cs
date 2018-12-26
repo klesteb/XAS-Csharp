@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DemoDatabaseInit")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Demo Database Init")]
+[assembly: AssemblyDescription("Initialize the demo database")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Keivn L. Esteb")]
 [assembly: AssemblyProduct("DemoDatabaseInit")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]

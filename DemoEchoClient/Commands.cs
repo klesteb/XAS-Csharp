@@ -51,7 +51,7 @@ namespace DemoEchoClient {
 
             client.OnException += delegate(Exception ex) {
 
-                System.Console.WriteLine(ex);
+                handler.Errors(ex);
 
             };
 

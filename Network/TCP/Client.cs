@@ -280,6 +280,7 @@ namespace XAS.Network.TCP {
 
             context.Connected = false;
             IsConnectionSuccessful = false;
+
             OnDisconnect();
 
             log.Trace("Leaving Disconnect()");

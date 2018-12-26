@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DemoEchoServer")]
+[assembly: AssemblyTitle("Demo Echo Server")]
 [assembly: AssemblyDescription("A demo of a echo server")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kevin L. Esteb")]

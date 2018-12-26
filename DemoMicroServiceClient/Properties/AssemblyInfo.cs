@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DemoMicroServiceClient")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Demo Micro Service Client")]
+[assembly: AssemblyDescription("A client for  demo-mocro-service-serviced")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Kevin L. Esteb")]
 [assembly: AssemblyProduct("DemoMicroServiceClient")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]

@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DemoDatabase")]
-[assembly: AssemblyDescription("A demo of XAS Model")]
+[assembly: AssemblyTitle("Demo Database")]
+[assembly: AssemblyDescription("A command line shell to the demo database")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kevin L. Esteb")]
 [assembly: AssemblyProduct("DemoDatabase")]
-[assembly: AssemblyCopyright("Kevin L. Esteb")]
+[assembly: AssemblyCopyright("Copyright (c) 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

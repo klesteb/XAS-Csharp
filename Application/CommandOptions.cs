@@ -209,6 +209,7 @@ namespace XAS.App {
                 } catch (Exception ex) {
 
                     handler.Errors(ex);
+                    stat = true;
 
                 }
 

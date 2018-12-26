@@ -130,6 +130,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoEchoClient", "DemoEchoC
 		{4AA7CF73-52E6-4311-8197-B6EE0605CF94} = {4AA7CF73-52E6-4311-8197-B6EE0605CF94}
 	EndProjectSection
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupDemo", "SetupDemo\SetupDemo.vdproj", "{7475DFF0-981F-4699-B226-93CC3716E3E7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A24B9F0B-1A06-40F6-8610-1BC6EE3605CA} = {A24B9F0B-1A06-40F6-8610-1BC6EE3605CA}
+		{700012D0-ACDC-4ABA-94EC-7D8C44E7E805} = {700012D0-ACDC-4ABA-94EC-7D8C44E7E805}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -214,6 +220,8 @@ Global
 		{BB8018E4-9693-49ED-B900-C420F1C4A832}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB8018E4-9693-49ED-B900-C420F1C4A832}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB8018E4-9693-49ED-B900-C420F1C4A832}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7475DFF0-981F-4699-B226-93CC3716E3E7}.Debug|Any CPU.ActiveCfg = Debug
+		{7475DFF0-981F-4699-B226-93CC3716E3E7}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DemoShell")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Demo Shell")]
+[assembly: AssemblyDescription("A demo of the shell interface")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Kevin L. Esteb")]
 [assembly: AssemblyProduct("DemoShell")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]

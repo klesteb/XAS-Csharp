@@ -583,7 +583,7 @@ namespace XAS.Network.TCP {
 
             foreach (Int32 id in removals) {
 
-                if (this.Cancellation.Token.IsCancellationRequested) {
+                if (Cancellation.Token.IsCancellationRequested) {
 
                     return;
 

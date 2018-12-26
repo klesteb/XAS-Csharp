@@ -7,7 +7,7 @@
     <ProjectGuid>{1289E8C9-A322-46A4-99C3-966195454F48}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>DemoEchoServer</RootNamespace>
-    <AssemblyName>DemoEchoServerd</AssemblyName>
+    <AssemblyName>demo-echo-serverd</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="DemoEchoServerd.ini" />
+    <None Include="demo-echo-serverd.ini" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup />

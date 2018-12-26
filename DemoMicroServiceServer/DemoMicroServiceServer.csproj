@@ -7,7 +7,7 @@
     <ProjectGuid>{AC5563D7-77AC-4226-8E5F-694A01E51FE3}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>DemoMicroServiceServer</RootNamespace>
-    <AssemblyName>DemoMicroServiceServerd</AssemblyName>
+    <AssemblyName>demo-micro-service-serverd</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -125,7 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="DemoMicroServiceServerd.ini" />
+    <None Include="demo-micro-service-serverd.ini" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

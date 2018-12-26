@@ -7,7 +7,7 @@
     <ProjectGuid>{9EEDAEB6-C56C-4F01-AD79-9EABCD5808D4}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>DemoMicroServiceClient</RootNamespace>
-    <AssemblyName>DemoMicroServiceClient</AssemblyName>
+    <AssemblyName>demo-micro-service-client</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -78,7 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="DemoMicroServiceClient.ini" />
+    <None Include="demo-micro-service-client.ini" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

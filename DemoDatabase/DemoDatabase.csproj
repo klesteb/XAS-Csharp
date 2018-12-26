@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DemoDatabase</RootNamespace>
-    <AssemblyName>DemoDatabase</AssemblyName>
+    <AssemblyName>demo-database</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -108,7 +108,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="DemoDatabase.ini" />
+    <None Include="demo-database.ini" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

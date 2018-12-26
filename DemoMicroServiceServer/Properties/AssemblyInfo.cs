@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DemoMicroServiceServer")]
+[assembly: AssemblyTitle("Demo Micro Service Server")]
 [assembly: AssemblyDescription("A demo of a micro server using XAS.Core, XAS.App and XAS.Rest")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kevin L. Esteb")]
