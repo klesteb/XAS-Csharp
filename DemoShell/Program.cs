@@ -68,15 +68,15 @@ namespace DemoShell {
 
             public override Int32 RunApp(String[] args) {
 
-                var handler = new Commands(config, logFactory);
-                this.Commands = new CommandOptions(config, logFactory);
+                var cmdHandler = new Commands(config, handler, logFactory);
+                this.Commands = new CommandOptions(config, handler, logFactory);
 
-                handler.Port = this.Port;
-                handler.Server = this.Server;
+                cmdHandler.Port = this.Port;
+                cmdHandler.Server = this.Server;
 
-                this.Commands.Add("set", "set global settings", handler.Set);
-                this.Commands.Add("show", "show global settings", handler.Show);
-                this.Commands.Add("schedule", "schedule a job to run", handler.Schedule);
+                this.Commands.Add("set", "set global settings", cmdHandler.Set);
+                this.Commands.Add("show", "show global settings", cmdHandler.Show);
+                this.Commands.Add("schedule", "schedule a job to run", cmdHandler.Schedule);
 
                 return base.RunApp(args);
 

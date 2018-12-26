@@ -62,6 +62,10 @@ namespace XAS.Network.Configuration.Extensions {
             return "ServerConnect";
         }
 
+        public static String ServerReconnect(this Key junk) {
+            return "ServerReconnect";
+        }
+
     }
 
 }

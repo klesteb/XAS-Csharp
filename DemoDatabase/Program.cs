@@ -103,7 +103,7 @@ namespace DemoDatabase {
 
             bool debug = config.GetValue(config.Section.Environment(), config.Key.Debug()).ToBoolean();
             var command = new Commands(config, handler, logFactory, model);
-            this.Commands = new CommandOptions(config, logFactory);
+            this.Commands = new CommandOptions(config, handler, logFactory);
 
             this.Commands.Add("set", "set global settings", command.Set);
             this.Commands.Add("show", "show global settings", command.Show);

@@ -4,6 +4,7 @@ using System.Linq;
 using XAS.App;
 using XAS.Core.Logging;
 using XAS.App.Exceptions;
+using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 
@@ -17,6 +18,7 @@ namespace DemoShell {
 
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
+        private readonly IErrorHandler handler = null;
         private readonly ILoggerFactory logFactory = null;
 
         public Int32 Port { get; set; }
@@ -29,9 +31,10 @@ namespace DemoShell {
         /// <param name="config">An IConfiguratio object.</param>
         /// <param name="logFactory">An ILoggerFActory object.</param>
         /// 
-        public Commands(IConfiguration config, ILoggerFactory logFactory): base() {
+        public Commands(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory): base() {
 
             this.config = config;
+            this.handler = handler;
             this.logFactory = logFactory;
 
             this.log = logFactory.Create(typeof(Commands));

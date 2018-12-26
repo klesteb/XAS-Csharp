@@ -5,9 +5,10 @@ using XAS.App;
 using XAS.Network.TCP;
 using XAS.Core.Logging;
 using XAS.App.Exceptions;
+using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
-using XAS.Core.Exceptions;
+using XAS.Network.Configuration.Extensions;
 
 namespace DemoEchoClient {
 
@@ -43,12 +44,38 @@ namespace DemoEchoClient {
             this.log = logFactory.Create(typeof(Commands));
             this.Requestor = config.GetValue(config.Section.Environment(), config.Key.Username());
 
-            this.client.OnDataReceived += delegate(Byte[] bytes) {
+            client.OnDataReceived += delegate(Byte[] bytes) {
                 string buffer = System.Text.Encoding.UTF8.GetString(bytes);
-                System.Console.WriteLine("received: {0}", buffer);
+                System.Console.WriteLine("\nreceived: {0}", buffer);
             };
 
-            this.client.Connect();
+            client.OnException += delegate(Exception ex) {
+
+                System.Console.WriteLine(ex);
+
+            };
+
+            client.OnDisconnect += delegate() {
+
+                var key = config.Key;
+                var section = config.Section;
+                string format = config.GetValue(section.Messages(), key.ServerDisconnect());
+
+                System.Console.WriteLine(String.Format(format, client.Server));
+
+            };
+
+            client.OnConnect += delegate() {
+
+                var key = config.Key;
+                var section = config.Section;
+                string format = config.GetValue(section.Messages(), key.ServerConnect());
+
+                System.Console.WriteLine(String.Format(format, client.Server, client.Port));
+
+            };
+
+            client.Connect();
 
         }
 
@@ -60,6 +87,8 @@ namespace DemoEchoClient {
         /// 
         public Boolean Send(params String[] args) {
 
+            string text = "";
+            bool sendText = false;
             bool displayHelp = false;
             string requestor = this.Requestor;
 
@@ -70,8 +99,8 @@ namespace DemoEchoClient {
             });
 
             options.Add("text=", "send a line of text.", (v) => {
-                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(v);
-                client.Send(bytes);
+                sendText = true;
+                text = v;
             });
 
             var parameters = options.Parse(args).ToArray(); // forces the options to be parsed
@@ -79,6 +108,11 @@ namespace DemoEchoClient {
             if (displayHelp) {
 
                 DisplayHelp("send \"<text...>\"", options);
+
+            } else if (sendText) {
+
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(text);
+                client.Send(bytes);
 
             }
 
@@ -103,10 +137,16 @@ namespace DemoEchoClient {
 
             options.Add("port=", "set the port number.", (v) => {
                 this.Port = Convert.ToInt32(v);
+                client.Disconnect();
+                client.Port = Port;
+                client.Reconnect();
             });
 
             options.Add("server=", "set the server name.", (v) => {
                 this.Server = v;
+                client.Disconnect();
+                client.Server = Server;
+                client.Reconnect();
             });
 
             options.Add("requestor=", "set the default requestor.", (v) => {

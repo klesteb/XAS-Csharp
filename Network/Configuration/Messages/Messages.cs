@@ -42,8 +42,9 @@ namespace XAS.Network.Configuration.Messages {
             config.AddKey(section.Messages(), key.ClientDeadSocket(), "Clinet {0} on port {1} had been disconnected for a dead socker.");
             config.AddKey(section.Messages(), key.ClientSSLValidation(), "Client {0} on port {1} had been disconnected for bad ssl validation.");
 
-            config.AddKey(section.Messages(), key.ServerDisconnect(), "Disconneted from {0}, trying to reconnect.");
-            config.AddKey(section.Messages(), key.ServerConnect(), "Connected to {0} on port {0}.");
+            config.AddKey(section.Messages(), key.ServerDisconnect(), "Disconnected from {0}.");
+            config.AddKey(section.Messages(), key.ServerConnect(), "Connected to {0} on port {1}.");
+            config.AddKey(section.Messages(), key.ServerReconnect(), "Trying to connect to {0}.");
 
         }
 

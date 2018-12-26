@@ -22,10 +22,11 @@ namespace XAS.Network.TCP {
     public class Client: IDisposable {
 
         private readonly ILogger log = null;
-        private XAS.Network.TCP.Context context = null;
         protected readonly IConfiguration config = null;
         protected readonly IErrorHandler handler = null;
         protected readonly ILoggerFactory logFactory = null;
+
+        private XAS.Network.TCP.Context context = null;
         private AutoResetEvent timeoutEvent = new AutoResetEvent(false);
         private X509CertificateCollection clientCerts = new X509CertificateCollection();
 
@@ -148,6 +149,9 @@ namespace XAS.Network.TCP {
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">Am ILoggerFactory object.</param>
         /// 
         public Client(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
@@ -278,7 +282,34 @@ namespace XAS.Network.TCP {
             IsConnectionSuccessful = false;
             OnDisconnect();
 
-            log.Trace("Leaving Diconnect()");
+            log.Trace("Leaving Disconnect()");
+
+        }
+
+        /// <summary>
+        /// Reconnect to the server. This provides a simple backoff methodology. 
+        /// </summary>
+        /// <returns>true on sucess.</returns>
+        /// 
+        public Boolean Reconnect() {
+
+            log.Trace("Entering Reconnect()");
+
+            bool stat = false;
+            var key = config.Key;
+            Int32[] retries = { 60, 120, 240, 480, 960, 1920, 3840 };
+
+            log.InfoMsg(key.ServerReconnect(), Server);
+
+            if (! Cancellation.IsCancellationRequested) {
+
+                stat = Retry.UntilTrue(retries, Connect);
+
+            }
+
+            log.Trace("Leaving Reconnect()");
+
+            return stat;
 
         }
 
@@ -353,9 +384,7 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering InternalOnConnect()");
 
-            var key = config.Key;
-
-            log.InfoMsg(key.ServerConnect(), this.Server, this.Port);
+            // do nothing
 
             log.Trace("Leaving InternalOnConnect()");
 
@@ -365,7 +394,7 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering InternalOnException()");
 
-            handler.Exceptions(ex);
+            // do nothing
 
             log.Trace("Leaving InternalOnException()");
 
@@ -375,7 +404,7 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering InternalOnDataSent()");
 
-            // do nothing.
+            Receive();
 
             log.Trace("Leaving InternalOnDataSent()");
 
@@ -385,20 +414,7 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering InternalOnDisconnect()");
 
-            var key = config.Key;
-            Int32[] retries = { 60, 120, 240, 480, 960, 1920, 3840 };
-
-            log.ErrorMsg(key.ServerDisconnect(), this.Server);
-
-            if (! this.Cancellation.IsCancellationRequested) {
-
-                if (Retry.UntilTrue(retries, Connect)) {
-
-                    log.InfoMsg(key.ServerConnect(), this.Server, this.Port);
-
-                }
-
-            }
+            // do nothing
 
             log.Trace("Leaving InternalOnDisconnect()");
 
@@ -431,21 +447,21 @@ namespace XAS.Network.TCP {
                 Context context = (Context)asyn.AsyncState;
                 context.Socket.EndConnect(asyn);
 
-                this.IsConnectionSuccessful = false;
+                IsConnectionSuccessful = false;
 
                 if (context.Socket.IsConnected()) {
 
-                    this.IsConnectionSuccessful = true;
+                    IsConnectionSuccessful = true;
 
                 }
 
             } catch (Exception ex) {
 
-                this.OnException(ex);
+                OnException(ex);
 
             } finally {
 
-                this.timeoutEvent.Set();
+                timeoutEvent.Set();
 
             }
 
@@ -468,10 +484,9 @@ namespace XAS.Network.TCP {
                     byte[] buffer = new byte[context.Count];
                     Array.Copy(context.Buffer, buffer, context.Count);
 
-                    this.OnDataReceived(buffer);
+                    OnDataReceived(buffer);
 
                     context.Count = 0;
-                    this.Receive();
 
                 } else {
 
@@ -479,7 +494,7 @@ namespace XAS.Network.TCP {
 
                     log.Debug("ReadCallback() - read == 0");
 
-                    this.Disconnect();
+                    Disconnect();
 
                 }
 
@@ -497,7 +512,7 @@ namespace XAS.Network.TCP {
 
             } catch (Exception ex) {
 
-                this.OnException(ex);
+                OnException(ex);
 
             }
 
@@ -515,11 +530,11 @@ namespace XAS.Network.TCP {
                 context.Stream.EndWrite(asyn);
                 context.Stream.Flush();
 
-                this.OnDataSent();
+                OnDataSent();
 
             } catch (Exception ex) {
 
-                this.OnException(ex);
+                OnException(ex);
 
             }
 

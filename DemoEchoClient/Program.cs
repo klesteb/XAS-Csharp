@@ -74,7 +74,7 @@ namespace DemoEchoClient {
                 client.Port = Port;
 
                 var cmdHandler = new Commands(config, handler, logFactory, client);
-                this.Commands = new CommandOptions(config, logFactory);
+                this.Commands = new CommandOptions(config, handler, logFactory);
 
                 cmdHandler.Port = this.Port;
                 cmdHandler.Server = this.Server;

@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 
 using XAS.Core;
 using XAS.Core.Logging;
+using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 using XAS.App.Configuration.Extensions;
@@ -25,6 +26,7 @@ namespace XAS.App {
 
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
+        private readonly IErrorHandler handler = null;
         private Dictionary<string, string> descriptions;
         private Dictionary<string, Func<String[], Boolean>> actions;
 
@@ -44,7 +46,7 @@ namespace XAS.App {
         /// Initializes a new instance of the <see cref="CommandOptions"/> class.
         /// </summary>
         /// 
-        public CommandOptions(IConfiguration config, ILoggerFactory logFactory) {
+        public CommandOptions(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
             Prompt = "> ";
 
@@ -52,6 +54,7 @@ namespace XAS.App {
             actions = new Dictionary<string, Func<string[], bool>>();
 
             this.config = config;
+            this.handler = handler;
             this.InCommandFile = false;
  
             log = logFactory.Create(typeof(CommandOptions));
@@ -205,7 +208,7 @@ namespace XAS.App {
 
                 } catch (Exception ex) {
 
-                    log.Debug(String.Format("Exception = {0}", ex.Message));
+                    handler.Errors(ex);
 
                 }
 

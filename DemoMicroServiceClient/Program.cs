@@ -93,7 +93,7 @@ namespace DemoMicroServiceClient {
             // build the command handler
 
             var command = new Commands(config, handler, logFactory);
-            this.Commands = new CommandOptions(config, logFactory);
+            this.Commands = new CommandOptions(config, handler, logFactory);
 
             this.Commands.Add("set", "set global settings", command.Set);
             this.Commands.Add("show", "show global settings", command.Show);
