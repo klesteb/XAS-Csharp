@@ -50,6 +50,10 @@ namespace XAS.App.Configuration.Extensions {
             return "ServiceStartup";
         }
 
+        public static String ServiceCustom(this Key junk) {
+            return "ServiceCustom";
+        }
+
         public static String ServiceShutdown(this Key junk) {
             return "ServiceShutdown";
         }

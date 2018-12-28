@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
 using XAS.Core;
@@ -19,42 +20,38 @@ namespace ServiceSpooler.Processors {
     /// A class to handle the interaction to a STOMP based message queue server.
     /// </summary>
     /// 
-    public class Connector: Client {
+    public class Connector {
 
         private readonly ILogger log = null;
+        private readonly Stomp stomp = null;
+        private readonly Client client = null;
+        private readonly IConfiguration config = null;
+        private readonly IErrorHandler handler = null;
 
-        /// <summary>
-        /// Get/Set the connection event.
-        /// </summary>
-        /// 
-        public ManualResetEvent ConnectionEvent { get; set; }
+        private Task task = null;
+        private ManualResetEvent connectionEvent = null;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="cfgs">A configuration object.</param>
-        /// <param name="level">The STOMP level to use.</param>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">An ILoggerFactory object.</param>
         /// 
-        public Connector(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory): 
-            base(config, handler, logFactory, "1.0") {
+        public Connector(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
-            var key = config.Key;
-            var section = config.Section;
-            string mqServer = config.GetValue(section.Environment(), key.MQServer());
-            string mqPort = config.GetValue(section.Environment(), key.MQPort());
+            this.config = config;
+            this.handler = handler;
 
-            this.Cancellation = new CancellationTokenSource();
-            this.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
-            this.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
-            this.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
-            this.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
-            this.Port = config.GetValue(section.MessageQueue(), key.MQPort(), mqPort).ToInt32();
+            this.connectionEvent = new ManualResetEvent(true);
+            this.stomp = new Stomp(config, handler, logFactory);
+            this.client = new Client(config, handler, logFactory);
 
-            this.OnStompNoop += OnNoop;
-            this.OnStompError += OnError;
-            this.OnStompMessage += OnMessage;
-            this.OnStompReceipt += OnReceipt;
-            this.OnStompConnected += OnConnected;
+            client.OnStompNoop += OnStompNoop;
+            client.OnStompError += OnStompError;
+            client.OnStompMessage += OnStompMessage;
+            client.OnStompReceipt += OnStompReceipt;
+            client.OnStompConnected += OnStompConnected;
 
             this.log = logFactory.Create(typeof(Connector));
 
@@ -69,19 +66,19 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering SendPacket()");
 
-            byte[] message = Stomp.ConvertToBytes(packet.json, this.Level.ToString());
+            byte[] message = Stomp.ConvertToBytes(packet.json, client.Level.ToString());
             Frame frame = stomp.Send(
                 destination: packet.queue,
                 message: message,
                 receipt: packet.receipt,
                 persistent: true,
                 mimeType: "application/json",
-                level: this.Level.ToString()
+                level: client.Level.ToString()
             );
 
             log.Debug(Utils.Dump(frame));
 
-            this.Send(frame);
+            client.Send(frame);
 
             log.Trace("Leaving SendPacket()");
 
@@ -115,6 +112,28 @@ namespace ServiceSpooler.Processors {
 
         }
 
+        public void Processor() {
+
+            var key = config.Key;
+            var section = config.Section;
+
+            string mqPort = config.GetValue(section.Environment(), key.MQPort());
+            string mqServer = config.GetValue(section.Environment(), key.MQServer());
+
+            client.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
+            client.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
+            client.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
+            client.Port = config.GetValue(section.MessageQueue(), key.Port(), mqPort).ToInt32();
+            client.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
+            client.UseSSL = config.GetValue(section.MessageQueue(), key.UseSSL(), "false").ToBoolean();
+            client.Keepalive = config.GetValue(section.MessageQueue(), key.KeepAlive(), "true").ToBoolean();
+
+            client.Connect();
+
+            connectionEvent.WaitOne();
+
+        }
+
         /// <summary>
         /// Start processing.
         /// </summary>
@@ -126,18 +145,10 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Start()");
 
-            string mqPort = config.GetValue(section.Environment(), key.MQPort());
-            string mqServer = config.GetValue(section.Environment(), key.MQServer());
+            client.Cancellation = new CancellationTokenSource();
 
-            this.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
-            this.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
-            this.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
-            this.Port = config.GetValue(section.MessageQueue(), key.Port(), mqPort).ToInt32();
-            this.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
-            this.UseSSL = config.GetValue(section.MessageQueue(), key.UseSSL(), "false").ToBoolean();
-            this.Keepalive = config.GetValue(section.MessageQueue(), key.KeepAlive(), "true").ToBoolean();
-
-            this.Connect();
+            task = new Task(Processor, client.Cancellation.Token, TaskCreationOptions.LongRunning);
+            task.Start();
 
             log.Trace("Leaving Start()");
 
@@ -151,11 +162,17 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Stop()");
 
-            if (this.IsConnectionSuccessful) {
+            if (client.IsConnectionSuccessful) {
 
-                this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
-                this.Disconnect();
-                this.ConnectionEvent.Reset();
+                Task[] tasks = { task };
+
+                client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
+                client.Disconnect();
+                client.Cancellation.Cancel(true);
+
+                connectionEvent.Reset();
+
+                Task.WaitAll(tasks);
 
             }
 
@@ -171,11 +188,17 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Pause()");
 
-            if (this.IsConnectionSuccessful) {
+            if (client.IsConnectionSuccessful) {
 
-                this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
-                this.Disconnect();
-                this.ConnectionEvent.Reset();
+                Task[] tasks = { task };
+
+                client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
+                client.Disconnect();
+                client.Cancellation.Cancel(true);
+
+                connectionEvent.Reset();
+
+                Task.WaitAll(tasks);
 
             }
 
@@ -191,8 +214,10 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Continue()");
 
-            this.Connect();
-            this.ConnectionEvent.Set();
+            client.Cancellation = new CancellationTokenSource();
+
+            task = new Task(Processor, client.Cancellation.Token, TaskCreationOptions.LongRunning);
+            task.Start();
 
             log.Trace("Leaving Continue()");
 
@@ -206,11 +231,17 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Shutdown()");
 
-            if (this.IsConnectionSuccessful) {
+            if (client.IsConnectionSuccessful) {
 
-                this.Send(stomp.Disconnect(receipt: "disconnected", level: this.Level.ToString()));
-                this.Disconnect();
-                this.ConnectionEvent.Reset();
+                Task[] tasks = { task };
+
+                client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
+                client.Disconnect();
+                client.Cancellation.Cancel(true);
+
+                connectionEvent.Reset();
+
+                Task.WaitAll(tasks);
 
             }
 
@@ -225,19 +256,19 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public void OnConnected(Frame frame) {
+        public void OnStompConnected(Frame frame) {
 
             var key = config.Key;
             var section = config.Section;
 
-            log.Trace("Entering OnConnected()");
+            log.Trace("Entering OnStompConnected()");
             log.Debug(Utils.Dump(frame));
 
+            log.InfoMsg(key.Connected(), client.Server, client.Port);
 
-            log.InfoMsg(key.Connected(), this.Server, this.Port);
-            this.ConnectionEvent.Set();
+            connectionEvent.Set();
 
-            log.Trace("Leaving OnConnected()");
+            log.Trace("Leaving OnStompConnected()");
 
         }
 
@@ -246,22 +277,22 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public void OnReceipt(Frame frame) {
+        public void OnStompReceipt(Frame frame) {
 
             var key = config.Key;
             var section = config.Section;
 
-            log.Trace("Entering OnReceipt()");
-            log.Debug(String.Format("frame: {0}", Utils.Dump(frame)));
+            log.Trace("Entering OnStompReceipt()");
+            log.Debug(String.Format("OnStompReceipt() - frame: {0}", Utils.Dump(frame)));
 
             if (frame.Headers.ContainsKey("receipt-id")) {
 
                 char[] split = { ';' };  // really, chessy
                 string buffer = frame.Headers["receipt-id"];
 
-                log.Debug(String.Format("OnReceipt() - receipt: {0}", buffer));
+                log.Debug(String.Format("OnStompReceipt() - receipt: {0}", buffer));
                 string receipt = buffer.FromBase64();
-                log.Debug(String.Format("OnReceipt() - receipt: {0}", receipt));
+                log.Debug(String.Format("OnStompReceipt() - receipt: {0}", receipt));
 
                 if (receipt.Contains(";")) {
 
@@ -269,19 +300,19 @@ namespace ServiceSpooler.Processors {
 
                     if (stuff[1] != "") {
 
-                        this.UnlinkFile(stuff[1]);
+                        UnlinkFile(stuff[1]);
 
                     }
 
                 } else if (receipt.ToLower() == "disconnected") {
 
-                    log.InfoMsg(key.Disconnected(), this.Server);
+                    log.InfoMsg(key.Disconnected(), client.Server);
 
                 }
 
             }
 
-            log.Trace("Leaving OnReceipt()");
+            log.Trace("Leaving OnStompReceipt()");
 
         }
 
@@ -290,12 +321,12 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public void OnError(Frame frame) {
+        public void OnStompError(Frame frame) {
 
             var key = config.Key;
             var section = config.Section;
 
-            log.Trace("Entering OnError()");
+            log.Trace("Entering OnStompError()");
             log.Debug(Utils.Dump(frame));
 
             string body = "";
@@ -309,14 +340,14 @@ namespace ServiceSpooler.Processors {
 
             if (frame.Body != null) {
 
-                body = Stomp.ConvertToString(frame.Body, this.Level.ToString());
+                body = Stomp.ConvertToString(frame.Body, client.Level.ToString());
                 body = Regex.Replace(body, @"\r\n?|\n|\r", " ");
 
             }
 
             log.ErrorMsg(key.ProtocolError(), message, body);
 
-            log.Trace("Leaving OnError()");
+            log.Trace("Leaving OnStompError()");
 
         }
 
@@ -325,13 +356,13 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public void OnMessage(Frame frame) {
+        public void OnStompMessage(Frame frame) {
 
-            log.Trace("Entering OnMessage()");
+            log.Trace("Entering OnStompMessage()");
 
             log.Debug(Utils.Dump(frame));
 
-            log.Trace("Leaving OnMessage()");
+            log.Trace("Leaving OnStompMessage()");
 
         }
 
@@ -340,13 +371,13 @@ namespace ServiceSpooler.Processors {
         /// </summary>
         /// <param name="frame">A STOMP frame.</param>
         /// 
-        public void OnNoop(Frame frame) {
+        public void OnStompNoop(Frame frame) {
 
-            log.Trace("Entering OnNoop()");
+            log.Trace("Entering OnStompNoop()");
 
             log.Debug(Utils.Dump(frame));
 
-            log.Trace("Entering OnNoop()");
+            log.Trace("Leaving OnStompNoop()");
 
         }
 

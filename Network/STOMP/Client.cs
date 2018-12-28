@@ -7,6 +7,7 @@ using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
+using XAS.Network.Configuration.Extensions;
 
 namespace XAS.Network.STOMP {
 
@@ -128,17 +129,17 @@ namespace XAS.Network.STOMP {
 
             log.Debug(frame.ToString());
 
-            this.Send(frame.ToArray());
+            Send(frame.ToArray());
 
         }
 
         #region Delegate Methods
 
-        private new void OnException(Exception ex) {
+        public new void OnException(Exception ex) {
 
             log.Trace("Entering OnException()");
 
-            //this.Cancellation.Cancel();
+            handler.Exceptions(ex);
 
             log.Trace("Leaving OnException()");
 
@@ -155,15 +156,18 @@ namespace XAS.Network.STOMP {
 
             log.Trace("Entering OnConnect()");
 
-            this.StartDispatch();
-            this.Receive();
-            this.Send(
+            var key = config.Key;
+            
+            log.InfoMsg(key.ServerConnect(), Server, Port);
+
+            StartDispatch();
+            Send(
                 stomp.Connect(
-                    login: this.Username,
-                    passcode: this.Password,
-                    virtualhost: this.VirtualHost,
-                    acceptable: this.Level.ToString(),
-                    level: this.Level.ToString()
+                    login: Username,
+                    passcode: Password,
+                    virtualhost: VirtualHost,
+                    acceptable: Level.ToString(),
+                    level: Level.ToString()
                 )
             );
 
@@ -209,7 +213,17 @@ namespace XAS.Network.STOMP {
 
             log.Trace("Entering OnDisconnect()");
 
-            this.StopDispatch();
+            var key = config.Key;
+
+            log.WarnMsg(key.ServerDisconnect(), Server);
+
+            StopDispatch();
+
+            if (! Cancellation.IsCancellationRequested) {
+
+                Reconnect();
+
+            }
 
             log.Trace("Leaving OnDisconnect()");
 
@@ -222,14 +236,8 @@ namespace XAS.Network.STOMP {
 
             log.Trace("Entering StartDispatch()");
 
-            if (this.Cancellation.IsCancellationRequested) {
-
-                this.Cancellation = new CancellationTokenSource();
-
-            }
-
-            this.dispatchTask = new Task(this.Dispatch, this.Cancellation.Token, TaskCreationOptions.LongRunning);
-            this.dispatchTask.Start();
+            dispatchTask = new Task(Dispatch, Cancellation.Token, TaskCreationOptions.LongRunning);
+            dispatchTask.Start();
 
             log.Trace("Leaving StartDispatch()");
 
@@ -239,12 +247,13 @@ namespace XAS.Network.STOMP {
 
             log.Trace("Entering StopDispatch()");
 
-            if (this.dispatchTask != null) {
+            if (dispatchTask != null) {
 
-                Task[] tasks = { this.dispatchTask };
+                Task[] tasks = { dispatchTask };
 
-                this.Cancellation.Cancel(true);
-                this.dispatchEvent.Set();
+                Cancellation.Cancel(true);
+                dispatchEvent.Set();
+
                 Task.WaitAll(tasks);
 
             }
@@ -263,7 +272,7 @@ namespace XAS.Network.STOMP {
 
                 Frame frame;
 
-                if (this.Cancellation.Token.IsCancellationRequested) {
+                if (Cancellation.Token.IsCancellationRequested) {
 
                     log.Debug("Dispatch() - cancellation requested");
                     break;
@@ -272,7 +281,7 @@ namespace XAS.Network.STOMP {
 
                 while (frames.TryDequeue(out frame)) {
 
-                    if (this.Cancellation.Token.IsCancellationRequested) {
+                    if (Cancellation.Token.IsCancellationRequested) {
 
                         log.Debug("Dispatch() - cancellation requested");
                         break;
@@ -282,27 +291,27 @@ namespace XAS.Network.STOMP {
                     switch (frame.Command) {
                         case "CONNECTED":
                             log.Debug("Dispatch() - received a \"CONNECTED\" message");
-                            this.OnStompConnected(frame);
+                            OnStompConnected(frame);
                             break;
 
                         case "MESSAGE":
                             log.Debug("Dispatch() - received a \"MESSAGE\" message");
-                            this.OnStompMessage(frame);
+                            OnStompMessage(frame);
                             break;
 
                         case "RECEIPT":
                             log.Debug("Dispatch() - received a \"RECEIPT\" message");
-                            this.OnStompReceipt(frame);
+                            OnStompReceipt(frame);
                             break;
 
                         case "ERROR":
                             log.Debug("Dispatch() - received a \"ERROR\" message");
-                            this.OnStompError(frame);
+                            OnStompError(frame);
                             break;
 
                         default:
                             log.Debug("Dispatch() - received a \"NOOP\" message");
-                            this.OnStompNoop(frame);
+                            OnStompNoop(frame);
                             break;
 
                     }

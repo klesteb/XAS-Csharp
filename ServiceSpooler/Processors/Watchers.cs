@@ -33,23 +33,13 @@ namespace ServiceSpooler.Processors {
         private List<Task> tasks = null;
         private ConcurrentQueue<Packet> queued = null;
         private Dictionary<string, Watcher> watchers = null;
+        private  CancellationTokenSource cancellation = null;
 
         /// <summary>
         /// Get/Set AutoResetEvent DequeueEvent.
         /// </summary>
         /// 
         public AutoResetEvent DequeueEvent { get; set; }
-
-        /// <summary>
-        /// Get/Set the MnaulResetEvent ConnectionEvent.
-        /// </summary>
-        /// 
-        public ManualResetEvent ConnectionEvent { get; set; }
-
-        /// <summary>
-        /// Get/Set the Cancellation Token Source.
-        /// </summary>
-        public CancellationTokenSource Cancellation { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -64,7 +54,6 @@ namespace ServiceSpooler.Processors {
 
             this.tasks = new List<Task>();
             this.watchers = new Dictionary<string, Watcher>();
-            this.Cancellation = new CancellationTokenSource();
             this.log = logFactory.Create(typeof(Watchers));
 
         }
@@ -77,9 +66,9 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Clear()");
 
-            if (this.watchers.Count > 0) {
+            if (watchers.Count > 0) {
 
-                this.watchers.Clear();
+                watchers.Clear();
 
             }
 
@@ -97,7 +86,7 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Add()");
 
-            this.watchers.Add(directory, watcher);
+            watchers.Add(directory, watcher);
 
             log.Trace("Leaving Add()");
 
@@ -146,7 +135,7 @@ namespace ServiceSpooler.Processors {
                         watcher.watch.Changed += new FileSystemEventHandler(OnChange);
                         watcher.watch.EnableRaisingEvents = true;
 
-                        this.watchers.Add(directory.TrimIfEndsWith("\\"), watcher);
+                        watchers.Add(directory.TrimIfEndsWith("\\"), watcher);
 
                         log.InfoMsg(key.WatchDirectory(), directory);
 
@@ -160,7 +149,7 @@ namespace ServiceSpooler.Processors {
 
             }
 
-            this.StartEnqueueOrphans();
+            StartEnqueueOrphans();
 
             log.Trace("Leaving Start()");
 
@@ -174,15 +163,14 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Stop()");
 
-            foreach (Watcher watcher in this.watchers.Values) {
+            foreach (Watcher watcher in watchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = false;
                 watcher.watch.Dispose();
 
             }
 
-            this.StopEnqueueOrphans();
-            this.ConnectionEvent.Reset();
+            StopEnqueueOrphans();
 
             log.Trace("Leaving Stop()");
 
@@ -196,14 +184,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Pause()");
 
-            foreach (Watcher watcher in this.watchers.Values) {
+            foreach (Watcher watcher in watchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = false;
 
             }
 
-            this.StopEnqueueOrphans();
-            this.ConnectionEvent.Reset();
+            StopEnqueueOrphans();
 
             log.Trace("Leaving Pause()");
 
@@ -237,15 +224,14 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Shutdown()");
 
-            foreach (Watcher watcher in this.watchers.Values) {
+            foreach (Watcher watcher in watchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = false;
                 watcher.watch.Dispose();
 
             }
 
-            this.StopEnqueueOrphans();
-            this.ConnectionEvent.Reset();
+            StopEnqueueOrphans();
 
             log.Trace("Leaving Shutdown()");
 
@@ -270,7 +256,7 @@ namespace ServiceSpooler.Processors {
             if (watchers.ContainsKey(directory)) {
 
                 byte[] buffer;
-                Watcher watcher = this.watchers[directory];
+                Watcher watcher = watchers[directory];
 
                 if (file.Extension == watcher.spool.Extension) {
 
@@ -305,8 +291,8 @@ namespace ServiceSpooler.Processors {
                             packet.json = jsonData;
                             packet.receipt = receipt.ToBase64();
 
-                            this.queued.Enqueue(packet);
-                            this.DequeueEvent.Set();
+                            queued.Enqueue(packet);
+                            DequeueEvent.Set();
 
                             log.InfoMsg(key.FileFound(), filename, watcher.queue);
 
@@ -344,9 +330,11 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering StartEnqueueOrphans()");
 
+            cancellation = new CancellationTokenSource();
+
             foreach (Watcher watcher in watchers.Values) {
 
-                Task task = new Task(() => this.EnqueueOrphans(watcher), this.Cancellation.Token, TaskCreationOptions.LongRunning);
+                Task task = new Task(() => this.EnqueueOrphans(watcher), cancellation.Token, TaskCreationOptions.LongRunning);
                 task.Start();
                 tasks.Add(task);
 
@@ -364,7 +352,7 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering StopEnqueueOrphans()");
 
-            this.Cancellation.Cancel(true);
+            cancellation.Cancel(true);
             Task.WaitAny(tasks.ToArray());
 
             log.Trace("Leaving StopEnqueueOrphans()");
@@ -381,15 +369,13 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering EnqueueOrphans()");
             log.Debug(String.Format("EnqueueOrphans() - processing {0}", watcher.directory));
 
-            this.ConnectionEvent.WaitOne();
-
             var files = watcher.spool.Scan();
 
             log.Debug(String.Format("EnqueueOrphans() - found {0} files in {1}", files.Count(), watcher.directory));
 
             foreach (string file in files) {
 
-                if (this.Cancellation.Token.IsCancellationRequested) {
+                if (cancellation.IsCancellationRequested) {
 
                     log.Debug("EnqueueOrphans() - cancellation requested");
                     break;

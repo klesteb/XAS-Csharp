@@ -17,6 +17,7 @@ namespace ServiceSpooler.Processors {
         private Task dequeueTask = null;
         private Connector connector = null;
         private ConcurrentQueue<Packet> queued = null;
+        private CancellationTokenSource cancellation = null;
 
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
@@ -29,27 +30,15 @@ namespace ServiceSpooler.Processors {
         public AutoResetEvent DequeueEvent { get; set; }
 
         /// <summary>
-        /// Get/Set the MnaulResetEvent ConnectionEvent.
-        /// </summary>
-        /// 
-        public ManualResetEvent ConnectionEvent { get; set; }
-
-        /// <summary>
-        /// Get/Set the cancellation token soure.
-        /// </summary>
-        /// 
-        public CancellationTokenSource Cancellation { get; set; }
-
-        /// <summary>
         /// Constructor.
         /// </summary>
         /// 
         public Monitor(IConfiguration config, IErrorHandler handler, ILoggerFactory LogFactory, ConcurrentQueue<Packet> queued, Connector connector) {
 
             this.queued = queued;
-            this.connector = connector;
             this.config = config;
             this.handler = handler;
+            this.connector = connector;
 
             this.log = LogFactory.Create(typeof(Monitor));
 
@@ -63,8 +52,10 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Start()");
 
-            this.dequeueTask = new Task(this.DequeuePacket, this.Cancellation.Token, TaskCreationOptions.LongRunning);
-            this.dequeueTask.Start();
+            cancellation = new CancellationTokenSource();
+
+            dequeueTask = new Task(DequeuePacket, cancellation.Token, TaskCreationOptions.LongRunning);
+            dequeueTask.Start();
 
             log.Trace("Leaving Start()");
 
@@ -78,12 +69,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Stop()");
 
-            if (this.dequeueTask != null) {
+            if (dequeueTask != null) {
 
-                Task[] tasks = { this.dequeueTask };
+                Task[] tasks = { dequeueTask };
 
-                this.Cancellation.Cancel(true);
-                this.DequeueEvent.Set();
+                cancellation.Cancel(true);
+                DequeueEvent.Set();
+
                 Task.WaitAny(tasks);
 
             }
@@ -100,12 +92,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Pause()");
 
-            if (this.dequeueTask != null) {
+            if (dequeueTask != null) {
 
-                Task[] tasks = { this.dequeueTask };
+                Task[] tasks = { dequeueTask };
 
-                this.Cancellation.Cancel(true);
-                this.DequeueEvent.Set();
+                cancellation.Cancel(true);
+                DequeueEvent.Set();
+                
                 Task.WaitAny(tasks);
 
             }
@@ -122,8 +115,10 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Continue()");
 
-            this.dequeueTask = new Task(this.DequeuePacket, this.Cancellation.Token, TaskCreationOptions.LongRunning);
-            this.dequeueTask.Start();
+            cancellation = new CancellationTokenSource();
+
+            dequeueTask = new Task(DequeuePacket, cancellation.Token, TaskCreationOptions.LongRunning);
+            dequeueTask.Start();
 
             log.Trace("Leaving Continue()");
 
@@ -137,12 +132,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Shutdown()");
 
-            if (this.dequeueTask != null) {
+            if (dequeueTask != null) {
 
-                Task[] tasks = { this.dequeueTask };
+                Task[] tasks = { dequeueTask };
 
-                this.Cancellation.Cancel(true);
-                this.DequeueEvent.Set();
+                cancellation.Cancel(true);
+                DequeueEvent.Set();
+                
                 Task.WaitAny(tasks);
 
             }
@@ -158,34 +154,33 @@ namespace ServiceSpooler.Processors {
         public void DequeuePacket() {
 
             log.Trace("Entering DequeuePacket()");
-
-            this.ConnectionEvent.WaitOne();
             log.Debug("DequeuePacket() - connected, ready to process");
 
             for (;;) {
 
-                this.DequeueEvent.WaitOne();
+                DequeueEvent.WaitOne();
+
                 log.Debug("DequeuePacket() - processing");
 
-                if (this.Cancellation.IsCancellationRequested) {
+                if (cancellation.IsCancellationRequested) {
 
                     log.Debug("DequeuePacket() - cancellation requested");
-                    break;
+                    goto fini;
 
                 }
 
                 Packet packet;
 
-                while (this.queued.TryDequeue(out packet)) {
+                while (queued.TryDequeue(out packet)) {
 
-                    if (this.Cancellation.Token.IsCancellationRequested) {
+                    if (cancellation.IsCancellationRequested) {
 
                         log.Debug("DequeuePacket() - cancellation requested");
                         goto fini;
 
                     }
 
-                    this.connector.SendPacket(packet);
+                    connector.SendPacket(packet);
 
                 }
 

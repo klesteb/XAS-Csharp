@@ -8,16 +8,16 @@ using XAS.Core.Security;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 using XAS.App.Services.Framework;
+using XAS.App.Configuration.Extensions;
 
 using ServiceSpooler.Processors;
-using ServiceSpooler.Configuration.Extensions;
 
 namespace ServiceSpooler {
 
-    [WindowsService("XasSpooler",
+    [WindowsService("XasSpoolerd",
         DisplayName = "XAS Spooler",
         Description = "This manages spool files and directories for the XAS environment.",
-        EventSource = "XasSpooler",
+        EventSource = "XasSpoolerd",
         EventLog = "Application",
         AutoLog = false,
         StartMode = ServiceStartMode.Manual
@@ -36,8 +36,6 @@ namespace ServiceSpooler {
  
         private AutoResetEvent dequeueEvent = null;
         private ConcurrentQueue<Packet> queued = null;
-        private ManualResetEvent connectionEvent = null;
-        private CancellationTokenSource cancelToken = null;
 
         /// <summary>
         /// Constructor.
@@ -56,7 +54,6 @@ namespace ServiceSpooler {
 
             this.queued = new ConcurrentQueue<Packet>();
             this.dequeueEvent = new AutoResetEvent(false);
-            this.connectionEvent = new ManualResetEvent(false);
 
             this.connector = new Processors.Connector(config, handler, logFactory);
             this.watchers = new Processors.Watchers(config, handler, logFactory, queued);
@@ -70,93 +67,77 @@ namespace ServiceSpooler {
 
         public void OnStart(String[] args) {
 
-            log.InfoMsg("ServiceStartup");
+            var key = config.Key;
 
-            this.cancelToken = new CancellationTokenSource();
+            log.InfoMsg(key.ServiceStartup());
 
-            this.watchers.Clear();
+            watchers.Clear();
 
-            this.watchers.Cancellation = this.cancelToken;
-            this.watchers.DequeueEvent = this.dequeueEvent;
-            this.watchers.ConnectionEvent = this.connectionEvent;
-
-            this.connector.Cancellation = this.cancelToken;
-            this.connector.ConnectionEvent = this.connectionEvent;
-
-            this.monitor.Cancellation = this.cancelToken;
-            this.monitor.DequeueEvent = this.dequeueEvent;
-            this.monitor.ConnectionEvent = this.connectionEvent;
-
-            this.connector.Cancellation = this.cancelToken;
+            watchers.DequeueEvent = dequeueEvent;
+            monitor.DequeueEvent = dequeueEvent;
 
             connector.Start();
-
-            if (! this.cancelToken.IsCancellationRequested) {
-
-                watchers.Start();
-                monitor.Start();
-
-            }
+            watchers.Start();
+            monitor.Start();
 
         }
 
         public void OnPause() {
 
-            log.InfoMsg("ServicePaused");
+            var key = config.Key;
 
-            this.cancelToken.Cancel();
+            log.InfoMsg(key.ServicePaused());
 
-            this.watchers.Pause();
-            this.monitor.Pause();
-            this.connector.Pause();
+            watchers.Pause();
+            monitor.Pause();
+            connector.Pause();
 
         }
 
         public void OnContinue() {
 
-            log.InfoMsg("ServiceResumed");
+            var key = config.Key;
 
-            this.cancelToken.Dispose();
-            this.cancelToken = new CancellationTokenSource();
+            log.InfoMsg(key.ServiceResumed());
 
-            this.watchers.Cancellation = this.cancelToken;
-            this.watchers.Continue();
+            watchers.DequeueEvent = dequeueEvent;
+            monitor.DequeueEvent = dequeueEvent;
 
-            this.monitor.Cancellation = this.cancelToken;
-            this.monitor.Continue();
-
-            this.connector.Cancellation = this.cancelToken;
-            this.connector.Continue();
+            watchers.Continue();
+            monitor.Continue();
+            connector.Continue();
 
         }
 
         public void OnStop() {
 
-            log.InfoMsg("ServiceStopped");
+            var key = config.Key;
 
-            this.cancelToken.Cancel();
+            log.InfoMsg(key.ServiceStopped());
 
-            this.watchers.Stop();
-            this.monitor.Stop();
-            this.connector.Stop();
+            watchers.Stop();
+            monitor.Stop();
+            connector.Stop();
 
         }
 
         public void OnShutdown() {
 
-            log.InfoMsg("ServiceShutdown");
+            var key = config.Key;
 
-            this.cancelToken.Cancel();
+            log.InfoMsg(key.ServiceShutdown());
 
-            this.watchers.Shutdown();
-            this.monitor.Shutdown();
-            this.connector.Shutdown();
+            watchers.Shutdown();
+            monitor.Shutdown();
+            connector.Shutdown();
 
         }
 
         public void OnCustomCommand(int command) {
 
-            log.Info(String.Format("customcommand: {0}", command));
+            var key = config.Key;
+
+            log.InfoMsg(key.ServiceCustom(), command);
 
         }
 
