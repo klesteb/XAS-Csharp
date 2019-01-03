@@ -546,6 +546,21 @@ namespace XAS.Network.STOMP {
         }
 
         /// <summary>
+        /// Send a NOOP frame.
+        /// </summary>
+        /// <param name="level">The STOMP version level.</param>
+        /// <returns>A properly configured frame.</returns>
+        /// 
+        public Frame Noop(String level = "1.2") {
+
+            Byte[] message = { };
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+
+            return new Frame("", headers, message, level);
+
+        }
+
+        /// <summary>
         /// Convert a string to a byte array.
         /// </summary>
         /// <param name="data">A string.</param>

@@ -32,6 +32,12 @@ namespace ServiceSpooler.Processors {
         private ManualResetEvent connectionEvent = null;
 
         /// <summary>
+        /// Get/Set the DequeuEvent.
+        /// </summary>
+        /// 
+        public ManualResetEvent DequeueEvent { get; set; }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="config">An IConfiguration object.</param>
@@ -112,6 +118,10 @@ namespace ServiceSpooler.Processors {
 
         }
 
+        /// <summary>
+        /// Start the STOMP processing.
+        /// </summary>
+        /// 
         public void Processor() {
 
             var key = config.Key;
@@ -123,6 +133,7 @@ namespace ServiceSpooler.Processors {
             client.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
             client.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
             client.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
+            client.Heartbeat = config.GetValue(section.MessageQueue(), key.Heartbeat(), "0,0");
             client.Port = config.GetValue(section.MessageQueue(), key.Port(), mqPort).ToInt32();
             client.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
             client.UseSSL = config.GetValue(section.MessageQueue(), key.UseSSL(), "false").ToBoolean();
@@ -130,6 +141,7 @@ namespace ServiceSpooler.Processors {
 
             client.Connect();
 
+            DequeueEvent.Reset();
             connectionEvent.WaitOne();
 
         }
@@ -145,6 +157,7 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Start()");
 
+            connectionEvent.Set();
             client.Cancellation = new CancellationTokenSource();
 
             task = new Task(Processor, client.Cancellation.Token, TaskCreationOptions.LongRunning);
@@ -214,6 +227,8 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Continue()");
 
+            connectionEvent.Set();
+
             client.Cancellation = new CancellationTokenSource();
 
             task = new Task(Processor, client.Cancellation.Token, TaskCreationOptions.LongRunning);
@@ -264,9 +279,9 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering OnStompConnected()");
             log.Debug(Utils.Dump(frame));
 
-            log.InfoMsg(key.Connected(), client.Server, client.Port);
+            DequeueEvent.Set();
 
-            connectionEvent.Set();
+            log.InfoMsg(key.Connected(), client.Server, client.Port);
 
             log.Trace("Leaving OnStompConnected()");
 
@@ -347,6 +362,20 @@ namespace ServiceSpooler.Processors {
 
             log.ErrorMsg(key.ProtocolError(), message, body);
 
+            if (message == "connection_forced") {
+
+                // stop processing
+
+                DequeueEvent.Reset();
+                connectionEvent.Reset();
+
+                // cancelation has been invoked, so need to create a new source.
+
+                client.Cancellation = new CancellationTokenSource();
+                client.Reconnect();
+
+            }
+
             log.Trace("Leaving OnStompError()");
 
         }
@@ -376,6 +405,12 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering OnStompNoop()");
 
             log.Debug(Utils.Dump(frame));
+
+            if (client.Level > 1.1) {
+
+                client.Send(stomp.Noop());
+
+            }
 
             log.Trace("Leaving OnStompNoop()");
 

@@ -90,6 +90,10 @@ namespace ServiceSpooler.Configuration.Extensions {
             return "alias";
         }
 
+        public static String Heartbeat(this Key junk) {
+            return "heartbeat";
+        }
+
     }
 
 }

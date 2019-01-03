@@ -209,6 +209,7 @@ namespace ServiceSpooler {
             text.Add("        username = guest");
             text.Add("        password = guest");
             text.Add("        keepalive = true");
+            text.Add("        heartbeat = 0,0");
             text.Add("        level = 1.0");
             text.Add("");
             text.Add("    This is for interaction with the message queue server. The above are the defaults. The level");

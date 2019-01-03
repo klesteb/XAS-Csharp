@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 
 namespace XAS.Network.STOMP {
 
@@ -68,6 +64,23 @@ namespace XAS.Network.STOMP {
 
             while ((buffer.Count > 0) && (i < buffer.Count)) {
 
+                if ((Level > 1.0) && (buffer.Count == 1)) {
+
+                    // checking for a heartbeat
+                    // this has changed, at one time a 
+                    // heartbeat was an empty frame, not 
+                    // a single LF(10). I didn't notice 
+                    // this change of behavior on the 
+                    // stomp mailling list.
+
+                    if (buffer[i] == 10) {
+
+                        state = 7;
+
+                    }
+
+                }
+
                 if (state == 1) {
 
                     state = GetCommand(ref buffer, ref command, i);
@@ -85,8 +98,8 @@ namespace XAS.Network.STOMP {
 
                 } else if (state == 4) {
 
-                    string k = Stomp.ConvertToString(key.ToArray(), this.Level.ToString());
-                    string v = Stomp.ConvertToString(value.ToArray(), this.Level.ToString());
+                    string k = Stomp.ConvertToString(key.ToArray(), Level.ToString());
+                    string v = Stomp.ConvertToString(value.ToArray(), Level.ToString());
 
                     Stomp.Unescape(ref k);
                     Stomp.Unescape(ref v);
@@ -121,10 +134,10 @@ namespace XAS.Network.STOMP {
                 } else if (state == 7) {
 
                     frame = new Frame();
-                    frame.Command = Stomp.ConvertToString(command.ToArray(), this.Level.ToString());
+                    frame.Command = Stomp.ConvertToString(command.ToArray(), Level.ToString());
                     frame.Headers = headers;
                     frame.Body = body.ToArray();
-                    frame.Level = this.Level;
+                    frame.Level = Level;
 
                     i++;
                     buffer.RemoveRange(0, i);
@@ -243,7 +256,7 @@ namespace XAS.Network.STOMP {
 
                     } else {
 
-                        return state;
+                        goto fini;
 
                     }
 
@@ -253,6 +266,7 @@ namespace XAS.Network.STOMP {
 
             }
 
+            fini:
             return state;
 
         }

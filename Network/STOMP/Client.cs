@@ -56,34 +56,39 @@ namespace XAS.Network.STOMP {
         public String Subscription { get; set; }
 
         /// <summary>
-        /// Get/Set the delegate for handling a STOMP Connected frame.
+        /// Gets/Sets the STOMP protocol heartbeat.
         /// </summary>
         /// 
-        public OnStompConnected OnStompConnected { get; set; }
+        public String Heartbeat {  get; set; }
+        /// <summary>
+        /// Set the event for handling a STOMP Connected frame.
+        /// </summary>
+        /// 
+        public event OnStompConnected OnStompConnected;
 
         /// <summary>
-        /// Get/Set the delegate for handling a STOMP Message frame.
+        /// Set the event for handling a STOMP Message frame.
         /// </summary>
         /// 
-        public OnStompMessage OnStompMessage {get; set; }
+        public event OnStompMessage OnStompMessage;
 
         /// <summary>
-        /// Get/Set the delegate for handling a STOMP Receipt frame.
+        /// Set the event for handling a STOMP Receipt frame.
         /// </summary>
         /// 
-        public OnStompReceipt OnStompReceipt { get; set; }
+        public event OnStompReceipt OnStompReceipt;
 
         /// <summary>
-        /// Get/Set the delegate for handling s STOMP Error frame.
+        /// Set the event for handling s STOMP Error frame.
         /// </summary>
         /// 
-        public OnStompError OnStompError { get; set; }
+        public event OnStompError OnStompError;
 
         /// <summary>
-        /// Get/Set the delegate for handling a STOMP NOOP frame.
+        /// Set the event for handling a STOMP NOOP frame.
         /// </summary>
         /// 
-        public OnStompNoop OnStompNoop { get; set; }
+        public event OnStompNoop OnStompNoop;
 
         /// <summary>
         /// Constructor.
@@ -100,6 +105,7 @@ namespace XAS.Network.STOMP {
             frames = new ConcurrentQueue<Frame>();
             stomp = new Stomp(config, handler, logFactory);
 
+            this.Heartbeat = "0,0";
             this.VirtualHost = "/";
             this.Username = "guest";
             this.Password = "guest";
@@ -167,7 +173,8 @@ namespace XAS.Network.STOMP {
                     passcode: Password,
                     virtualhost: VirtualHost,
                     acceptable: Level.ToString(),
-                    level: Level.ToString()
+                    level: Level.ToString(),
+                    heartbeat: Heartbeat
                 )
             );
 
@@ -176,7 +183,7 @@ namespace XAS.Network.STOMP {
         }
 
         /// <summary>
-        /// Handles the callback for when data i received from the network.
+        /// Handles the callback for when data is received from the network.
         /// </summary>
         /// <remarks>
         /// Handles the abstract method from TCP.Client.
@@ -190,13 +197,15 @@ namespace XAS.Network.STOMP {
             Frame frame = null;
             parser.Buffer = buffer;
             parser.Level = this.Level;
-
+           
             while ((frame = parser.Filter()) != null) {
 
                 frames.Enqueue(frame);
                 dispatchEvent.Set();
 
             }
+
+            Receive();
 
             log.Trace("Leaving OnDataReceived()");
 
@@ -218,12 +227,8 @@ namespace XAS.Network.STOMP {
             log.WarnMsg(key.ServerDisconnect(), Server);
 
             StopDispatch();
-
-            if (! Cancellation.IsCancellationRequested) {
-
-                Reconnect();
-
-            }
+            Cancellation = new CancellationTokenSource();
+            Reconnect();
 
             log.Trace("Leaving OnDisconnect()");
 
@@ -333,7 +338,7 @@ namespace XAS.Network.STOMP {
         /// Generic dispose.
         /// </summary>
         /// <param name="disposing"></param>
-
+        /// 
         protected override void Dispose(bool disposing) {
 
             if (!disposedValue) {
@@ -348,8 +353,40 @@ namespace XAS.Network.STOMP {
                 // TODO: set large fields to null.
 
                 base.Dispose(disposing);
+
                 dispatchEvent.Dispose();
                 Task.WaitAny(dispatchTask);
+
+                foreach (OnStompConnected item in OnStompConnected.GetInvocationList()) {
+
+                    OnStompConnected -= item;
+
+                }
+
+                foreach (OnStompError item in OnStompError.GetInvocationList()) {
+
+                    OnStompError -= item;
+
+                }
+
+                foreach (OnStompMessage item in OnStompMessage.GetInvocationList()) {
+
+                    OnStompMessage -= item;
+
+                }
+
+                foreach (OnStompNoop item in OnStompNoop.GetInvocationList()) {
+
+                    OnStompNoop -= item;
+
+                }
+
+                foreach (OnStompReceipt item in OnStompReceipt.GetInvocationList()) {
+
+
+                    OnStompReceipt -= item;
+
+                }
 
                 disposedValue = true;
 

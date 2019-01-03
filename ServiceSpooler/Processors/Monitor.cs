@@ -27,7 +27,7 @@ namespace ServiceSpooler.Processors {
         /// Get/Set the DequeuEvent.
         /// </summary>
         /// 
-        public AutoResetEvent DequeueEvent { get; set; }
+        public ManualResetEvent DequeueEvent { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -74,7 +74,6 @@ namespace ServiceSpooler.Processors {
                 Task[] tasks = { dequeueTask };
 
                 cancellation.Cancel(true);
-                DequeueEvent.Set();
 
                 Task.WaitAny(tasks);
 
@@ -97,7 +96,6 @@ namespace ServiceSpooler.Processors {
                 Task[] tasks = { dequeueTask };
 
                 cancellation.Cancel(true);
-                DequeueEvent.Set();
                 
                 Task.WaitAny(tasks);
 
@@ -137,7 +135,6 @@ namespace ServiceSpooler.Processors {
                 Task[] tasks = { dequeueTask };
 
                 cancellation.Cancel(true);
-                DequeueEvent.Set();
                 
                 Task.WaitAny(tasks);
 
@@ -183,6 +180,8 @@ namespace ServiceSpooler.Processors {
                     connector.SendPacket(packet);
 
                 }
+
+                DequeueEvent.Reset();
 
             }
 

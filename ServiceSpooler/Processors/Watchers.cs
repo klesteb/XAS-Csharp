@@ -39,7 +39,7 @@ namespace ServiceSpooler.Processors {
         /// Get/Set AutoResetEvent DequeueEvent.
         /// </summary>
         /// 
-        public AutoResetEvent DequeueEvent { get; set; }
+        public ManualResetEvent DequeueEvent { get; set; }
 
         /// <summary>
         /// Constructor.

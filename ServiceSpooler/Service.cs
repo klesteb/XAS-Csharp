@@ -34,7 +34,7 @@ namespace ServiceSpooler {
         private Processors.Watchers watchers = null;
         private Processors.Connector connector = null;
  
-        private AutoResetEvent dequeueEvent = null;
+        private ManualResetEvent dequeueEvent = null;
         private ConcurrentQueue<Packet> queued = null;
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace ServiceSpooler {
             this.log = logFactory.Create(typeof(Service));
 
             this.queued = new ConcurrentQueue<Packet>();
-            this.dequeueEvent = new AutoResetEvent(false);
+            this.dequeueEvent = new ManualResetEvent(false);
 
             this.connector = new Processors.Connector(config, handler, logFactory);
             this.watchers = new Processors.Watchers(config, handler, logFactory, queued);
@@ -72,9 +72,11 @@ namespace ServiceSpooler {
             log.InfoMsg(key.ServiceStartup());
 
             watchers.Clear();
+            dequeueEvent.Set();
 
-            watchers.DequeueEvent = dequeueEvent;
             monitor.DequeueEvent = dequeueEvent;
+            watchers.DequeueEvent = dequeueEvent;
+            connector.DequeueEvent = dequeueEvent;
 
             connector.Start();
             watchers.Start();
@@ -88,6 +90,8 @@ namespace ServiceSpooler {
 
             log.InfoMsg(key.ServicePaused());
 
+            dequeueEvent.Reset();
+
             watchers.Pause();
             monitor.Pause();
             connector.Pause();
@@ -100,8 +104,7 @@ namespace ServiceSpooler {
 
             log.InfoMsg(key.ServiceResumed());
 
-            watchers.DequeueEvent = dequeueEvent;
-            monitor.DequeueEvent = dequeueEvent;
+            dequeueEvent.Set();
 
             watchers.Continue();
             monitor.Continue();
@@ -115,6 +118,8 @@ namespace ServiceSpooler {
 
             log.InfoMsg(key.ServiceStopped());
 
+            dequeueEvent.Reset();
+
             watchers.Stop();
             monitor.Stop();
             connector.Stop();
@@ -126,6 +131,8 @@ namespace ServiceSpooler {
             var key = config.Key;
 
             log.InfoMsg(key.ServiceShutdown());
+
+            dequeueEvent.Reset();
 
             watchers.Shutdown();
             monitor.Shutdown();

@@ -112,39 +112,39 @@ namespace XAS.Network.TCP {
         /// Gets wither the connection was successful.
         /// </summary>
         /// 
-        public Boolean IsConnectionSuccessful { get; private set; }
+        public Boolean IsConnectionSuccessful { get; set; }
 
         /// <summary>
-        /// Get/Set the delegate for handling connections.
+        /// Set the event for handling connections.
         /// </summary>
         /// 
-        public OnClientConnect OnConnect { get; set; }
+        public event OnClientConnect OnConnect;
 
         /// <summary>
-        /// Get/Set the delegate for handling when data was sent.
+        /// Set the event for handling when data was sent.
         /// </summary>
         /// <remarks>An internal delegate is called, which does nothing.</remarks>
         /// 
-        public OnClientDataSent OnDataSent { get; set; }
+        public event OnClientDataSent OnDataSent;
 
         /// <summary>
-        /// Get/Set the delegate for handling disconnects.
+        /// Set the event for handling disconnects.
         /// </summary>
         /// 
-        public OnClientDisconnect OnDisconnect { get; set; }
+        public event OnClientDisconnect OnDisconnect;
 
         /// <summary>
-        /// Get/Set the delegate for when exceptions happen.
+        /// Set the event for when exceptions happen.
         /// </summary>
         /// <remarks>An internal delegate is called, which invokes ErrorHandler.Exception().</remarks>
         /// 
-        public OnClientException OnException { get; set; }
+        public event OnClientException OnException;
 
         /// <summary>
-        /// Get/Set the delegate for when data is recieved.
+        /// Set the event for when data is recieved.
         /// </summary>
         /// 
-        public OnClientDataReceived OnDataReceived { get; set; }
+        public event OnClientDataReceived OnDataReceived;
 
         /// <summary>
         /// Constructor.
@@ -161,7 +161,7 @@ namespace XAS.Network.TCP {
 
             this.Port = 7;              // echo-stream server
             this.BufferSize = 1024;
-            this.Server = "127.0.0.1";
+            this.Server = "127.0.0.1";  // use the local network interface
 
             this.Timeout = 30;
 
@@ -280,8 +280,6 @@ namespace XAS.Network.TCP {
 
             context.Connected = false;
             IsConnectionSuccessful = false;
-
-            OnDisconnect();
 
             log.Trace("Leaving Disconnect()");
 
@@ -456,6 +454,18 @@ namespace XAS.Network.TCP {
 
                 }
 
+            } catch (ObjectDisposedException) {
+
+                // ignore, stream has been disposed with an outstanding read.
+
+                log.Debug("ConnectCallback() - Ignored but a ObjectDisposedException was thrown");
+
+            } catch (NullReferenceException) {
+
+                // ignore, Disconnect() with an outstanding read.
+
+                log.Debug("ConnectCallback() - Ignored but a NullReferenceException was thrown");
+
             } catch (Exception ex) {
 
                 OnException(ex);
@@ -491,11 +501,13 @@ namespace XAS.Network.TCP {
 
                 } else {
 
+                    IsConnectionSuccessful = false;
+
                     // stream has been remotely closed.
 
                     log.Debug("ReadCallback() - read == 0");
 
-                    Disconnect();
+                    OnDisconnect();
 
                 }
 
@@ -661,7 +673,7 @@ namespace XAS.Network.TCP {
         /// Generic dispose.
         /// </summary>
         /// <param name="disposing"></param>
-
+        /// 
         protected virtual void Dispose(bool disposing) {
 
             if (!disposedValue) {
@@ -676,6 +688,36 @@ namespace XAS.Network.TCP {
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
+
+                foreach (OnClientConnect item in OnConnect.GetInvocationList()) {
+
+                    OnConnect -= item;
+                
+                }
+
+                foreach (OnClientDataReceived item in OnDataReceived.GetInvocationList()) {
+
+                    OnDataReceived -= item;
+
+                }
+
+                foreach (OnClientDataSent item in OnDataSent.GetInvocationList()) {
+
+                    OnDataSent -= item;
+
+                }
+
+                foreach (OnClientDisconnect item in OnDisconnect.GetInvocationList()) {
+
+                    OnDisconnect -= item;
+
+                }
+
+                foreach (OnClientException item in OnException.GetInvocationList()) {
+
+                    OnException -= item;
+
+                }
 
                 disposedValue = true;
 

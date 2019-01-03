@@ -82,6 +82,10 @@ namespace ServiceSpooler.Configuration.Loaders {
                             config.UpdateKey(section.MessageQueue(), key.Level(), value);
                             break;
 
+                        case "heartbeat":
+                            config.UpdateKey(section.MessageQueue(), key.Heartbeat(), value);
+                            break;
+
                     }
 
                 }
