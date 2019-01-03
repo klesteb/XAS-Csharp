@@ -57,8 +57,8 @@ namespace DemoEchoServer.Processors {
             this.server.UseSSL = config.GetValue(section.SSL(), key.UseSSL(), "false").ToBoolean();
             this.server.SSLVerifyPeer = config.GetValue(section.SSL(), key.SSLVerifyPeer(), "false").ToBoolean();
 
-            this.server.OnDataSent += OnDataSent;
-            this.server.OnDataReceived += OnDataReceived;
+            this.server.OnServerDataSent += OnDataSent;
+            this.server.OnServerDataReceived += OnDataReceived;
 
         }
 

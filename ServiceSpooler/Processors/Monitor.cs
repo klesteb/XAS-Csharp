@@ -27,7 +27,13 @@ namespace ServiceSpooler.Processors {
         /// Get/Set the DequeuEvent.
         /// </summary>
         /// 
-        public ManualResetEvent DequeueEvent { get; set; }
+        public ManualResetEventSlim DequeueEvent { get; set; }
+
+        /// <summary>
+        /// Get/Set the connection event.
+        /// </summary>
+        /// 
+        public ManualResetEventSlim ConnectionEvent { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -155,7 +161,8 @@ namespace ServiceSpooler.Processors {
 
             for (;;) {
 
-                DequeueEvent.WaitOne();
+                ConnectionEvent.Wait(cancellation.Token);
+                DequeueEvent.Wait(cancellation.Token);
 
                 log.Debug("DequeuePacket() - processing");
 

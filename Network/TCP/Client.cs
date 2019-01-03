@@ -115,36 +115,36 @@ namespace XAS.Network.TCP {
         public Boolean IsConnectionSuccessful { get; set; }
 
         /// <summary>
-        /// Set the event for handling connections.
+        /// Set the event handler for handling connections.
         /// </summary>
         /// 
-        public event OnClientConnect OnConnect;
+        public event ClientConnectHandler OnClientConnect;
 
         /// <summary>
-        /// Set the event for handling when data was sent.
+        /// Set the event handler for handling when data was sent.
         /// </summary>
         /// <remarks>An internal delegate is called, which does nothing.</remarks>
         /// 
-        public event OnClientDataSent OnDataSent;
+        public event ClientDataSentHandler OnClientDataSent;
 
         /// <summary>
-        /// Set the event for handling disconnects.
+        /// Set the event handler for handling disconnects.
         /// </summary>
         /// 
-        public event OnClientDisconnect OnDisconnect;
+        public event ClientDisconnectHandler OnClientDisconnect;
 
         /// <summary>
-        /// Set the event for when exceptions happen.
+        /// Set the event handler for when exceptions happen.
         /// </summary>
         /// <remarks>An internal delegate is called, which invokes ErrorHandler.Exception().</remarks>
         /// 
-        public event OnClientException OnException;
+        public event ClientExceptionHandler OnClientException;
 
         /// <summary>
-        /// Set the event for when data is recieved.
+        /// Set the event handler for when data is recieved.
         /// </summary>
         /// 
-        public event OnClientDataReceived OnDataReceived;
+        public event ClientDataReceivedHandler OnClientDataReceived;
 
         /// <summary>
         /// Constructor.
@@ -160,7 +160,7 @@ namespace XAS.Network.TCP {
             this.logFactory = logFactory;
 
             this.Port = 7;              // echo-stream server
-            this.BufferSize = 1024;
+            this.BufferSize = 1024;     // a nice magic number
             this.Server = "127.0.0.1";  // use the local network interface
 
             this.Timeout = 30;
@@ -178,10 +178,10 @@ namespace XAS.Network.TCP {
             this.IsConnectionSuccessful = false;
             this.Cancellation = new CancellationTokenSource();
 
-            this.OnConnect += InternalOnConnect;
-            this.OnDataSent += InternalOnDataSent;
-            this.OnException += InternalOnException;
-            this.OnDisconnect += InternalOnDisconnect;
+            this.OnClientConnect += InternalOnConnect;
+            this.OnClientDataSent += InternalOnDataSent;
+            this.OnClientException += InternalOnException;
+            this.OnClientDisconnect += InternalOnDisconnect;
 
             this.log = logFactory.Create(typeof(Client));
 
@@ -219,6 +219,8 @@ namespace XAS.Network.TCP {
 
                         if (Keepalive) {
 
+                            log.InfoMsg(key.TcpKeepalive());
+
                             context.Socket.SetKeepaliveValues(KeepaliveTimeout, KeepaliveInterval);
 
                         }
@@ -232,7 +234,7 @@ namespace XAS.Network.TCP {
 
                         }
 
-                        OnConnect();
+                        OnClientConnect();
 
                         stat = true;
 
@@ -246,7 +248,7 @@ namespace XAS.Network.TCP {
                 
             } catch (Exception ex) {
 
-                OnException(ex);
+                OnClientException(ex);
 
             }
 
@@ -377,7 +379,7 @@ namespace XAS.Network.TCP {
 
         }
 
-        #region Delegate Methods
+        #region Internal Event Handlers
 
         private void InternalOnConnect() {
 
@@ -468,7 +470,7 @@ namespace XAS.Network.TCP {
 
             } catch (Exception ex) {
 
-                OnException(ex);
+                OnClientException(ex);
 
             } finally {
 
@@ -495,7 +497,7 @@ namespace XAS.Network.TCP {
                     byte[] buffer = new byte[context.Count];
                     Array.Copy(context.Buffer, buffer, context.Count);
 
-                    OnDataReceived(buffer);
+                    OnClientDataReceived(buffer);
 
                     context.Count = 0;
 
@@ -507,7 +509,7 @@ namespace XAS.Network.TCP {
 
                     log.Debug("ReadCallback() - read == 0");
 
-                    OnDisconnect();
+                    OnClientDisconnect();
 
                 }
 
@@ -525,7 +527,7 @@ namespace XAS.Network.TCP {
 
             } catch (Exception ex) {
 
-                OnException(ex);
+                OnClientException(ex);
 
             }
 
@@ -543,11 +545,11 @@ namespace XAS.Network.TCP {
                 context.Stream.EndWrite(asyn);
                 context.Stream.Flush();
 
-                OnDataSent();
+                OnClientDataSent();
 
             } catch (Exception ex) {
 
-                OnException(ex);
+                OnClientException(ex);
 
             }
 
@@ -682,42 +684,42 @@ namespace XAS.Network.TCP {
 
                     // TODO: dispose managed state (managed objects).
 
-                    this.Disconnect();
+                    Disconnect();
+
+                    foreach (ClientConnectHandler item in OnClientConnect.GetInvocationList()) {
+
+                        OnClientConnect -= item;
+
+                    }
+
+                    foreach (ClientDataReceivedHandler item in OnClientDataReceived.GetInvocationList()) {
+
+                        OnClientDataReceived -= item;
+
+                    }
+
+                    foreach (ClientDataSentHandler item in OnClientDataSent.GetInvocationList()) {
+
+                        OnClientDataSent -= item;
+
+                    }
+
+                    foreach (ClientDisconnectHandler item in OnClientDisconnect.GetInvocationList()) {
+
+                        OnClientDisconnect -= item;
+
+                    }
+
+                    foreach (ClientExceptionHandler item in OnClientException.GetInvocationList()) {
+
+                        OnClientException -= item;
+
+                    }
 
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
-
-                foreach (OnClientConnect item in OnConnect.GetInvocationList()) {
-
-                    OnConnect -= item;
-                
-                }
-
-                foreach (OnClientDataReceived item in OnDataReceived.GetInvocationList()) {
-
-                    OnDataReceived -= item;
-
-                }
-
-                foreach (OnClientDataSent item in OnDataSent.GetInvocationList()) {
-
-                    OnDataSent -= item;
-
-                }
-
-                foreach (OnClientDisconnect item in OnDisconnect.GetInvocationList()) {
-
-                    OnDisconnect -= item;
-
-                }
-
-                foreach (OnClientException item in OnException.GetInvocationList()) {
-
-                    OnException -= item;
-
-                }
 
                 disposedValue = true;
 

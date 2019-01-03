@@ -19,10 +19,10 @@ using XAS.Network.Configuration.Extensions;
 namespace XAS.Network.TCP {
 
     /// <summary>
-    /// A basic async TCP server with ssl.
+    /// A basic async TCP/IP server with SSL.
     /// </summary>
     /// 
-    public class Server {
+    public class Server: IDisposable {
 
         private string sslCaCert = "";
         private Socket listener = null;
@@ -110,25 +110,25 @@ namespace XAS.Network.TCP {
         public CancellationTokenSource Cancellation { get; set; }
 
         /// <summary>
-        /// Get/Set the delegate to call when data has been sent.
+        /// Set the event handler to call when data has been sent.
         /// </summary>
         /// 
-        public OnServerDataSent OnDataSent { get; set; }
+        public event ServerDataSentHandler OnServerDataSent;
 
         /// <summary>
-        /// Get/Set the delegate to call whan an exception has occurred.
+        /// Set the event handler to call whan an exception has occurred.
         /// </summary>
         /// <remarks>
         /// A internal exception handler is enbled. It logs the exception.
         /// </remarks>
         /// 
-        public OnServerException OnException { get; set; }
+        public event ServerExceptionHandler OnServerException;
 
         /// <summary>
-        /// Get/Set the delegate to call when data has been received.
+        /// Set the event handler to call when data has been received.
         /// </summary>
         /// 
-        public OnServerDataReceived OnDataReceived { get; set; }
+        public event ServerDataReceivedHandler OnServerDataReceived;
 
         /// <summary>
         /// Constructor.
@@ -155,11 +155,14 @@ namespace XAS.Network.TCP {
             this.handler = handler;
             this._critical = new Object();
             this._dictionary = new Object();
-            this.OnException += ExceptionHander;
-            this.accept = new ManualResetEventSlim(false);
-            this.throttle = new ManualResetEventSlim(false);
             this.log = logFactory.Create(typeof(Server));
             this.clients = new Dictionary<Int32, State>();
+            this.accept = new ManualResetEventSlim(false);
+            this.throttle = new ManualResetEventSlim(false);
+
+            this.OnServerDataSent += InternalOnDataSent;
+            this.OnServerException += InternalOnException;
+            this.OnServerDataReceived += InternalOnDataReceived;
 
             this.reaperTimer = new System.Timers.Timer(ReaperInterval * 1000);
             this.reaperTimer.Elapsed += ReapClients;
@@ -269,23 +272,6 @@ namespace XAS.Network.TCP {
         }
 
         /// <summary>
-        /// Get a client.
-        /// </summary>
-        /// <param name="id">Client ie.</param>
-        /// <returns>The State object for the client or null.</returns>
-        /// 
-        public State GetClient(Int32 id) {
-
-            lock (_dictionary) {
-
-                var state = new State();
-                return clients.TryGetValue(id, out state) ? state : null;
-
-            }
-
-        }
-
-        /// <summary>
         /// Send a buffer to the client.
         /// </summary>
         /// <param name="id">The client id.</param>
@@ -312,7 +298,7 @@ namespace XAS.Network.TCP {
 
         }
 
-        #region Private Methods
+        #region Callback Methods
 
         private void OnAcceptCallback(IAsyncResult result) {
 
@@ -393,11 +379,7 @@ namespace XAS.Network.TCP {
                     Array.Copy(client.Buffer, buffer, client.Count);
                     Array.Clear(client.Buffer, 0, client.Size);
 
-                    if (OnDataReceived != null) {
-
-                        OnDataReceived(client.Id, buffer);
-
-                    }
+                    OnServerDataReceived(client.Id, buffer);
 
                     client.Count = 0;
                     client.Activity = DateTime.Now.ToUnixTime();
@@ -437,7 +419,7 @@ namespace XAS.Network.TCP {
 
             } catch (Exception ex) {
 
-                OnException(client.Id, ex);
+                OnServerException(client.Id, ex);
 
             }
 
@@ -459,15 +441,11 @@ namespace XAS.Network.TCP {
                 client.Activity = DateTime.Now.ToUnixTime();
                 UpdateClient(client);
 
-                if (OnDataSent != null) {
-
-                    OnDataSent(client.Id);
-
-                }
+                OnServerDataSent(client.Id);
 
             } catch (Exception ex) {
 
-                OnException(client.Id, ex);
+                OnServerException(client.Id, ex);
 
             }
 
@@ -475,7 +453,22 @@ namespace XAS.Network.TCP {
 
         }
 
-        private void ExceptionHander(Int32 id, Exception ex) {
+        #endregion
+        #region Internal Event Handlers
+
+        private void InternalOnDataSent(Int32 clientId) {
+
+            log.Trace("Entering InternOnDataSent()");
+
+            // do nothing
+
+            log.Trace("Leaving InternalOnDataSent()");
+
+        }
+
+        private void InternalOnException(Int32 id, Exception ex) {
+
+            log.Trace("Entering InternalOnException()");
 
             var key = config.Key;
             var client = GetClient(id);
@@ -494,8 +487,23 @@ namespace XAS.Network.TCP {
 
             }
 
+            log.Trace("Leaving InternalOnException()");
+
         }
-        
+
+        private void InternalOnDataReceived(Int32 clientId, Byte[] buffer) {
+
+            log.Trace("Entering InternalOnDataReceived()");
+
+            // do nothing
+
+            log.Trace("Leaving InternalOnDataReceived()");
+
+        }
+
+        #endregion
+        #region Private Methods
+
         private void ReapClients(object sender, EventArgs args) {
 
             log.Trace("Entering ReapClients()");
@@ -605,6 +613,26 @@ namespace XAS.Network.TCP {
 
         }
 
+        #endregion
+        #region Client Management
+
+        /// <summary>
+        /// Get a client.
+        /// </summary>
+        /// <param name="id">Client ie.</param>
+        /// <returns>The State object for the client or null.</returns>
+        /// 
+        public State GetClient(Int32 id) {
+
+            lock (_dictionary) {
+
+                var state = new State();
+                return clients.TryGetValue(id, out state) ? state : null;
+
+            }
+
+        }
+
         private State CloneClient(State state) {
 
             var clone = new State(size: state.Size) {
@@ -705,6 +733,9 @@ namespace XAS.Network.TCP {
 
         }
 
+        #endregion
+        #region SSL Support
+
         private void EnableSSL(State state) {
 
             log.Trace("Entering EnableSSL()");
@@ -720,6 +751,63 @@ namespace XAS.Network.TCP {
 
             log.Trace("Leaving EnableSSL()");
 
+        }
+
+        #endregion
+        #region IDisposable Support
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+
+            if (!disposedValue) {
+
+                if (disposing) {
+
+                    listener.Close();
+                    RemoveClients();
+
+                    foreach (ServerDataReceivedHandler item in OnServerDataReceived.GetInvocationList()) {
+
+                        OnServerDataReceived -= item;
+
+                    }
+
+                    foreach (ServerDataSentHandler item in OnServerDataSent.GetInvocationList()) {
+
+                        OnServerDataSent -= item;
+
+                    }
+
+                    foreach (ServerExceptionHandler item in OnServerException.GetInvocationList()) {
+
+                        OnServerException -= item;
+
+                    }
+
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+
+            }
+
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~Server() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
         }
 
         #endregion

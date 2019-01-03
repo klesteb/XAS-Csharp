@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace XAS.Network.STOMP {
 
     /// <summary>
+    /// Create a STOMP frame.
+    /// </summary>
+    /// <remarks>
     /// 
     /// A STOMP v1.0 frame consists of the following:
     ///
@@ -62,8 +63,15 @@ namespace XAS.Network.STOMP {
     ///                                                                  
     /// v1.2 says there should be no "padding" in headers and values.
     /// It now appears the headers and values should be lowercase.                                     
-    ///                                                                 
-    /// </summary>
+    /// 
+    /// As of 2019-01-03
+    /// 
+    /// It appears the Rabbit MQ (3.1.5) is sending a single LF(10) for the
+    /// keepalive frame. And the github pages show that is now the correct
+    /// way of doing a keepalive. I didn't see anything on the stomp
+    /// mailing list about this change.
+    /// 
+    /// </remarks>
 
     public class Frame {
 

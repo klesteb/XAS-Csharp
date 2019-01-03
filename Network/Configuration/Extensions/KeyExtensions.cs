@@ -66,6 +66,10 @@ namespace XAS.Network.Configuration.Extensions {
             return "ServerReconnect";
         }
 
+        public static String TcpKeepalive(this Key junk) {
+            return "TcpKeepalive";
+        }
+
     }
 
 }

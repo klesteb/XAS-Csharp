@@ -44,18 +44,18 @@ namespace DemoEchoClient {
             this.log = logFactory.Create(typeof(Commands));
             this.Requestor = config.GetValue(config.Section.Environment(), config.Key.Username());
 
-            client.OnDataReceived += delegate(Byte[] bytes) {
+            client.OnClientDataReceived += delegate(Byte[] bytes) {
                 string buffer = System.Text.Encoding.UTF8.GetString(bytes);
                 System.Console.WriteLine("\nreceived: {0}", buffer);
             };
 
-            client.OnException += delegate(Exception ex) {
+            client.OnClientException += delegate(Exception ex) {
 
                 handler.Errors(ex);
 
             };
 
-            client.OnDisconnect += delegate() {
+            client.OnClientDisconnect += delegate() {
 
                 var key = config.Key;
                 var section = config.Section;
@@ -65,7 +65,7 @@ namespace DemoEchoClient {
 
             };
 
-            client.OnConnect += delegate() {
+            client.OnClientConnect += delegate() {
 
                 var key = config.Key;
                 var section = config.Section;

@@ -61,39 +61,42 @@ namespace XAS.Network.STOMP {
         /// 
         public String Heartbeat {  get; set; }
         /// <summary>
-        /// Set the event for handling a STOMP Connected frame.
+        /// Set the event handler for handling a STOMP Connected frame.
         /// </summary>
         /// 
-        public event OnStompConnected OnStompConnected;
+        public event StompConnectedHandler OnStompConnected;
 
         /// <summary>
-        /// Set the event for handling a STOMP Message frame.
+        /// Set the event handler for handling a STOMP Message frame.
         /// </summary>
         /// 
-        public event OnStompMessage OnStompMessage;
+        public event StompMessageHandler OnStompMessage;
 
         /// <summary>
-        /// Set the event for handling a STOMP Receipt frame.
+        /// Set the event handler for handling a STOMP Receipt frame.
         /// </summary>
         /// 
-        public event OnStompReceipt OnStompReceipt;
+        public event StompReceiptHandler OnStompReceipt;
 
         /// <summary>
-        /// Set the event for handling s STOMP Error frame.
+        /// Set the event handler for handling s STOMP Error frame.
         /// </summary>
         /// 
-        public event OnStompError OnStompError;
+        public event StompErrorHandler OnStompError;
 
         /// <summary>
-        /// Set the event for handling a STOMP NOOP frame.
+        /// Set the event handler for handling a STOMP NOOP frame.
         /// </summary>
         /// 
-        public event OnStompNoop OnStompNoop;
+        public event StompNoopHandler OnStompNoop;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="level">The STOMP version level to use.</param>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name="level">The STOMP level to use, defaults to 1.0.</param>
         /// 
         public Client(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, String level = "1.0"): 
             base(config, handler, logFactory) {
@@ -117,10 +120,10 @@ namespace XAS.Network.STOMP {
 
             this.dispatchEvent = new AutoResetEvent(false);
 
-            base.OnConnect += OnConnect;
-            base.OnException += OnException;
-            base.OnDisconnect += OnDisconnect;
-            base.OnDataReceived += OnDataReceived;
+            this.OnClientConnect += OnConnect;
+            this.OnClientException += OnException;
+            this.OnClientDisconnect += OnDisconnect;
+            this.OnClientDataReceived += OnDataReceived;
 
             log = logFactory.Create(typeof(Client));
 
@@ -139,9 +142,14 @@ namespace XAS.Network.STOMP {
 
         }
 
-        #region Delegate Methods
+        #region Internal Event Handlers
 
-        public new void OnException(Exception ex) {
+        /// <summary>
+        /// Handles the callback for an exception.
+        /// </summary>
+        /// <param name="ex">An Exception object.</param>
+        /// 
+        public void OnException(Exception ex) {
 
             log.Trace("Entering OnException()");
 
@@ -154,11 +162,8 @@ namespace XAS.Network.STOMP {
         /// <summary>
         /// Handles the callback for the initial connection to the server.
         /// </summary>
-        /// <remarks>
-        /// Handles the abstract method from TCP.Client.
-        /// </remarks>
         /// 
-        public new void OnConnect() {
+        public void OnConnect() {
 
             log.Trace("Entering OnConnect()");
 
@@ -185,19 +190,16 @@ namespace XAS.Network.STOMP {
         /// <summary>
         /// Handles the callback for when data is received from the network.
         /// </summary>
-        /// <remarks>
-        /// Handles the abstract method from TCP.Client.
-        /// </remarks>
         /// <param name="buffer">The byte array read from the socket.</param>
         /// 
-        public new void OnDataReceived(Byte[] buffer) {
+        public void OnDataReceived(Byte[] buffer) {
 
             log.Trace("Entering OnDataReceived()");
 
             Frame frame = null;
+            parser.Level = Level;
             parser.Buffer = buffer;
-            parser.Level = this.Level;
-           
+
             while ((frame = parser.Filter()) != null) {
 
                 frames.Enqueue(frame);
@@ -214,11 +216,8 @@ namespace XAS.Network.STOMP {
         /// <summary>
         /// Handles the callback for when the network is disconnected.
         /// </summary>
-        /// <remarks>
-        /// Handles the abstract method from TCP.Client.
-        /// </remarks>
         /// 
-        public new void OnDisconnect() {
+        public void OnDisconnect() {
 
             log.Trace("Entering OnDisconnect()");
 
@@ -227,8 +226,6 @@ namespace XAS.Network.STOMP {
             log.WarnMsg(key.ServerDisconnect(), Server);
 
             StopDispatch();
-            Cancellation = new CancellationTokenSource();
-            Reconnect();
 
             log.Trace("Leaving OnDisconnect()");
 
@@ -345,50 +342,44 @@ namespace XAS.Network.STOMP {
 
                 if (disposing) {
 
-                    // TODO: dispose managed state (managed objects).
+                    dispatchEvent.Dispose();
+                    Task.WaitAny(dispatchTask);
 
-                }
+                    foreach (StompConnectedHandler item in OnStompConnected.GetInvocationList()) {
 
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
+                        OnStompConnected -= item;
 
-                base.Dispose(disposing);
+                    }
 
-                dispatchEvent.Dispose();
-                Task.WaitAny(dispatchTask);
+                    foreach (StompErrorHandler item in OnStompError.GetInvocationList()) {
 
-                foreach (OnStompConnected item in OnStompConnected.GetInvocationList()) {
+                        OnStompError -= item;
 
-                    OnStompConnected -= item;
+                    }
 
-                }
+                    foreach (StompMessageHandler item in OnStompMessage.GetInvocationList()) {
 
-                foreach (OnStompError item in OnStompError.GetInvocationList()) {
+                        OnStompMessage -= item;
 
-                    OnStompError -= item;
+                    }
 
-                }
+                    foreach (StompNoopHandler item in OnStompNoop.GetInvocationList()) {
 
-                foreach (OnStompMessage item in OnStompMessage.GetInvocationList()) {
+                        OnStompNoop -= item;
 
-                    OnStompMessage -= item;
+                    }
 
-                }
-
-                foreach (OnStompNoop item in OnStompNoop.GetInvocationList()) {
-
-                    OnStompNoop -= item;
-
-                }
-
-                foreach (OnStompReceipt item in OnStompReceipt.GetInvocationList()) {
+                    foreach (StompReceiptHandler item in OnStompReceipt.GetInvocationList()) {
 
 
-                    OnStompReceipt -= item;
+                        OnStompReceipt -= item;
+
+                    }
 
                 }
 
                 disposedValue = true;
+                base.Dispose(disposing);
 
             }
 

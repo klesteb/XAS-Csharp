@@ -46,6 +46,8 @@ namespace XAS.Network.Configuration.Messages {
             config.AddKey(section.Messages(), key.ServerConnect(), "Connected to {0} on port {1}.");
             config.AddKey(section.Messages(), key.ServerReconnect(), "Trying to connect to {0}.");
 
+            config.AddKey(section.Messages(), key.TcpKeepalive(), "TCP level keepalive has been activated.");
+
         }
 
     }

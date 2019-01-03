@@ -29,13 +29,13 @@ namespace ServiceSpooler.Processors {
         private readonly IErrorHandler handler = null;
 
         private Task task = null;
-        private ManualResetEvent connectionEvent = null;
+        private ManualResetEvent connectedEvent = null;
 
         /// <summary>
-        /// Get/Set the DequeuEvent.
+        /// Get/Set the conection event.
         /// </summary>
         /// 
-        public ManualResetEvent DequeueEvent { get; set; }
+        public ManualResetEventSlim ConnectionEvent { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -49,7 +49,7 @@ namespace ServiceSpooler.Processors {
             this.config = config;
             this.handler = handler;
 
-            this.connectionEvent = new ManualResetEvent(true);
+            this.connectedEvent = new ManualResetEvent(true);
             this.stomp = new Stomp(config, handler, logFactory);
             this.client = new Client(config, handler, logFactory);
 
@@ -58,6 +58,7 @@ namespace ServiceSpooler.Processors {
             client.OnStompMessage += OnStompMessage;
             client.OnStompReceipt += OnStompReceipt;
             client.OnStompConnected += OnStompConnected;
+            client.OnClientDisconnect += OnDisconnect;
 
             this.log = logFactory.Create(typeof(Connector));
 
@@ -141,8 +142,8 @@ namespace ServiceSpooler.Processors {
 
             client.Connect();
 
-            DequeueEvent.Reset();
-            connectionEvent.WaitOne();
+            ConnectionEvent.Reset();
+            connectedEvent.WaitOne();
 
         }
 
@@ -157,7 +158,7 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Start()");
 
-            connectionEvent.Set();
+            connectedEvent.Set();
             client.Cancellation = new CancellationTokenSource();
 
             task = new Task(Processor, client.Cancellation.Token, TaskCreationOptions.LongRunning);
@@ -183,7 +184,8 @@ namespace ServiceSpooler.Processors {
                 client.Disconnect();
                 client.Cancellation.Cancel(true);
 
-                connectionEvent.Reset();
+                connectedEvent.Reset();
+                ConnectionEvent.Reset();
 
                 Task.WaitAll(tasks);
 
@@ -209,7 +211,8 @@ namespace ServiceSpooler.Processors {
                 client.Disconnect();
                 client.Cancellation.Cancel(true);
 
-                connectionEvent.Reset();
+                connectedEvent.Reset();
+                ConnectionEvent.Reset();
 
                 Task.WaitAll(tasks);
 
@@ -227,7 +230,8 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Continue()");
 
-            connectionEvent.Set();
+            connectedEvent.Set();
+            ConnectionEvent.Set();
 
             client.Cancellation = new CancellationTokenSource();
 
@@ -254,7 +258,8 @@ namespace ServiceSpooler.Processors {
                 client.Disconnect();
                 client.Cancellation.Cancel(true);
 
-                connectionEvent.Reset();
+                connectedEvent.Reset();
+                ConnectionEvent.Reset();
 
                 Task.WaitAll(tasks);
 
@@ -265,6 +270,19 @@ namespace ServiceSpooler.Processors {
         }
 
         #region Delegate Methods
+
+        /// <summary>
+        /// Handle a disconnect event.
+        /// </summary>
+        /// 
+        public void OnDisconnect() {
+
+            ConnectionEvent.Reset();
+
+            client.Cancellation = new CancellationTokenSource();
+            client.Reconnect();
+
+        }
 
         /// <summary>
         /// Handle a STOMP CONNECTED response.
@@ -279,7 +297,7 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering OnStompConnected()");
             log.Debug(Utils.Dump(frame));
 
-            DequeueEvent.Set();
+            ConnectionEvent.Set();
 
             log.InfoMsg(key.Connected(), client.Server, client.Port);
 
@@ -366,8 +384,8 @@ namespace ServiceSpooler.Processors {
 
                 // stop processing
 
-                DequeueEvent.Reset();
-                connectionEvent.Reset();
+                connectedEvent.Reset();
+                ConnectionEvent.Reset();
 
                 // cancelation has been invoked, so need to create a new source.
 

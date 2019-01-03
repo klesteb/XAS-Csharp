@@ -33,13 +33,13 @@ namespace ServiceSpooler.Processors {
         private List<Task> tasks = null;
         private ConcurrentQueue<Packet> queued = null;
         private Dictionary<string, Watcher> watchers = null;
-        private  CancellationTokenSource cancellation = null;
+        private CancellationTokenSource cancellation = null;
 
         /// <summary>
-        /// Get/Set AutoResetEvent DequeueEvent.
+        /// Get/Set dequeue vvent.
         /// </summary>
         /// 
-        public ManualResetEvent DequeueEvent { get; set; }
+        public ManualResetEventSlim DequeueEvent { get; set; }
 
         /// <summary>
         /// Constructor.
@@ -53,8 +53,8 @@ namespace ServiceSpooler.Processors {
             this.handler = handler;
 
             this.tasks = new List<Task>();
-            this.watchers = new Dictionary<string, Watcher>();
             this.log = logFactory.Create(typeof(Watchers));
+            this.watchers = new Dictionary<string, Watcher>();
 
         }
 
@@ -171,6 +171,7 @@ namespace ServiceSpooler.Processors {
             }
 
             StopEnqueueOrphans();
+            DequeueEvent.Reset();
 
             log.Trace("Leaving Stop()");
 
@@ -191,6 +192,7 @@ namespace ServiceSpooler.Processors {
             }
 
             StopEnqueueOrphans();
+            DequeueEvent.Reset();
 
             log.Trace("Leaving Pause()");
 
@@ -210,7 +212,8 @@ namespace ServiceSpooler.Processors {
 
             }
 
-            this.StartEnqueueOrphans();
+            DequeueEvent.Set();
+            StartEnqueueOrphans();
 
             log.Trace("Leaving Continue()");
 
@@ -232,6 +235,7 @@ namespace ServiceSpooler.Processors {
             }
 
             StopEnqueueOrphans();
+            DequeueEvent.Reset();
 
             log.Trace("Leaving Shutdown()");
 
@@ -382,7 +386,7 @@ namespace ServiceSpooler.Processors {
 
                 }
 
-                this.EnqueuePacket(file);
+                EnqueuePacket(file);
 
             }
 
