@@ -405,7 +405,7 @@ namespace XAS.Network.TCP {
 
             log.Trace("Entering InternalOnDataSent()");
 
-            Receive();
+            // do nothing
 
             log.Trace("Leaving InternalOnDataSent()");
 

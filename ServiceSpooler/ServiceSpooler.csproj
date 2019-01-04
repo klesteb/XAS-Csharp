@@ -62,6 +62,7 @@
     <Compile Include="Configuration\Messages\Messages.cs" />
     <Compile Include="Processors\Connector.cs" />
     <Compile Include="Processors\DataStructures.cs" />
+    <Compile Include="Processors\PacketHandler.cs" />
     <Compile Include="Processors\Monitor.cs" />
     <Compile Include="Processors\Watchers.cs" />
     <Compile Include="Program.cs" />

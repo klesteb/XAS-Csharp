@@ -182,6 +182,7 @@ namespace XAS.Network.STOMP {
                     heartbeat: Heartbeat
                 )
             );
+            Receive();
 
             log.Trace("Leaving OnConnect()");
 

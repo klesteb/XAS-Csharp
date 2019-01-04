@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 using XAS.Core.Spooling;
 
@@ -26,5 +27,18 @@ namespace ServiceSpooler.Processors {
         public Spooler spool;
         public FileSystemWatcher watch;
     }
+
+    /// <summary>
+    /// The handler to enqueue packets.
+    /// </summary>
+    /// <param name="filename">The file to process.</param>
+    /// 
+    public delegate void EnqueueHandler(String filename);
+
+    /// <summary>
+    /// The handler to dequeue packets.
+    /// </summary>
+    /// 
+    public delegate void DequeueHandler(Packet packet);
 
 }

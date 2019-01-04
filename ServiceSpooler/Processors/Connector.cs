@@ -29,7 +29,8 @@ namespace ServiceSpooler.Processors {
         private readonly IErrorHandler handler = null;
 
         private Task task = null;
-        private ManualResetEvent connectedEvent = null;
+        private bool paused = false;
+        private ManualResetEventSlim connectedEvent = null;
 
         /// <summary>
         /// Get/Set the conection event.
@@ -49,7 +50,7 @@ namespace ServiceSpooler.Processors {
             this.config = config;
             this.handler = handler;
 
-            this.connectedEvent = new ManualResetEvent(true);
+            this.connectedEvent = new ManualResetEventSlim(true);
             this.stomp = new Stomp(config, handler, logFactory);
             this.client = new Client(config, handler, logFactory);
 
@@ -65,9 +66,142 @@ namespace ServiceSpooler.Processors {
         }
 
         /// <summary>
+        /// Start processing.
+        /// </summary>
+        /// 
+        public void Start() {
+
+            log.Trace("Entering Start()");
+
+            var key = config.Key;
+            var section = config.Section;
+
+            paused = false;
+
+            connectedEvent.Set();
+            ConnectionEvent.Set();
+
+            client.Cancellation = new CancellationTokenSource();
+
+            task = new Task(() => Processor(false), client.Cancellation.Token, TaskCreationOptions.LongRunning);
+            task.Start();
+
+            log.Trace("Leaving Start()");
+
+        }
+
+        /// <summary>
+        /// Stop processing.
+        /// </summary>
+        /// 
+        public void Stop() {
+
+            log.Trace("Entering Stop()");
+
+            paused = true;
+
+            if (client.IsConnectionSuccessful) {
+
+                ConnectionEvent.Reset();
+
+                Task[] tasks = { task };
+
+                client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
+                client.Disconnect();
+                client.Cancellation.Cancel(true);
+
+                connectedEvent.Reset();
+
+                Task.WaitAll(tasks);
+
+            }
+
+            log.Trace("Leaving Stop()");
+
+        }
+
+        /// <summary>
+        /// Pause processing.
+        /// </summary>
+        /// 
+        public void Pause() {
+
+            log.Trace("Entering Pause()");
+
+            Stop();
+
+            log.Trace("Leaving Pause()");
+
+        }
+
+        /// <summary>
+        /// Continue processing.
+        /// </summary>
+        /// 
+        public void Continue() {
+
+            log.Trace("Entering Continue()");
+
+            Start();
+
+            log.Trace("Leaving Continue()");
+
+        }
+
+        /// <summary>
+        /// Shutdown processing.
+        /// </summary>
+        /// 
+        public void Shutdown() {
+
+            log.Trace("Entering Shutdown()");
+
+            Stop();
+
+            log.Trace("Leaving Shutdown()");
+
+        }
+
+        /// <summary>
+        /// Start the STOMP processing.
+        /// </summary>
+        /// 
+        public void Processor(Boolean reconnect) {
+
+            var key = config.Key;
+            var section = config.Section;
+
+            string mqPort = config.GetValue(section.Environment(), key.MQPort());
+            string mqServer = config.GetValue(section.Environment(), key.MQServer());
+
+            client.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
+            client.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
+            client.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
+            client.Heartbeat = config.GetValue(section.MessageQueue(), key.Heartbeat(), "0,0");
+            client.Port = config.GetValue(section.MessageQueue(), key.Port(), mqPort).ToInt32();
+            client.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
+            client.UseSSL = config.GetValue(section.MessageQueue(), key.UseSSL(), "false").ToBoolean();
+            client.Keepalive = config.GetValue(section.MessageQueue(), key.KeepAlive(), "true").ToBoolean();
+
+            if (reconnect) {
+
+                client.Reconnect();
+
+            } else {
+
+                client.Connect();
+
+            }
+
+            ConnectionEvent.Reset();
+            connectedEvent.Wait(client.Cancellation.Token);
+
+        }
+
+        /// <summary>
         /// Send a packet.
         /// </summary>
-        /// <param name="packet">a packet object.</param>
+        /// <param name="packet">A Packet object.</param>
         /// 
         public void SendPacket(Packet packet) {
 
@@ -119,157 +253,7 @@ namespace ServiceSpooler.Processors {
 
         }
 
-        /// <summary>
-        /// Start the STOMP processing.
-        /// </summary>
-        /// 
-        public void Processor() {
-
-            var key = config.Key;
-            var section = config.Section;
-
-            string mqPort = config.GetValue(section.Environment(), key.MQPort());
-            string mqServer = config.GetValue(section.Environment(), key.MQServer());
-
-            client.Server = config.GetValue(section.MessageQueue(), key.Server(), mqServer);
-            client.Username = config.GetValue(section.MessageQueue(), key.Username(), "guest");
-            client.Password = config.GetValue(section.MessageQueue(), key.Password(), "guest");
-            client.Heartbeat = config.GetValue(section.MessageQueue(), key.Heartbeat(), "0,0");
-            client.Port = config.GetValue(section.MessageQueue(), key.Port(), mqPort).ToInt32();
-            client.Level = config.GetValue(section.MessageQueue(), key.Level(), "1.0").ToSingle();
-            client.UseSSL = config.GetValue(section.MessageQueue(), key.UseSSL(), "false").ToBoolean();
-            client.Keepalive = config.GetValue(section.MessageQueue(), key.KeepAlive(), "true").ToBoolean();
-
-            client.Connect();
-
-            ConnectionEvent.Reset();
-            connectedEvent.WaitOne();
-
-        }
-
-        /// <summary>
-        /// Start processing.
-        /// </summary>
-        /// 
-        public void Start() {
-
-            var key = config.Key;
-            var section = config.Section;
-
-            log.Trace("Entering Start()");
-
-            connectedEvent.Set();
-            client.Cancellation = new CancellationTokenSource();
-
-            task = new Task(Processor, client.Cancellation.Token, TaskCreationOptions.LongRunning);
-            task.Start();
-
-            log.Trace("Leaving Start()");
-
-        }
-
-        /// <summary>
-        /// Stop processing.
-        /// </summary>
-        /// 
-        public void Stop() {
-
-            log.Trace("Entering Stop()");
-
-            if (client.IsConnectionSuccessful) {
-
-                Task[] tasks = { task };
-
-                client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
-                client.Disconnect();
-                client.Cancellation.Cancel(true);
-
-                connectedEvent.Reset();
-                ConnectionEvent.Reset();
-
-                Task.WaitAll(tasks);
-
-            }
-
-            log.Trace("Leaving Stop()");
-
-        }
-
-        /// <summary>
-        /// Pause processing.
-        /// </summary>
-        /// 
-        public void Pause() {
-
-            log.Trace("Entering Pause()");
-
-            if (client.IsConnectionSuccessful) {
-
-                Task[] tasks = { task };
-
-                client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
-                client.Disconnect();
-                client.Cancellation.Cancel(true);
-
-                connectedEvent.Reset();
-                ConnectionEvent.Reset();
-
-                Task.WaitAll(tasks);
-
-            }
-
-            log.Trace("Leaving Pause()");
-
-        }
-
-        /// <summary>
-        /// Continue processing.
-        /// </summary>
-        /// 
-        public void Continue() {
-
-            log.Trace("Entering Continue()");
-
-            connectedEvent.Set();
-            ConnectionEvent.Set();
-
-            client.Cancellation = new CancellationTokenSource();
-
-            task = new Task(Processor, client.Cancellation.Token, TaskCreationOptions.LongRunning);
-            task.Start();
-
-            log.Trace("Leaving Continue()");
-
-        }
-
-        /// <summary>
-        /// Shutdown processing.
-        /// </summary>
-        /// 
-        public void Shutdown() {
-
-            log.Trace("Entering Shutdown()");
-
-            if (client.IsConnectionSuccessful) {
-
-                Task[] tasks = { task };
-
-                client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
-                client.Disconnect();
-                client.Cancellation.Cancel(true);
-
-                connectedEvent.Reset();
-                ConnectionEvent.Reset();
-
-                Task.WaitAll(tasks);
-
-            }
-
-            log.Trace("Leaving Shutdown()");
-
-        }
-
-        #region Delegate Methods
+        #region Event Handlers
 
         /// <summary>
         /// Handle a disconnect event.
@@ -277,10 +261,21 @@ namespace ServiceSpooler.Processors {
         /// 
         public void OnDisconnect() {
 
-            ConnectionEvent.Reset();
+            log.Trace("Entering OnDisconnect()");
 
-            client.Cancellation = new CancellationTokenSource();
-            client.Reconnect();
+            if (! client.IsConnectionSuccessful && ! paused) {
+
+                connectedEvent.Set();
+                ConnectionEvent.Set();
+
+                client.Cancellation = new CancellationTokenSource();
+
+                task = new Task(() => Processor(false), client.Cancellation.Token, TaskCreationOptions.LongRunning);
+                task.Start();
+
+            }
+
+            log.Trace("Leaving OnDisconnect()");
 
         }
 
@@ -424,11 +419,11 @@ namespace ServiceSpooler.Processors {
 
             log.Debug(Utils.Dump(frame));
 
-            if (client.Level > 1.1) {
+            //if (client.Level > 1.1) {
 
-                client.Send(stomp.Noop());
+            //    client.Send(stomp.Noop());
 
-            }
+            //}
 
             log.Trace("Leaving OnStompNoop()");
 

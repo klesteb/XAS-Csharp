@@ -1,6 +1,8 @@
-﻿using System.Threading;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
@@ -9,25 +11,19 @@ using XAS.Core.Configuration;
 namespace ServiceSpooler.Processors {
 
     /// <summary>
-    /// A class to monitor and process the queued packets,
+    /// A class to monitor and process any orphaned spool files.
     /// </summary>
     /// 
     public class Monitor {
 
-        private Task dequeueTask = null;
-        private Connector connector = null;
-        private ConcurrentQueue<Packet> queued = null;
+        private List<Task> tasks = null;
+        private Int32 monitorInterval = 300;
+        private System.Timers.Timer monitorTimer = null;
         private CancellationTokenSource cancellation = null;
 
         private readonly ILogger log = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
-
-        /// <summary>
-        /// Get/Set the DequeuEvent.
-        /// </summary>
-        /// 
-        public ManualResetEventSlim DequeueEvent { get; set; }
 
         /// <summary>
         /// Get/Set the connection event.
@@ -36,16 +32,30 @@ namespace ServiceSpooler.Processors {
         public ManualResetEventSlim ConnectionEvent { get; set; }
 
         /// <summary>
-        /// Constructor.
+        /// Get/Set the directory watchers.
         /// </summary>
         /// 
-        public Monitor(IConfiguration config, IErrorHandler handler, ILoggerFactory LogFactory, ConcurrentQueue<Packet> queued, Connector connector) {
+        public Dictionary<String, Watcher> DirectoryWatchers { get; set; }
 
-            this.queued = queued;
+        /// <summary>
+        /// Set the event handler for enqueueing packets.
+        /// </summary>
+        /// 
+        public event EnqueueHandler OnEnqueuePacket;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="LogFactory">An ILoggerFactory object.</param>
+        /// 
+        public Monitor(IConfiguration config, IErrorHandler handler, ILoggerFactory LogFactory) {
+
             this.config = config;
             this.handler = handler;
-            this.connector = connector;
 
+            this.tasks = new List<Task>();
             this.log = LogFactory.Create(typeof(Monitor));
 
         }
@@ -58,10 +68,23 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Start()");
 
+            var key = config.Key;
+            var section = config.Section;
+            var sections = config.GetSections();
+
             cancellation = new CancellationTokenSource();
 
-            dequeueTask = new Task(DequeuePacket, cancellation.Token, TaskCreationOptions.LongRunning);
-            dequeueTask.Start();
+            ConnectionEvent.Wait(cancellation.Token);
+
+            if (! cancellation.IsCancellationRequested) {
+
+                tasks.Clear();
+
+                monitorTimer = new System.Timers.Timer(monitorInterval * 1000);
+                monitorTimer.Elapsed += ProcessOrphans;
+                monitorTimer.Start();
+
+            }
 
             log.Trace("Leaving Start()");
 
@@ -75,15 +98,12 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Stop()");
 
-            if (dequeueTask != null) {
+            cancellation.Cancel(true);
 
-                Task[] tasks = { dequeueTask };
+            monitorTimer.Stop();
+            monitorTimer.Dispose();
 
-                cancellation.Cancel(true);
-
-                Task.WaitAny(tasks);
-
-            }
+            Task.WaitAll(tasks.ToArray());
 
             log.Trace("Leaving Stop()");
 
@@ -97,15 +117,7 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Pause()");
 
-            if (dequeueTask != null) {
-
-                Task[] tasks = { dequeueTask };
-
-                cancellation.Cancel(true);
-                
-                Task.WaitAny(tasks);
-
-            }
+            Stop();
 
             log.Trace("Leaving Pause()");
 
@@ -119,10 +131,7 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Continue()");
 
-            cancellation = new CancellationTokenSource();
-
-            dequeueTask = new Task(DequeuePacket, cancellation.Token, TaskCreationOptions.LongRunning);
-            dequeueTask.Start();
+            Start();
 
             log.Trace("Leaving Continue()");
 
@@ -136,67 +145,78 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Shutdown()");
 
-            if (dequeueTask != null) {
-
-                Task[] tasks = { dequeueTask };
-
-                cancellation.Cancel(true);
-                
-                Task.WaitAny(tasks);
-
-            }
+            Stop();
 
             log.Trace("Leaving Shutdown()");
 
         }
 
-        /// <summary>
-        /// Remove and send a queued packet from the queue.
-        /// </summary>
-        /// 
-        public void DequeuePacket() {
+        #region Private Methods
 
-            log.Trace("Entering DequeuePacket()");
-            log.Debug("DequeuePacket() - connected, ready to process");
+        private void ProcessOrphans(object sender, EventArgs args) {
 
-            for (;;) {
+            log.Trace("Entering ProcessOrphans()");
 
-                ConnectionEvent.Wait(cancellation.Token);
-                DequeueEvent.Wait(cancellation.Token);
+            //cancellation.Cancel(true);
+            //Task.WaitAny(tasks.ToArray());
 
-                log.Debug("DequeuePacket() - processing");
+            cancellation = new CancellationTokenSource();
 
-                if (cancellation.IsCancellationRequested) {
+            foreach (Watcher watcher in DirectoryWatchers.Values) {
 
-                    log.Debug("DequeuePacket() - cancellation requested");
-                    goto fini;
+                Task task = new Task(() => EnqueueOrphans(watcher), cancellation.Token, TaskCreationOptions.LongRunning);
+                task.Start();
+                tasks.Add(task);
 
-                }
-
-                Packet packet;
-
-                while (queued.TryDequeue(out packet)) {
-
-                    if (cancellation.IsCancellationRequested) {
-
-                        log.Debug("DequeuePacket() - cancellation requested");
-                        goto fini;
-
-                    }
-
-                    connector.SendPacket(packet);
-
-                }
-
-                DequeueEvent.Reset();
+                Task.WaitAll(tasks.ToArray());
 
             }
 
-            fini:
-            log.Trace("Leaving DequeuePacket()");
+            tasks.Clear();
+
+            log.Trace("Leaving ProcessOrphans()");
+
+        }
+
+        /// <summary>
+        /// Enqueue any found orphan files.
+        /// </summary>
+        /// <param name="watcher">A file system watcher.</param>
+        /// 
+        private void EnqueueOrphans(Watcher watcher) {
+
+            log.Trace("Entering EnqueueOrphans()");
+            log.Debug(String.Format("EnqueueOrphans() - processing {0}", watcher.directory));
+
+            ConnectionEvent.Wait(cancellation.Token);
+
+            if (! cancellation.IsCancellationRequested) {
+
+                var files = watcher.spool.Scan();
+
+                log.Debug(String.Format("EnqueueOrphans() - found {0} files in {1}", files.Count(), watcher.directory));
+
+                foreach (string file in files) {
+
+                    if (cancellation.IsCancellationRequested) {
+
+                        log.Debug("EnqueueOrphans() - cancellation requested");
+                        break;
+
+                    }
+
+                    OnEnqueuePacket(file);
+
+                }
+
+            }
+
+            log.Trace("Leaving EnqueueOrphans()");
 
         }
 
     }
+
+    #endregion
 
 }

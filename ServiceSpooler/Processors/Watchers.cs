@@ -1,14 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Text;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 using XAS.Core.Logging;
 using XAS.Core.Extensions;
@@ -30,65 +23,39 @@ namespace ServiceSpooler.Processors {
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
 
-        private List<Task> tasks = null;
-        private ConcurrentQueue<Packet> queued = null;
-        private Dictionary<string, Watcher> watchers = null;
         private CancellationTokenSource cancellation = null;
 
         /// <summary>
-        /// Get/Set dequeue vvent.
+        /// Get/Set the conection event.
         /// </summary>
         /// 
-        public ManualResetEventSlim DequeueEvent { get; set; }
+        public ManualResetEventSlim ConnectionEvent { get; set; }
+
+        /// <summary>
+        /// Get/Set the directory watchers.
+        /// </summary>
+        /// 
+        public Dictionary<String, Watcher> DirectoryWatchers { get; set; }
+
+        /// <summary>
+        /// Set the event handler for a watchers OnChange event is triggered.
+        /// </summary>
+        /// 
+        public event EnqueueHandler OnEnqueuePacket;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="cfgs">A configuration file.</param>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="handler">An IErrorHandler object.</param>
+        /// <param name="logFactory">An ILoggerFactory object.</param>
         /// 
-        public Watchers(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ConcurrentQueue<Packet> queued) {
+        public Watchers(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory) {
 
             this.config = config;
-            this.queued = queued;
             this.handler = handler;
 
-            this.tasks = new List<Task>();
             this.log = logFactory.Create(typeof(Watchers));
-            this.watchers = new Dictionary<string, Watcher>();
-
-        }
-
-        /// <summary>
-        /// Clear any queued packets.
-        /// </summary>
-        /// 
-        public void Clear() {
-
-            log.Trace("Entering Clear()");
-
-            if (watchers.Count > 0) {
-
-                watchers.Clear();
-
-            }
-
-            log.Trace("Leaving Clear()");
-
-        }
-
-        /// <summary>
-        /// Add a directory to watch.
-        /// </summary>
-        /// <param name="directory">A directory.</param>
-        /// <param name="watcher">A file system watcher.</param>
-        /// 
-        public void Add(String directory, Watcher watcher) {
-
-            log.Trace("Entering Add()");
-
-            watchers.Add(directory, watcher);
-
-            log.Trace("Leaving Add()");
 
         }
 
@@ -104,52 +71,25 @@ namespace ServiceSpooler.Processors {
             var section = config.Section;
             var sections = config.GetSections();
 
-            // build a locker
+            cancellation = new CancellationTokenSource();
 
-            var lockName = config.GetValue(section.Application(), key.LockName(), "locked");
-            var lockDriver = config.GetValue(section.Application(), key.LockDriver()).ToLockDriver();
-            var locker = new XAS.Core.Locking.Factory(lockName).Create(lockDriver);
+            // block until connected
 
-            foreach (string directory in sections) {
+            ConnectionEvent.Wait(cancellation.Token);
 
-                if ((directory != section.Application()) && 
-                    (directory != section.MessageQueue()) &&
-                    (directory != section.Environment()) &&
-                    (directory != section.Messages())) {
+            if (! cancellation.IsCancellationRequested) {
 
-                    if (Directory.Exists(directory)) {
+                foreach (var watcher in DirectoryWatchers.Values) {
 
-                        Watcher watcher = new Watcher();
-
-                        watcher.queue = config.GetValue(directory, key.Queue(), "");
-                        watcher.type = config.GetValue(directory, key.PacketType(), "");
-                        watcher.alias = config.GetValue(directory, key.Alias(), "unlink");
-                        watcher.directory = directory;
-
-                        watcher.spool = new XAS.Core.Spooling.Spooler(config, locker);
-                        watcher.spool.Directory = directory;
-
-                        watcher.watch = new FileSystemWatcher();
-                        watcher.watch.Path = directory;
-                        watcher.watch.NotifyFilter = NotifyFilters.LastWrite;
-                        watcher.watch.Changed += new FileSystemEventHandler(OnChange);
-                        watcher.watch.EnableRaisingEvents = true;
-
-                        watchers.Add(directory.TrimIfEndsWith("\\"), watcher);
-
-                        log.InfoMsg(key.WatchDirectory(), directory);
-
-                    } else {
-
-                        log.ErrorMsg(key.NoDirectory(), directory);
-
-                    }
+                    watcher.watch = new FileSystemWatcher();
+                    watcher.watch.Path = watcher.directory;
+                    watcher.watch.NotifyFilter = NotifyFilters.LastWrite;
+                    watcher.watch.Changed += new FileSystemEventHandler(OnChange);
+                    watcher.watch.EnableRaisingEvents = true;
 
                 }
 
             }
-
-            StartEnqueueOrphans();
 
             log.Trace("Leaving Start()");
 
@@ -163,15 +103,14 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Stop()");
 
-            foreach (Watcher watcher in watchers.Values) {
+            cancellation.Cancel(true);
+
+            foreach (Watcher watcher in DirectoryWatchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = false;
                 watcher.watch.Dispose();
 
             }
-
-            StopEnqueueOrphans();
-            DequeueEvent.Reset();
 
             log.Trace("Leaving Stop()");
 
@@ -185,14 +124,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Pause()");
 
-            foreach (Watcher watcher in watchers.Values) {
+            cancellation.Cancel(true);
+
+            foreach (Watcher watcher in DirectoryWatchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = false;
 
             }
-
-            StopEnqueueOrphans();
-            DequeueEvent.Reset();
 
             log.Trace("Leaving Pause()");
 
@@ -206,14 +144,13 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Continue()");
 
-            foreach (Watcher watcher in this.watchers.Values) {
+            cancellation = new CancellationTokenSource();
+
+            foreach (Watcher watcher in DirectoryWatchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = true;
 
             }
-
-            DequeueEvent.Set();
-            StartEnqueueOrphans();
 
             log.Trace("Leaving Continue()");
 
@@ -227,175 +164,14 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering Shutdown()");
 
-            foreach (Watcher watcher in watchers.Values) {
-
-                watcher.watch.EnableRaisingEvents = false;
-                watcher.watch.Dispose();
-
-            }
-
-            StopEnqueueOrphans();
-            DequeueEvent.Reset();
+            Stop();
 
             log.Trace("Leaving Shutdown()");
 
         }
 
         /// <summary>
-        /// Create and queue a packet.
-        /// </summary>
-        /// <param name="filename">The name of the spool file.</param>
-        /// 
-        public void EnqueuePacket(string filename) {
-
-            log.Trace("Entering EnqueuePacket()");
-
-            var key = config.Key;
-            var section = config.Section;
-            FileInfo file = new FileInfo(filename);
-            string directory = file.DirectoryName;
-
-            log.Debug(String.Format("EnqueuePacket() - file: {0}", file.FullName));
-
-            if (watchers.ContainsKey(directory)) {
-
-                byte[] buffer;
-                Watcher watcher = watchers[directory];
-
-                if (file.Extension == watcher.spool.Extension) {
-
-                    if ((buffer = watcher.spool.Read(filename)) != null) {
-
-                        Packet packet = new Packet();
-                        string rawData = Encoding.UTF8.GetString(buffer);
-                        string header = String.Format(
-                            "{{'hostname':'{0}','timestamp':'{1}','type':'{2}'}}",
-                            config.GetValue(section.Environment(), key.Host()),
-                            DateTime.Now.ToUnixTime().ToString(),
-                            watcher.type
-                        );
-                          
-                        log.Debug(String.Format("EncodePacket() - header: {0}", header));
-
-                        // checking for no data in file.
-
-                        if (! String.IsNullOrEmpty(rawData)) {
-
-                            JObject packetData = JObject.Parse(header);
-                            JObject spoolData = JObject.Parse(rawData);
-
-                            packetData.Add("data", spoolData);
-
-                            string jsonData = JsonConvert.SerializeObject(packetData);
-                            string receipt = String.Format("{0};{1}", watcher.alias, filename);
-
-                            log.Debug(String.Format("EncodePacket() - jsonData: {0}", jsonData));
-
-                            packet.queue = watcher.queue;
-                            packet.json = jsonData;
-                            packet.receipt = receipt.ToBase64();
-
-                            queued.Enqueue(packet);
-                            DequeueEvent.Set();
-
-                            log.InfoMsg(key.FileFound(), filename, watcher.queue);
-
-                        } else {
-
-                            file.Delete();
-                            log.WarnMsg(key.NoData(), filename, watcher.queue);
-
-                        }
-
-                    } else {
-
-                        file.Delete();
-                        log.WarnMsg(key.CorruptFile(), filename);
-
-                    }
-
-                }
-
-            } else {
-
-                log.WarnMsg(key.UnknownFile(), filename);
-
-            }
-
-            log.Trace("Leaving EnqueuePacket()");
-
-        }
-
-        /// <summary>
-        /// Start looking for orphan files.
-        /// </summary>
-        /// 
-        public void StartEnqueueOrphans() {
-
-            log.Trace("Entering StartEnqueueOrphans()");
-
-            cancellation = new CancellationTokenSource();
-
-            foreach (Watcher watcher in watchers.Values) {
-
-                Task task = new Task(() => this.EnqueueOrphans(watcher), cancellation.Token, TaskCreationOptions.LongRunning);
-                task.Start();
-                tasks.Add(task);
-
-            }
-
-            log.Trace("Leaving StopEnqueueOrphans()");
-
-        }
-
-        /// <summary>
-        /// Stop looking for orphan files.
-        /// </summary>
-        /// 
-        public void StopEnqueueOrphans() {
-
-            log.Trace("Entering StopEnqueueOrphans()");
-
-            cancellation.Cancel(true);
-            Task.WaitAny(tasks.ToArray());
-
-            log.Trace("Leaving StopEnqueueOrphans()");
-
-        }
-
-        /// <summary>
-        /// Enque any found orphan files.
-        /// </summary>
-        /// <param name="watcher">A file system watcher.</param>
-        /// 
-        public void EnqueueOrphans(Watcher watcher) {
-
-            log.Trace("Entering EnqueueOrphans()");
-            log.Debug(String.Format("EnqueueOrphans() - processing {0}", watcher.directory));
-
-            var files = watcher.spool.Scan();
-
-            log.Debug(String.Format("EnqueueOrphans() - found {0} files in {1}", files.Count(), watcher.directory));
-
-            foreach (string file in files) {
-
-                if (cancellation.IsCancellationRequested) {
-
-                    log.Debug("EnqueueOrphans() - cancellation requested");
-                    break;
-
-                }
-
-                EnqueuePacket(file);
-
-            }
-
-            log.Trace("Leaving EnqueueOrphans()");
-
-        }
-
-        /// <summary>
-        /// An fired when an file is created in a watched diretory.
+        /// Fired when an file is created in a watched diretory.
         /// </summary>
         /// <param name="sender">A sender object.</param>
         /// <param name="e">A FileSystemEvent object.</param>
@@ -404,7 +180,7 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering OnChange()");
 
-            EnqueuePacket(e.FullPath);
+            OnEnqueuePacket(e.FullPath);
 
             log.Trace("Leaving OnChange()");
 

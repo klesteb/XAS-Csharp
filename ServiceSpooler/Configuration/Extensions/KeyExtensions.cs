@@ -20,6 +20,10 @@ namespace ServiceSpooler.Configuration.Extensions {
             return "WatchDirectory";
         }
 
+        public static String MonitorDirectory(this Key junk) {
+            return "MonitorDirectory";
+        }
+
         public static String NoDirectory(this Key junk) {
             return "NoDirectory";
         }

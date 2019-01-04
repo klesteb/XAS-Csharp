@@ -1,16 +1,20 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.ServiceProcess;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 using XAS.Core.Logging;
 using XAS.Core.Security;
 using XAS.Core.Exceptions;
+using XAS.Core.Extensions;
 using XAS.Core.Configuration;
 using XAS.App.Services.Framework;
 using XAS.App.Configuration.Extensions;
+using XAS.Core.Configuration.Extensions;
 
 using ServiceSpooler.Processors;
+using ServiceSpooler.Configuration.Extensions;
 
 namespace ServiceSpooler {
 
@@ -25,17 +29,16 @@ namespace ServiceSpooler {
 
     public class Service: IWindowsService {
 
-        private readonly ILogger log = null;
         protected readonly ISecurity security = null;
         protected readonly IConfiguration config = null;
         protected readonly IErrorHandler handler = null;
 
-        private Processors.Monitor monitor = null;
-        private Processors.Watchers watchers = null;
-        private Processors.Connector connector = null;
+        private readonly ILogger log = null;
+        private readonly Processors.Monitor monitor = null;
+        private readonly Processors.Watchers watchers = null;
+        private readonly Processors.Connector connector = null;
+        private readonly Processors.PacketHandler packetHandler = null;
 
-        private ConcurrentQueue<Packet> queued = null;
-        private ManualResetEventSlim dequeueEvent = null;
         private ManualResetEventSlim connectionEvent = null;
 
         /// <summary>
@@ -53,13 +56,10 @@ namespace ServiceSpooler {
             this.handler = errorHandler;
             this.log = logFactory.Create(typeof(Service));
 
-            this.queued = new ConcurrentQueue<Packet>();
-            this.dequeueEvent = new ManualResetEventSlim(false);
-            this.connectionEvent = new ManualResetEventSlim(false);
-
+            this.monitor = new Processors.Monitor(config, handler, logFactory);
+            this.watchers = new Processors.Watchers(config, handler, logFactory);
             this.connector = new Processors.Connector(config, handler, logFactory);
-            this.watchers = new Processors.Watchers(config, handler, logFactory, queued);
-            this.monitor = new Processors.Monitor(config, handler, logFactory, queued, connector);
+            this.packetHandler = new Processors.PacketHandler(config, handler, logFactory);
 
         }
 
@@ -73,17 +73,26 @@ namespace ServiceSpooler {
 
             log.InfoMsg(key.ServiceStartup());
 
-            watchers.Clear();
-            dequeueEvent.Set();
+            var dirWatchers = BuildWatchers();
+            connectionEvent = new ManualResetEventSlim(false);
 
-            monitor.DequeueEvent = dequeueEvent;
-            watchers.DequeueEvent = dequeueEvent;
             monitor.ConnectionEvent = connectionEvent;
+            watchers.ConnectionEvent = connectionEvent;
             connector.ConnectionEvent = connectionEvent;
+            packetHandler.ConnectionEvent = connectionEvent;
+
+            monitor.DirectoryWatchers = dirWatchers;
+            watchers.DirectoryWatchers = dirWatchers;
+            packetHandler.DirectoryWatchers = dirWatchers;
+
+            packetHandler.OnDequeuePacket += connector.SendPacket;
+            watchers.OnEnqueuePacket += packetHandler.EnqueuePacket;
+            monitor.OnEnqueuePacket += packetHandler.EnqueuePacket;
 
             connector.Start();
             watchers.Start();
             monitor.Start();
+            packetHandler.Start();
 
         }
 
@@ -96,6 +105,7 @@ namespace ServiceSpooler {
             watchers.Pause();
             monitor.Pause();
             connector.Pause();
+            packetHandler.Pause();
 
         }
 
@@ -105,9 +115,22 @@ namespace ServiceSpooler {
 
             log.InfoMsg(key.ServiceResumed());
 
+            var dirWatchers = BuildWatchers();
+            connectionEvent = new ManualResetEventSlim(false);
+
+            monitor.ConnectionEvent = connectionEvent;
+            watchers.ConnectionEvent = connectionEvent;
+            connector.ConnectionEvent = connectionEvent;
+            packetHandler.ConnectionEvent = connectionEvent;
+
+            monitor.DirectoryWatchers = dirWatchers;
+            watchers.DirectoryWatchers = dirWatchers;
+            packetHandler.DirectoryWatchers = dirWatchers;
+
             watchers.Continue();
             monitor.Continue();
             connector.Continue();
+            packetHandler.Continue();
 
         }
 
@@ -120,6 +143,7 @@ namespace ServiceSpooler {
             watchers.Stop();
             monitor.Stop();
             connector.Stop();
+            packetHandler.Stop();
 
         }
 
@@ -132,6 +156,7 @@ namespace ServiceSpooler {
             watchers.Shutdown();
             monitor.Shutdown();
             connector.Shutdown();
+            packetHandler.Shutdown();
 
         }
 
@@ -140,6 +165,61 @@ namespace ServiceSpooler {
             var key = config.Key;
 
             log.InfoMsg(key.ServiceCustom(), command);
+
+        }
+
+
+        private Dictionary<String, Watcher> BuildWatchers() {
+
+            var key = config.Key;
+            var section = config.Section;
+            var sections = config.GetSections();
+            var watchers = new Dictionary<String, Watcher>();
+
+            // build a locker
+
+            var lockName = config.GetValue(section.Application(), key.LockName(), "locked");
+            var lockDriver = config.GetValue(section.Application(), key.LockDriver()).ToLockDriver();
+            var locker = new XAS.Core.Locking.Factory(lockName).Create(lockDriver);
+
+            // start the watchers
+
+            watchers.Clear();
+
+            foreach (string directory in sections) {
+
+                if ((directory != section.Application()) &&
+                    (directory != section.MessageQueue()) &&
+                    (directory != section.Environment()) &&
+                    (directory != section.Messages())) {
+
+                    if (Directory.Exists(directory)) {
+
+                        Watcher watcher = new Watcher();
+
+                        watcher.queue = config.GetValue(directory, key.Queue(), "");
+                        watcher.type = config.GetValue(directory, key.PacketType(), "");
+                        watcher.alias = config.GetValue(directory, key.Alias(), "unlink");
+                        watcher.directory = directory;
+
+                        watcher.spool = new XAS.Core.Spooling.Spooler(config, locker);
+                        watcher.spool.Directory = directory;
+
+                        watchers.Add(directory.TrimIfEndsWith("\\"), watcher);
+
+                        log.InfoMsg(key.WatchDirectory(), directory);
+
+                    } else {
+
+                        log.ErrorMsg(key.NoDirectory(), directory);
+
+                    }
+
+                }
+
+            }
+
+            return watchers;
 
         }
 

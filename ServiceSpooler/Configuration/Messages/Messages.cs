@@ -39,6 +39,7 @@ namespace ServiceSpooler.Configuration.Messages {
             config.AddKey(section.Messages(), key.NoDirectory(), "Directory \"{0}\" was not found.");
             config.AddKey(section.Messages(), key.FileFound(), "Found file \"{0}\", queuing to {1}.");
             config.AddKey(section.Messages(), key.UnknownFile(), "\"{0}\" is from an unwatched directory.");
+            config.AddKey(section.Messages(), key.MonitorDirectory(), "Monitoring directory \"{0}\" for orphans.");
 
         }
 
