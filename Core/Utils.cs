@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace XAS.Core {
     
@@ -98,6 +99,22 @@ namespace XAS.Core {
 
             }
 
+        }
+
+        /// <summary>
+        /// Sleep for a period of time and allow for cancellations to take effect.
+        /// </summary>
+        /// <param name="seconds">The number of seconds to sleep.</param>
+        /// <param name="cancelSource">A CancellationToken object.</param>
+        /// <returns>true if canceled.</returns>
+        /// 
+        public static Boolean Sleep(Int32 seconds, CancellationToken token) {
+
+            // taken from: https://stackoverflow.com/questions/18715099/how-to-sleep-until-timeout-or-cancellation-is-requested-in-net-4-0/23633151#23633151
+            // with modifications
+
+            return token.WaitHandle.WaitOne(seconds * 1000);
+            
         }
 
     }

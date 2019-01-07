@@ -108,10 +108,10 @@ namespace ServiceSpooler.Processors {
 
                 client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
                 client.Disconnect();
-                client.Cancellation.Cancel(true);
 
                 connectedEvent.Reset();
 
+                client.Cancellation.Cancel(true);
                 Task.WaitAll(tasks);
 
             }

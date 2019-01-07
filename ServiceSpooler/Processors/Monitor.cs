@@ -162,17 +162,23 @@ namespace ServiceSpooler.Processors {
 
             cancellation = new CancellationTokenSource();
 
-            foreach (Watcher watcher in DirectoryWatchers.Values) {
+            ConnectionEvent.Wait(cancellation.Token);
 
-                Task task = new Task(() => EnqueueOrphans(watcher), cancellation.Token, TaskCreationOptions.LongRunning);
-                task.Start();
-                tasks.Add(task);
+            if (! cancellation.IsCancellationRequested) {
 
-                Task.WaitAll(tasks.ToArray());
+                foreach (Watcher watcher in DirectoryWatchers.Values) {
+
+                    Task task = new Task(() => EnqueueOrphans(watcher), cancellation.Token, TaskCreationOptions.LongRunning);
+                    task.Start();
+                    tasks.Add(task);
+
+                    Task.WaitAll(tasks.ToArray());
+
+                }
+
+                tasks.Clear();
 
             }
-
-            tasks.Clear();
 
             log.Trace("Leaving ProcessOrphans()");
 
@@ -188,26 +194,20 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering EnqueueOrphans()");
             log.Debug(String.Format("EnqueueOrphans() - processing {0}", watcher.directory));
 
-            ConnectionEvent.Wait(cancellation.Token);
+            var files = watcher.spool.Scan();
 
-            if (! cancellation.IsCancellationRequested) {
+            log.Debug(String.Format("EnqueueOrphans() - found {0} files in {1}", files.Count(), watcher.directory));
 
-                var files = watcher.spool.Scan();
+            foreach (string file in files) {
 
-                log.Debug(String.Format("EnqueueOrphans() - found {0} files in {1}", files.Count(), watcher.directory));
+                if (cancellation.IsCancellationRequested) {
 
-                foreach (string file in files) {
-
-                    if (cancellation.IsCancellationRequested) {
-
-                        log.Debug("EnqueueOrphans() - cancellation requested");
-                        break;
-
-                    }
-
-                    OnEnqueuePacket(file);
+                    log.Debug("EnqueueOrphans() - cancellation requested");
+                    break;
 
                 }
+
+                OnEnqueuePacket(file);
 
             }
 

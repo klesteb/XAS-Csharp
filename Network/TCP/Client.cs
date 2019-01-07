@@ -304,7 +304,7 @@ namespace XAS.Network.TCP {
 
             if (! Cancellation.IsCancellationRequested) {
 
-                stat = Retry.UntilTrue(retries, Connect);
+                stat = Retry.UntilTrue(retries, Cancellation.Token, Connect);
 
             }
 
