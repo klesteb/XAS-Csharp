@@ -4,12 +4,8 @@ using System.Threading;
 using System.Collections.Generic;
 
 using XAS.Core.Logging;
-using XAS.Core.Extensions;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
-using XAS.Core.Configuration.Extensions;
-
-using ServiceSpooler.Configuration.Extensions;
 
 namespace ServiceSpooler.Processors {
 
@@ -24,6 +20,7 @@ namespace ServiceSpooler.Processors {
         private readonly IErrorHandler handler = null;
 
         private CancellationTokenSource cancellation = null;
+        private Dictionary<String, Watcher> localWatchers = null;
 
         /// <summary>
         /// Get/Set the conection event.
@@ -38,7 +35,7 @@ namespace ServiceSpooler.Processors {
         public Dictionary<String, Watcher> DirectoryWatchers { get; set; }
 
         /// <summary>
-        /// Set the event handler for a watchers OnChange event is triggered.
+        /// Set the event handler for when enqueueing packets.
         /// </summary>
         /// 
         public event EnqueueHandler OnEnqueuePacket;
@@ -56,6 +53,7 @@ namespace ServiceSpooler.Processors {
             this.handler = handler;
 
             this.log = logFactory.Create(typeof(Watchers));
+            this.localWatchers = new Dictionary<String, Watcher>();
 
         }
 
@@ -79,13 +77,25 @@ namespace ServiceSpooler.Processors {
 
             if (! cancellation.IsCancellationRequested) {
 
-                foreach (var watcher in DirectoryWatchers.Values) {
+                foreach (KeyValuePair<String, Watcher> item in DirectoryWatchers) {
+
+                    var watcher = new Watcher();
+
+                    watcher.queue = item.Value.queue;
+                    watcher.type = item.Value.type;
+                    watcher.alias = item.Value.alias;
+                    watcher.directory = item.Value.directory;
+
+                    watcher.spool = item.Value.spool;
+                    watcher.spool.Directory = item.Value.directory;
 
                     watcher.watch = new FileSystemWatcher();
                     watcher.watch.Path = watcher.directory;
                     watcher.watch.NotifyFilter = NotifyFilters.LastWrite;
                     watcher.watch.Changed += new FileSystemEventHandler(OnChange);
                     watcher.watch.EnableRaisingEvents = true;
+
+                    localWatchers.Add(item.Key, watcher);
 
                 }
 
@@ -105,7 +115,7 @@ namespace ServiceSpooler.Processors {
 
             cancellation.Cancel(true);
 
-            foreach (Watcher watcher in DirectoryWatchers.Values) {
+            foreach (Watcher watcher in localWatchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = false;
                 watcher.watch.Dispose();
@@ -126,7 +136,7 @@ namespace ServiceSpooler.Processors {
 
             cancellation.Cancel(true);
 
-            foreach (Watcher watcher in DirectoryWatchers.Values) {
+            foreach (Watcher watcher in localWatchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = false;
 
@@ -146,7 +156,7 @@ namespace ServiceSpooler.Processors {
 
             cancellation = new CancellationTokenSource();
 
-            foreach (Watcher watcher in DirectoryWatchers.Values) {
+            foreach (Watcher watcher in localWatchers.Values) {
 
                 watcher.watch.EnableRaisingEvents = true;
 

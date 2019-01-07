@@ -15,6 +15,7 @@ using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 
 using ServiceSpooler.Configuration.Extensions;
+using System.Threading.Tasks;
 
 namespace ServiceSpooler.Processors {
     
@@ -29,6 +30,7 @@ namespace ServiceSpooler.Processors {
         private readonly IErrorHandler handler = null;
         private readonly ConcurrentQueue<Packet> queued = null;
 
+        private Task task = null;
         private ManualResetEventSlim dequeueEvent = null;
         private CancellationTokenSource cancellation = null;
 
@@ -69,27 +71,63 @@ namespace ServiceSpooler.Processors {
         }
 
         public void Start() {
-        
+
+            log.Trace("Entering Start()");
+
+            cancellation = new CancellationTokenSource();
+
+            task = new Task(() => DequeuePacket(), cancellation.Token, TaskCreationOptions.LongRunning);
+            task.Start();
+
+            log.Trace("Leaving Start()");
+
         }
 
         public void Stop() {
-        
+
+            log.Trace("Entering Stop()");
+
+            Task[] tasks = { task };
+
+            cancellation.Cancel(true);
+            Task.WaitAll(tasks);
+
+            log.Trace("Leaving Stop()");
+
         }
 
         public void Pause() {
-                
+
+            log.Trace("Entering Pause()");
+
+            Stop();
+
+            log.Trace("Leaving Pause()");
+
         }
 
         public void Continue() {
-        
+
+            log.Trace("Entering Contunue()");
+
+            Start();
+
+            log.Trace("Leaving Continue()");
+
         }
 
         public void Shutdown() {
-        
+
+            log.Trace("Entering Shutdown()");
+
+            Stop();
+
+            log.Trace("Leaving Shutdown()");
+
         }
 
         /// <summary>
-        /// Create and queue a packet.
+        /// The event handler for a OnEnqueuePacket event.
         /// </summary>
         /// <param name="filename">The name of the spool file.</param>
         /// 
@@ -174,7 +212,7 @@ namespace ServiceSpooler.Processors {
         }
 
         /// <summary>
-        /// Remove and send a queued packet from the queue.
+        /// The event handler for the OnDequeuePacket event.
         /// </summary>
         /// 
         public void DequeuePacket() {
@@ -223,4 +261,3 @@ namespace ServiceSpooler.Processors {
     }
 
 }
-
