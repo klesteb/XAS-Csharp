@@ -547,6 +547,18 @@ namespace XAS.Network.TCP {
 
                 OnClientDataSent();
 
+            } catch (ObjectDisposedException) {
+
+                // ignore, stream has been disposed with an outstanding read.
+
+                log.Debug("ReadCallback() - Ignored but a ObjectDisposedException was thrown");
+
+            } catch (NullReferenceException) {
+
+                // ignore, Disconnect() with an outstanding read.
+
+                log.Debug("ReadCallback() - Ignored but a NullReferenceException was thrown");
+
             } catch (Exception ex) {
 
                 OnClientException(ex);

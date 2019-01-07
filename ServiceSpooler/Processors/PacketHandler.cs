@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
@@ -15,7 +16,6 @@ using XAS.Core.Configuration;
 using XAS.Core.Configuration.Extensions;
 
 using ServiceSpooler.Configuration.Extensions;
-using System.Threading.Tasks;
 
 namespace ServiceSpooler.Processors {
     
@@ -220,23 +220,14 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering DequeuePacket()");
             log.Debug("DequeuePacket() - connected, ready to process");
 
-            for (;;) {
+            try {
 
-                ConnectionEvent.Wait(cancellation.Token);
-                dequeueEvent.Wait(cancellation.Token);
+                for (;;) {
 
-                log.Debug("DequeuePacket() - processing");
+                    ConnectionEvent.Wait(cancellation.Token);
+                    dequeueEvent.Wait(cancellation.Token);
 
-                if (cancellation.IsCancellationRequested) {
-
-                    log.Debug("DequeuePacket() - cancellation requested");
-                    goto fini;
-
-                }
-
-                Packet packet;
-
-                while (queued.TryDequeue(out packet)) {
+                    log.Debug("DequeuePacket() - processing");
 
                     if (cancellation.IsCancellationRequested) {
 
@@ -245,15 +236,39 @@ namespace ServiceSpooler.Processors {
 
                     }
 
-                    OnDequeuePacket(packet);
+                    Packet packet;
+
+                    while (queued.TryDequeue(out packet)) {
+
+                        if (cancellation.IsCancellationRequested) {
+
+                            log.Debug("DequeuePacket() - cancellation requested");
+                            goto fini;
+
+                        }
+
+                        OnDequeuePacket(packet);
+
+                    }
+
+                    dequeueEvent.Reset();
 
                 }
 
-                dequeueEvent.Reset();
+                fini:;
+
+            } catch (OperationCanceledException) {
+
+                // ignore, the waits were canceled.
+
+                log.Debug("DequeuePacket() - Ignored but a OperationCanceledException was thrown");
+
+            } catch (Exception ex) {
+
+                handler.Exceptions(ex);
 
             }
 
-            fini:
             log.Trace("Leaving DequeuePacket()");
 
         }

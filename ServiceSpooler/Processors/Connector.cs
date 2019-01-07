@@ -106,7 +106,7 @@ namespace ServiceSpooler.Processors {
 
                 Task[] tasks = { task };
 
-                client.Send(stomp.Disconnect(receipt: "disconnected", level: client.Level.ToString()));
+                client.Send(stomp.Disconnect(level: client.Level.ToString()));
                 client.Disconnect();
 
                 connectedEvent.Reset();
@@ -270,7 +270,7 @@ namespace ServiceSpooler.Processors {
 
                 client.Cancellation = new CancellationTokenSource();
 
-                task = new Task(() => Processor(false), client.Cancellation.Token, TaskCreationOptions.LongRunning);
+                task = new Task(() => Processor(true), client.Cancellation.Token, TaskCreationOptions.LongRunning);
                 task.Start();
 
             }
@@ -374,20 +374,6 @@ namespace ServiceSpooler.Processors {
             }
 
             log.ErrorMsg(key.ProtocolError(), message, body);
-
-            if (message == "connection_forced") {
-
-                // stop processing
-
-                connectedEvent.Reset();
-                ConnectionEvent.Reset();
-
-                // cancelation has been invoked, so need to create a new source.
-
-                client.Cancellation = new CancellationTokenSource();
-                client.Reconnect();
-
-            }
 
             log.Trace("Leaving OnStompError()");
 
