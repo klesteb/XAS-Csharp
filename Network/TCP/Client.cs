@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net.Security;
@@ -525,6 +526,13 @@ namespace XAS.Network.TCP {
 
                 log.Debug("ReadCallback() - Ignored but a NullReferenceException was thrown");
 
+            } catch (IOException ex) {
+
+                // keepalive handling, some intermediate device dropped the connection
+
+                handler.Exceptions(ex);
+                OnClientDisconnect();
+
             } catch (Exception ex) {
 
                 OnClientException(ex);
@@ -558,6 +566,13 @@ namespace XAS.Network.TCP {
                 // ignore, Disconnect() with an outstanding read.
 
                 log.Debug("ReadCallback() - Ignored but a NullReferenceException was thrown");
+
+            } catch (IOException ex) {
+
+                // keepalive handling, some intermediate device dropped the connection
+
+                handler.Exceptions(ex);
+                OnClientDisconnect();
 
             } catch (Exception ex) {
 

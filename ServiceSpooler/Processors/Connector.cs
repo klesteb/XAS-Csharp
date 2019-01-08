@@ -338,10 +338,6 @@ namespace ServiceSpooler.Processors {
 
                     }
 
-                } else if (receipt.ToLower() == "disconnected") {
-
-                    log.InfoMsg(key.Disconnected(), client.Server);
-
                 }
 
             }
@@ -380,7 +376,7 @@ namespace ServiceSpooler.Processors {
 
             }
 
-            log.ErrorMsg(key.ProtocolError(), message, body);
+            log.ErrorMsg(key.ProtocolError(), message.Trim(), body.Trim());
 
             log.Trace("Leaving OnStompError()");
 

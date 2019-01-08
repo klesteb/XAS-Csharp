@@ -78,7 +78,7 @@ namespace ServiceSpooler.Processors {
 
             if (! cancellation.IsCancellationRequested) {
 
-                tasks.Clear();
+                ProcessOrphans(null, null);
 
                 monitorTimer = new System.Timers.Timer(monitorInterval * 1000);
                 monitorTimer.Elapsed += ProcessOrphans;
