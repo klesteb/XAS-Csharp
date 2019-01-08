@@ -299,7 +299,7 @@ namespace ServiceSpooler.Processors {
 
             ConnectionEvent.Set();
 
-            log.InfoMsg(key.Connected(), client.Server, client.Port);
+            log.InfoMsg(key.Connected(), client.Server);
 
             log.Trace("Leaving OnStompConnected()");
 

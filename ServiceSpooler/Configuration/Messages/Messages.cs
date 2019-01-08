@@ -32,7 +32,7 @@ namespace ServiceSpooler.Configuration.Messages {
             config.AddKey(section.Messages(), key.UnlinkFile(), "Removed file \"{0}\".");
             config.AddKey(section.Messages(), key.Disconnected(), "Disconnected from {0}.");
             config.AddKey(section.Messages(), key.CorruptFile(), "Corrupted file \"{0}\".");
-            config.AddKey(section.Messages(), key.Connected(), "Connected to {0} on port {1}.");
+            config.AddKey(section.Messages(), key.Connected(), "Logged into {0}.");
             config.AddKey(section.Messages(), key.ProtocolError(), "Protocol error: {0} - {1}.");
             config.AddKey(section.Messages(), key.NoData(), "Empty file \"{0}\", for queue {1}.");
             config.AddKey(section.Messages(), key.WatchDirectory(), "Watching directory \"{0}\".");
