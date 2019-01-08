@@ -168,6 +168,8 @@ namespace ServiceSpooler.Processors {
         /// 
         public void Processor(Boolean reconnect) {
 
+            log.Trace("Entering Processor()");
+
             var key = config.Key;
             var section = config.Section;
 
@@ -195,6 +197,8 @@ namespace ServiceSpooler.Processors {
 
             ConnectionEvent.Reset();
             connectedEvent.Wait(client.Cancellation.Token);
+
+            log.Trace("Leaving Processor()");
 
         }
 
@@ -232,10 +236,10 @@ namespace ServiceSpooler.Processors {
         /// 
         public void UnlinkFile(String filename) {
 
+            log.Trace("Entering UnlinkFile()");
+
             var key = config.Key;
             var section = config.Section;
-
-            log.Trace("Entering UnlinkFile()");
 
             try {
 
@@ -286,10 +290,11 @@ namespace ServiceSpooler.Processors {
         /// 
         public void OnStompConnected(Frame frame) {
 
+            log.Trace("Entering OnStompConnected()");
+
             var key = config.Key;
             var section = config.Section;
 
-            log.Trace("Entering OnStompConnected()");
             log.Debug(Utils.Dump(frame));
 
             ConnectionEvent.Set();
@@ -307,10 +312,11 @@ namespace ServiceSpooler.Processors {
         /// 
         public void OnStompReceipt(Frame frame) {
 
+            log.Trace("Entering OnStompReceipt()");
+
             var key = config.Key;
             var section = config.Section;
 
-            log.Trace("Entering OnStompReceipt()");
             log.Debug(String.Format("OnStompReceipt() - frame: {0}", Utils.Dump(frame)));
 
             if (frame.Headers.ContainsKey("receipt-id")) {
@@ -351,10 +357,11 @@ namespace ServiceSpooler.Processors {
         /// 
         public void OnStompError(Frame frame) {
 
+            log.Trace("Entering OnStompError()");
+
             var key = config.Key;
             var section = config.Section;
 
-            log.Trace("Entering OnStompError()");
             log.Debug(Utils.Dump(frame));
 
             string body = "";
@@ -404,12 +411,6 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering OnStompNoop()");
 
             log.Debug(Utils.Dump(frame));
-
-            //if (client.Level > 1.1) {
-
-            //    client.Send(stomp.Noop());
-
-            //}
 
             log.Trace("Leaving OnStompNoop()");
 

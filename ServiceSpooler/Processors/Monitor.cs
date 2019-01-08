@@ -157,9 +157,6 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering ProcessOrphans()");
 
-            //cancellation.Cancel(true);
-            //Task.WaitAny(tasks.ToArray());
-
             cancellation = new CancellationTokenSource();
 
             ConnectionEvent.Wait(cancellation.Token);
