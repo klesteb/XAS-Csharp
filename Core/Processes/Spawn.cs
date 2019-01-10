@@ -25,7 +25,7 @@ namespace XAS.Core.Processes {
         private Int32 exitCode = 0;
 
         private readonly ILogger log = null;
-        private readonly Process process = null;
+        private readonly System.Diagnostics.Process process = null;
         private readonly ISecurity secure = null;
         private readonly SpawnInfo spawnInfo = null;
         private readonly IConfiguration config = null;
@@ -33,22 +33,22 @@ namespace XAS.Core.Processes {
         private readonly ProcessStartInfo startInfo = null;
 
         /// <summary>
-        /// Get/Set a delegate to handle an exit event.
+        /// Set the event handler to handle an exit event.
         /// </summary>
         /// 
-        public OnExit OnExit { get; set; }
+        public event OnExit OnExit;
 
         /// <summary>
-        /// Get/Set a delgate to handle output on stderr.
+        /// Set the envent handler to handle output on stderr.
         /// </summary>
         /// 
-        public OnStderr OnStderr { get; set; }
+        public event OnStderr OnStderr;
 
         /// <summary>
-        /// Get/Set a delegate to handle output on stdout.
+        /// Set the event handler to handle output on stdout.
         /// </summary>
         /// 
-        public OnStdout OnStdout { get;set; }
+        public event OnStdout OnStdout;
 
         /// <summary>
         /// Contructor.
@@ -73,7 +73,7 @@ namespace XAS.Core.Processes {
 
             // set up the process
 
-            this.process = new Process();
+            this.process = new System.Diagnostics.Process();
             this.startInfo = new ProcessStartInfo() {
                 FileName = args[0],
                 CreateNoWindow = true,

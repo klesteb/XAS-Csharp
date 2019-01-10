@@ -46,6 +46,11 @@ Client and server classes for building and interacting with REST based services.
 
 There are various demo projects that will hopefully show you how to use this code.
 
+## Installation
+
+There are two setup modules available. You need to install SetupCore first. This provides the dependent libraries and creates 
+the directory structure needed to allow the code to run. SetupDemo will install the demos.
+
 ## Open Source
 
 This code is not stand alone. It makes use of other Open Source projects. A grateful thanks to those authors for providing their code

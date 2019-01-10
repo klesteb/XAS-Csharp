@@ -98,6 +98,7 @@
     <Compile Include="Mime\MimeTypes.cs" />
     <Compile Include="Processes\Spawn.cs" />
     <Compile Include="Processes\SpawnInfo.cs" />
+    <Compile Include="Processes\Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Retry.cs" />
     <Compile Include="Security\Authenticate.cs" />

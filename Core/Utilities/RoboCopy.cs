@@ -182,19 +182,19 @@ namespace XAS.Core.Utilities {
             spawnWait.Set();
             spawn = new Spawn(config, handler, logFactory, spawnInfo);
 
-            spawn.OnStderr = delegate(Int32 pid, String line) {
+            spawn.OnStderr += delegate(Int32 pid, String line) {
 
                 stderr.Add(line);
 
             };
 
-            spawn.OnStdout = delegate(Int32 pid, String line) {
+            spawn.OnStdout += delegate(Int32 pid, String line) {
 
                 stdout.Add(line);
 
             };
 
-            spawn.OnExit = delegate(Int32 pid, Int32 exitCode) {
+            spawn.OnExit += delegate(Int32 pid, Int32 exitCode) {
 
                 lock (_critical) {
 

@@ -518,11 +518,15 @@ namespace XAS.Network.TCP {
 
                 // ignore, stream has been disposed with an outstanding read.
 
+                IsConnectionSuccessful = false;
+
                 log.Debug("ReadCallback() - Ignored but a ObjectDisposedException was thrown");
 
             } catch (NullReferenceException) {
 
                 // ignore, Disconnect() with an outstanding read.
+
+                IsConnectionSuccessful = false;
 
                 log.Debug("ReadCallback() - Ignored but a NullReferenceException was thrown");
 
@@ -530,10 +534,14 @@ namespace XAS.Network.TCP {
 
                 // keepalive handling, some intermediate device dropped the connection
 
+                IsConnectionSuccessful = false;
                 handler.Exceptions(ex);
+ 
                 OnClientDisconnect();
 
             } catch (Exception ex) {
+
+                IsConnectionSuccessful = false;
 
                 OnClientException(ex);
 
@@ -559,11 +567,15 @@ namespace XAS.Network.TCP {
 
                 // ignore, stream has been disposed with an outstanding read.
 
+                IsConnectionSuccessful = false;
+
                 log.Debug("ReadCallback() - Ignored but a ObjectDisposedException was thrown");
 
             } catch (NullReferenceException) {
 
                 // ignore, Disconnect() with an outstanding read.
+
+                IsConnectionSuccessful = false;
 
                 log.Debug("ReadCallback() - Ignored but a NullReferenceException was thrown");
 
@@ -571,10 +583,14 @@ namespace XAS.Network.TCP {
 
                 // keepalive handling, some intermediate device dropped the connection
 
+                IsConnectionSuccessful = false;
                 handler.Exceptions(ex);
+
                 OnClientDisconnect();
 
             } catch (Exception ex) {
+
+                IsConnectionSuccessful = false;
 
                 OnClientException(ex);
 

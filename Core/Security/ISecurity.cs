@@ -14,7 +14,6 @@ namespace XAS.Core.Security {
 
         void RunElevated();
         SecureString MakeSecureString(string inSecureString);
-        Int32 RunAs(String command, String args, out List<string> stdout, out List<string> stdin);
 
     }
 
