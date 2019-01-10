@@ -49,7 +49,18 @@ There are various demo projects that will hopefully show you how to use this cod
 ## Installation
 
 There are two setup modules available. You need to install SetupCore first. This provides the dependent libraries and creates 
-the directory structure needed to allow the code to run. SetupDemo will install the demos.
+the directory structure needed to allow the code to run. It also installs the spooler. You will need to manually install the 
+spooler into SCM. 
+
+    C:\> C:\XAS\sbin\xas-spoolerd -install
+
+And change the XAS-Spooler services start feature from manaul to automatic, if so desried. You will also have to edit the
+configuration file for your environment. 
+
+If you installed the package someplace other then C:\xas\. Then you need to create the system wide environment variable XAS_ROOT to 
+point to this directory structure.
+
+SetupDemo will install the demos. Yow can install the services, but they may be best to run from the command line.
 
 ## Open Source
 
