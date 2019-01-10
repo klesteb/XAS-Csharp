@@ -60,7 +60,7 @@ configuration file for your environment.
 If you installed the package someplace other then C:\xas\. Then you need to create the system wide environment variable XAS_ROOT to 
 point to this directory structure.
 
-SetupDemo will install the demos. Yow can install the services, but they may be best to run from the command line.
+SetupDemo will install the demos. Yow can install the services, but they may be best if ran from the command line.
 
 ## Open Source
 
