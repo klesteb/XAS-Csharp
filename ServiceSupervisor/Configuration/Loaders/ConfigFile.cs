@@ -112,16 +112,12 @@ namespace ServiceSupervisor.Configuration.Loaders {
                                 config.UpdateKey(process, key.SupervisorVerb(), value);
                                 break;
 
-                            case "auto-start":
-                                config.UpdateKey(process, key.SupervisorAutoStart(), value);
-                                break;
-
                             case "exit-retries":
                                 config.UpdateKey(process, key.SupervisorExitRetries(), value);
                                 break;
 
                             case "auto-restart":
-                                config.UpdateKey(process, key.SupervisorAutoStart(), value);
+                                config.UpdateKey(process, key.SupervisorAutoRestart(), value);
                                 break;
 
                             case "restart-delay":

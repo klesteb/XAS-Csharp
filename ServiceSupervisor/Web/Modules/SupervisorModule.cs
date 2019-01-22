@@ -70,7 +70,7 @@ namespace ServiceSupervisor.Web.Modules {
 
                 log.InfoMsg(key.GET(), root, this.Context.CurrentUser.UserName);
 
-                var criteria = this.Bind<Model.Services.Supervised.SupervisedPagedCriteria>();
+                var criteria = this.Bind<SupervisedPagedCriteria>();
 
                 return Negotiate.WithModel(service.Paged(criteria));
 

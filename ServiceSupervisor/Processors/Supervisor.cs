@@ -9,6 +9,7 @@ using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
 using ServiceSupervisor.Model.Services;
+using XAS.Core;
 
 namespace ServiceSupervisor.Processors {
 
@@ -18,6 +19,8 @@ namespace ServiceSupervisor.Processors {
     /// 
     public class Supervisor {
 
+        private bool stopProcessing = false;
+
         private readonly ILogger log = null;
         private readonly IManager manager = null;
         private readonly Supervised service = null;
@@ -25,7 +28,6 @@ namespace ServiceSupervisor.Processors {
         private readonly IErrorHandler handler = null;
         private readonly ILoggerFactory logFactory = null;
 
-        private Task task = null;
         private CancellationTokenSource cancelSource = null;
 
         /// <summary>
@@ -56,6 +58,9 @@ namespace ServiceSupervisor.Processors {
         public void Start() {
 
             log.Trace("Entering Start()");
+
+            stopProcessing = false;
+            cancelSource = new CancellationTokenSource();
 
             using (var repo = manager.Repository as Model.Repositories) {
 
@@ -91,6 +96,9 @@ namespace ServiceSupervisor.Processors {
 
             log.Trace("Entering Stop()");
 
+            stopProcessing = true;
+            cancelSource.Cancel();
+
             using (var repo = manager.Repository as Model.Repositories) {
 
                 var jobs = service.List(repo);
@@ -99,8 +107,10 @@ namespace ServiceSupervisor.Processors {
 
                     if (job.Status == Model.Schema.RunStatus.Running) {
 
-                        job.Spawn.Stop();
+                        job.Spawn.Dispose();
                         job.Status = Model.Schema.RunStatus.Stopped;
+
+                        service.Update(repo, job.Name, job);
 
                     }
 
@@ -166,25 +176,26 @@ namespace ServiceSupervisor.Processors {
 
                 if (job != null) {
 
-                    if ((job.Config.AutoRestart) && 
+                    if (! stopProcessing && 
+                        job.Config.AutoRestart && 
                         (job.Config.ExitCodes.Contains(exitCode)) &&
                         (job.RetryCount <= job.Config.ExitRetries)) {
 
+                        Utils.Sleep(job.Config.RestartDelay, cancelSource.Token);
+
                         job.Spawn.Start();
                         job.RetryCount++;
-
-                        service.Update(repo, job.Name, job);
 
                     } else {
 
                         job.Pid = 0;
                         job.Status = Model.Schema.RunStatus.Stopped;
 
-                        service.Update(repo, job.Name, job);
-
                         log.WarnMsg("", "");
 
                     }
+
+                    service.Update(repo, job.Name, job);
 
                 }
 

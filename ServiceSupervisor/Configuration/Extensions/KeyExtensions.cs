@@ -68,10 +68,6 @@ namespace ServiceSupervisor.Configuration.Extensions {
             return "Verb";
         }
 
-        public static String SupervisorAutoStart(this Key junk) {
-            return "AutoStart";
-        }
-
         public static String SupervisorExitRetries(this Key junk) {
             return "ExitRetries";
         }

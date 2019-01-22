@@ -10,7 +10,6 @@ using XAS.Core.Extensions;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
-using ServiceSupervisor.Model;
 using ServiceSupervisor.Model.Schema;
 using ServiceSupervisorCommon.DataStructures;
 

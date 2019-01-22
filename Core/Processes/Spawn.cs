@@ -11,7 +11,7 @@ using XAS.Core.Configuration;
 
 namespace XAS.Core.Processes {
 
-    public delegate Int32 StartHandler(Int32 pid, String name);
+    public delegate void StartHandler(Int32 pid, String name);
     public delegate void ExitHandler(Int32 pid, Int32 exitCode);
     public delegate void StdoutHandler(Int32 pid, String buffer);
     public delegate void StderrHandler(Int32 pid, String buffer);
@@ -256,7 +256,7 @@ namespace XAS.Core.Processes {
 
             retries++;
 
-            if (! spawnInfo.ExitCodes.Contains(exitCode)) {
+            if (spawnInfo.ExitCodes.Contains(exitCode)) {
 
                 if ((spawnInfo.AutoRestart) && (retries <= spawnInfo.ExitRetries)) {
 
@@ -293,6 +293,10 @@ namespace XAS.Core.Processes {
 
             if (OnExit != null) {
 
+                OnExit(id, exitCode);
+
+            } else {
+            
                 RestartHandler();
 
             }
