@@ -27,6 +27,14 @@ namespace ServiceSupervisor {
         private readonly IErrorHandler handler = null;
         private readonly Processors.Supervisor supervisor = null;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="config">An IConfiguration object.</param>
+        /// <param name="errorHandler">An IErrorHandler object.</param>
+        /// <param name="logFactory">A ILoggerFactory object.</param>
+        /// <param name="secure">An ISecurity object.</param>
+        /// 
         public Service(IConfiguration config, IErrorHandler errorHandler, ILoggerFactory logFactory, ISecurity secure) {
 
             this.config = config;
@@ -103,7 +111,9 @@ namespace ServiceSupervisor {
 
         public void OnCustomCommand(int command) {
 
-            log.Warn(String.Format("Unknown custom command: {0}", command));
+            var key = config.Key;
+
+            log.WarnMsg(key.ServiceCustom(), command);
 
         }
 

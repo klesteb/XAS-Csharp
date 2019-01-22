@@ -11,44 +11,51 @@ using XAS.Core.Configuration;
 
 namespace XAS.Core.Processes {
 
-    public delegate void OnStdout(Int32 pid, String buffer);
-    public delegate void OnStderr(Int32 pid, String buffer);
-    public delegate void OnExit(Int32 pid, Int32 exitCode);
+    public delegate Int32 StartHandler(Int32 pid, String name);
+    public delegate void ExitHandler(Int32 pid, Int32 exitCode);
+    public delegate void StdoutHandler(Int32 pid, String buffer);
+    public delegate void StderrHandler(Int32 pid, String buffer);
 
     /// <summary>
     /// Spawn a process and keep it running.
     /// </summary>
     /// 
-    public class Spawn {
+    public class Spawn: IDisposable {
 
         private Int32 retries = 0;
         private Int32 exitCode = 0;
 
         private readonly ILogger log = null;
-        private readonly System.Diagnostics.Process process = null;
         private readonly ISecurity secure = null;
         private readonly SpawnInfo spawnInfo = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
         private readonly ProcessStartInfo startInfo = null;
+        private readonly System.Diagnostics.Process process = null;
 
         /// <summary>
         /// Set the event handler to handle an exit event.
         /// </summary>
         /// 
-        public event OnExit OnExit;
+        public event ExitHandler OnExit;
 
         /// <summary>
         /// Set the envent handler to handle output on stderr.
         /// </summary>
         /// 
-        public event OnStderr OnStderr;
+        public event StderrHandler OnStderr;
 
         /// <summary>
         /// Set the event handler to handle output on stdout.
         /// </summary>
         /// 
-        public event OnStdout OnStdout;
+        public event StdoutHandler OnStdout;
+
+        /// <summary>
+        /// Set the event handler to handle the process startup.
+        /// </summary>
+        /// 
+        public event StartHandler OnStarted;
 
         /// <summary>
         /// Contructor.
@@ -128,12 +135,6 @@ namespace XAS.Core.Processes {
             process.ErrorDataReceived += StderrHandler;
             process.OutputDataReceived += StdoutHandler;
 
-            if (spawnInfo.AutoStart) {
-
-                Start();
-
-            }
-
         }
 
         /// <summary>
@@ -150,6 +151,12 @@ namespace XAS.Core.Processes {
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
+
+            if (OnStarted != null) {
+
+                OnStarted(process.Id, spawnInfo.Name);
+
+            }
 
             log.Trace("Leaving Start()");
 
@@ -340,6 +347,82 @@ namespace XAS.Core.Processes {
 
             log.Trace("Leaving StderrHandler()");
 
+        }
+
+        #endregion
+        #region IDisposable Support
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+
+            if (!disposedValue) {
+
+                if (disposing) {
+
+                    // stop the process.
+
+                    int count = 0;
+                    Stop();
+
+                    while (Stat()) {
+
+                        count++;
+
+                        if (count > 5) {
+
+                            Kill();
+                            break;
+
+                        }
+
+                        Thread.Sleep(5 * 1000);
+
+                    }
+
+                    // release the handlers
+
+                    foreach (ExitHandler item in OnExit.GetInvocationList()) {
+
+                        OnExit -= item;
+
+                    }
+
+                    foreach (StderrHandler item in OnStderr.GetInvocationList()) {
+
+                        OnStderr -= item;
+
+                    }
+
+                    foreach (StdoutHandler item in OnStdout.GetInvocationList()) {
+
+                        OnStdout -= item;
+
+                    }
+
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+
+            }
+
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~Spawn() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
         }
 
         #endregion

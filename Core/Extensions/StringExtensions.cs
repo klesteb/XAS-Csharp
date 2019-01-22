@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text;
+using System.Collections.Generic;
+
 using XAS.Core.Locking;
 using XAS.Core.Logging;
 
@@ -261,6 +263,68 @@ namespace XAS.Core.Extensions {
         public static Double ToDouble(this String value) {
 
             return Convert.ToDouble(value);
+
+        }
+
+        /// <summary>
+        /// Parse a string of comma delimited numbers.
+        /// </summary>
+        /// <param name="buffer">A formatted string.</param>
+        /// <returns>A list of Int32s.</returns>
+        /// <remarks>
+        /// The needed format of the string:
+        ///    0,1,2
+        /// </remarks>
+        /// 
+        public static List<Int32> ToInt32List(this String buffer) {
+
+            var exitCodes = new List<Int32>();
+
+            if (buffer != "") {
+
+                String[] codes = buffer.Split(',');
+
+                foreach (string code in codes) {
+
+                    exitCodes.Add(code.ToInt32());
+
+                }
+
+            }
+
+            return exitCodes;
+
+        }
+
+        /// <summary>
+        /// Parse a string of key/value pairs.
+        /// </summary>
+        /// <param name="buffer">A formatted string.</param>
+        /// <returns>A dictionary of key/value pairs.</returns>
+        /// <remarks>
+        /// The needed format of the string:
+        ///     key=value;key=value;
+        /// </remarks>
+        /// 
+        public static Dictionary<String, String> ToKeyValuePairs(this String buffer) {
+
+            var keyValue = new Dictionary<String, String>();
+
+            if (buffer != "") {
+
+                String[] chunks = buffer.Split(';');
+
+                foreach (string chunk in chunks) {
+
+                    String[] parts = chunk.Split('=');
+
+                    keyValue.Add(parts[0].Trim(), parts[1].Trim());
+
+                }
+
+            }
+
+            return keyValue;
 
         }
 

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 using XAS.Model;
 using XAS.Core.Logging;
+using XAS.Core.Processes;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
-using ServiceSupervisor.Supervisor;
-using System.Threading.Tasks;
+using ServiceSupervisor.Model.Services;
 
 namespace ServiceSupervisor.Processors {
 
@@ -18,12 +19,14 @@ namespace ServiceSupervisor.Processors {
     public class Supervisor {
 
         private readonly ILogger log = null;
-        private readonly Handler server = null;
+        private readonly IManager manager = null;
+        private readonly Supervised service = null;
         private readonly IConfiguration config = null;
         private readonly IErrorHandler handler = null;
-        private readonly CancellationTokenSource cancelSource = null;
+        private readonly ILoggerFactory logFactory = null;
 
         private Task task = null;
+        private CancellationTokenSource cancelSource = null;
 
         /// <summary>
         /// Constructor.
@@ -36,18 +39,13 @@ namespace ServiceSupervisor.Processors {
 
             var key = config.Key;
             var section = config.Section;
-
+    
             this.config = config;
             this.handler = handler;
-            this.cancelSource = new CancellationTokenSource();
-
+            this.manager = manager;
+            this.logFactory = logFactory;
             this.log = logFactory.Create(typeof(Supervisor));
-
-            // get config stuff
-
-            // launch the server
-
-            this.server = new Handler(config, handler, logFactory, manager, cancelSource);
+            this.service = new Supervised(config, handler, logFactory);
 
         }
 
@@ -59,8 +57,27 @@ namespace ServiceSupervisor.Processors {
 
             log.Trace("Entering Start()");
 
-            task = new Task(server.Process, cancelSource.Token, TaskCreationOptions.LongRunning);
-            task.Start();
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var jobs = service.List(repo);
+
+                foreach (var job in jobs) {
+
+                    job.Spawn = new Spawn(config, handler, logFactory, job.Config);
+                    
+                    job.Spawn.OnExit += ExitHandler;
+                    job.Spawn.OnStderr += StderrHandler;
+                    job.Spawn.OnStdout += StdoutHandler;
+                    job.Spawn.OnStarted += StartedHandler;
+
+                    job.Spawn.Start();
+                    job.Status = Model.Schema.RunStatus.Started;
+
+                    service.Update(repo, job.Name, job);
+
+                }
+
+            }
 
             log.Trace("Leaving Start()");
 
@@ -72,12 +89,24 @@ namespace ServiceSupervisor.Processors {
         /// 
         public void Stop() {
 
-            Task[] tasks = { task };
-
             log.Trace("Entering Stop()");
 
-            cancelSource.Cancel();
-            Task.WaitAll(tasks);
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var jobs = service.List(repo);
+
+                foreach (var job in jobs) {
+
+                    if (job.Status == Model.Schema.RunStatus.Running) {
+
+                        job.Spawn.Stop();
+                        job.Status = Model.Schema.RunStatus.Stopped;
+
+                    }
+
+                }
+
+            }
 
             log.Trace("Leaving Stop()");
 
@@ -89,12 +118,9 @@ namespace ServiceSupervisor.Processors {
         /// 
         public void Pause() {
 
-            Task[] tasks = { task };
-
             log.Trace("Entering Pause()");
 
-            cancelSource.Cancel();
-            Task.WaitAll(tasks);
+            Stop();
 
             log.Trace("Leaving Pause()");
 
@@ -108,8 +134,7 @@ namespace ServiceSupervisor.Processors {
 
             log.Trace("Entering Continue()");
 
-            task = new Task(server.Process, cancelSource.Token, TaskCreationOptions.LongRunning);
-            task.Start();
+            Start();
 
             log.Trace("Leaving Continue()");
 
@@ -121,16 +146,122 @@ namespace ServiceSupervisor.Processors {
         /// 
         public void Shutdown() {
 
-            Task[] tasks = { task };
-
             log.Trace("Entering Shutdown()");
 
-            cancelSource.Cancel();
-            Task.WaitAll(tasks);
+            Stop();
 
             log.Trace("Leaving Shutdown()");
 
         }
+
+        #region Private Methods
+
+        private void ExitHandler(Int32 pid, Int32 exitCode) {
+
+            log.Trace("Entering ExitHandler()");
+
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var job = service.Get(repo, pid);
+
+                if (job != null) {
+
+                    if ((job.Config.AutoRestart) && 
+                        (job.Config.ExitCodes.Contains(exitCode)) &&
+                        (job.RetryCount <= job.Config.ExitRetries)) {
+
+                        job.Spawn.Start();
+                        job.RetryCount++;
+
+                        service.Update(repo, job.Name, job);
+
+                    } else {
+
+                        job.Pid = 0;
+                        job.Status = Model.Schema.RunStatus.Stopped;
+
+                        service.Update(repo, job.Name, job);
+
+                        log.WarnMsg("", "");
+
+                    }
+
+                }
+
+            }
+
+            log.Trace("Leaving ExitHandler()");
+
+        }
+
+        private void StartedHandler(Int32 pid, String name) {
+
+            log.Trace("Entering StderrHandler()");
+
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var job = service.Get(repo, name);
+
+                if (job != null) {
+
+                    if (job.Spawn.Stat()) {
+
+                        job.Status = Model.Schema.RunStatus.Running;
+                        service.Update(repo, job.Name, job);
+
+                        log.InfoMsg("", job.Name);
+
+                    }
+
+                }
+
+            }
+
+            log.Trace("Leaving StderrHandler()");
+
+        }
+
+        private void StderrHandler(Int32 pid, String buffer) {
+
+            log.Trace("Entering StderrHandler()");
+
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var job = service.Get(repo, pid);
+
+                if (job != null) {
+
+                    log.ErrorMsg("", job.Name, buffer);
+
+                }
+
+            }
+
+            log.Trace("Leaving StderrHandler()");
+
+        }
+
+        private void StdoutHandler(Int32 pid, String buffer) {
+
+            log.Trace("Entering StdoutHandler()");
+
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var job = service.Get(repo, pid);
+
+                if (job != null) {
+
+                    log.InfoMsg("", job.Name, buffer);
+
+                }
+
+            }
+
+            log.Trace("Leaving StdoutHandler()");
+
+        }
+
+        #endregion
 
     }
 

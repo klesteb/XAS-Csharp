@@ -68,7 +68,9 @@ namespace ServiceSupervisor.Processors {
         public void Start() {
 
             log.Trace("Entering Start()");
+
             server.Start();
+
             log.Trace("Leaving Start()");
 
         }
@@ -80,7 +82,9 @@ namespace ServiceSupervisor.Processors {
         public void Stop() {
 
             log.Trace("Entering Stop()");
+
             server.Stop();
+
             log.Trace("Leaving Stop()");
 
         }
@@ -92,7 +96,9 @@ namespace ServiceSupervisor.Processors {
         public void Pause() {
 
             log.Trace("Entering Pause()");
+
             server.Pause();
+
             log.Trace("Leaving Pause()");
 
         }
@@ -104,7 +110,9 @@ namespace ServiceSupervisor.Processors {
         public void Continue() {
 
             log.Trace("Entering Continue()");
+
             server.Continue();
+
             log.Trace("Leaving Continue()");
 
         }
@@ -116,7 +124,9 @@ namespace ServiceSupervisor.Processors {
         public void Shutdown() {
 
             log.Trace("Entering Shutdown()");
+
             server.Shutdown();
+
             log.Trace("Leaving Shutdown()");
 
         }

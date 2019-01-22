@@ -92,11 +92,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service.cs" />
-    <Compile Include="Supervisor\Handler.cs" />
-    <Compile Include="Utils.cs" />
     <Compile Include="Web\BootStrapper.cs" />
     <Compile Include="Web\Configure.cs" />
-    <Compile Include="Model\Schema\Supervise.cs" />
+    <Compile Include="Model\Schema\SupervisedProcess.cs" />
     <Compile Include="Web\Modules\SupervisorModule.cs" />
     <Compile Include="Services\ISuperviseService.cs" />
     <Compile Include="Services\SuperviseService.cs" />

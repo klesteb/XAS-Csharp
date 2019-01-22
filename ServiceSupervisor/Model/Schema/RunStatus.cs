@@ -13,7 +13,8 @@ namespace ServiceSupervisor.Model.Schema {
     public enum RunStatus {
 
         Started,
-        Stopped
+        Stopped,
+        Running
 
     }
 

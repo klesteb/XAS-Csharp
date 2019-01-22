@@ -17,8 +17,8 @@ namespace XAS.Core.Processes {
         /// 
         public static Int32 Run(String command, out List<String> stdout, out List<String> stderr) {
 
-            List<string> output = new List<string>();
             List<string> error = new List<string>();
+            List<string> output = new List<string>();
             var process = new System.Diagnostics.Process();
 
             string[] args = Utils.ParseCommandLine(command);
@@ -92,8 +92,8 @@ namespace XAS.Core.Processes {
         /// 
         public static Int32 RunAs(String command, out List<String> stdout, out List<String> stderr) {
 
-            List<string> output = new List<string>();
             List<string> error = new List<string>();
+            List<string> output = new List<string>();
             var process = new System.Diagnostics.Process();
 
             string[] args = Utils.ParseCommandLine(command);

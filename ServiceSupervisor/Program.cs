@@ -190,10 +190,10 @@ namespace ServiceSupervisor {
             text.Add("        enable-client-certificates = false ");
             text.Add("        root-path = " + config.GetValue(section.Web(), key.WebRootPath()));
             text.Add("");
-            text.Add("    This stanza tells the internal web server on what port to listen on, weither to accept client ssl");
+            text.Add("    This stanza tells the internal web server on what port to listen on, wither to accept client ssl");
             text.Add("    certificates and the root path for html templates.");
             text.Add("");
-            text.Add("EXIT CODES");
+             text.Add("EXIT CODES");
             text.Add("");
             text.Add("    0 - success");
             text.Add("    1 - failure");

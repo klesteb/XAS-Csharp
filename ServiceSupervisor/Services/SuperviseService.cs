@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.ComponentModel;
 using System.Collections.Generic;
 
 using XAS.Model;
@@ -8,9 +10,14 @@ using XAS.Core.Extensions;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
+using ServiceSupervisor.Model;
+using ServiceSupervisor.Model.Schema;
 using ServiceSupervisorCommon.DataStructures;
 
 namespace ServiceSupervisor.Services {
+
+    public class SupervisedPagedCriteria: PagedCriteria { }
+    public class SupervisedCriteria: Criteria<SupervisedProcess> { }
 
     /// <summary>
     /// A repository service.
@@ -54,7 +61,8 @@ namespace ServiceSupervisor.Services {
 
             using (var repo = manager.Repository as Model.Repositories) {
 
-                dto = service.Get(repo, name);
+                var data = service.Get(repo, name);
+                dto = NewDTO(repo, data);
 
             }
 
@@ -73,7 +81,8 @@ namespace ServiceSupervisor.Services {
 
                 if ((name = service.Create(repo, dti)) != null) {
 
-                    dto = service.Get(repo, name);
+                    var data = service.Get(repo, name);
+                    dto = NewDTO(repo, data);
 
                 }
 
@@ -93,7 +102,8 @@ namespace ServiceSupervisor.Services {
 
                 if (service.Update(repo, name, dti)) {
 
-                    dto = service.Get(repo, name);
+                    var data = service.Get(repo, name);
+                    dto = NewDTO(repo, data);
 
                 }
 
@@ -122,7 +132,13 @@ namespace ServiceSupervisor.Services {
 
             using (var repo = manager.Repository as Model.Repositories) {
 
-                dtos = service.List(repo);
+                var data = service.List(repo);
+
+                foreach (var item in data) {
+
+                    dtos.Add(NewDTO(repo, item));
+
+                }
 
             }
 
@@ -130,17 +146,52 @@ namespace ServiceSupervisor.Services {
 
         }
 
-        public IPagedList<SuperviseDTO> Paged(Model.Services.Supervised.SupervisedPagedCriteria criteria) {
+        public IPagedList<SuperviseDTO> Paged(SupervisedPagedCriteria criteria) {
 
-            var dtos = new Object();
+            PagedList<SuperviseDTO> paged = null;
+            Dictionary<String, ListSortDirection> sortDir = new Dictionary<String, ListSortDirection>();
 
-            using (var repo = manager.Repository as Model.Repositories) {
+            if (String.IsNullOrEmpty(criteria.SortDir)) {
 
-                dtos = service.Paged(repo, criteria);
+                sortDir.Add("asc", ListSortDirection.Ascending);
+
+            } else {
+
+                if (criteria.SortDir.Equals("asc", StringComparison.OrdinalIgnoreCase)) {
+
+                    sortDir.Add("asc", ListSortDirection.Ascending);
+
+                } else {
+
+                    sortDir.Add("desc", ListSortDirection.Descending);
+
+                }
 
             }
 
-            return dtos as PagedList<SuperviseDTO>;
+            var dbCriteria = new SupervisedCriteria() {
+                Page = (criteria.Page ?? 1),
+                PageSize = (criteria.PageSize ?? 20),
+                SortBy = (criteria.SortBy ?? new string[0]).ToList(),
+                SortDir = sortDir
+            };
+
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var page = repo.Supervised.Page(dbCriteria);
+
+                paged = new PagedList<SuperviseDTO>(
+                    page.PageNumber,
+                    page.PageSize,
+                    page.TotalResults,
+                    criteria.SortBy,
+                    dbCriteria.SortDir,
+                    page.Data.Select(rec => Get(rec.Name)).ToList()
+                );
+
+            }
+
+            return paged;
 
         }
 
@@ -162,20 +213,112 @@ namespace ServiceSupervisor.Services {
 
         #region Private Methods
 
-        private SuperviseDTI MoveBinding(SupervisePost binding) {
+        private SuperviseDTO NewDTO(IRepositories repo, SupervisedProcess data) {
 
-            return new SuperviseDTI {
-                Verb = binding.Verb,
-                Name = binding.Name,
-                Domain = binding.Domain,
-                Username = binding.Username,
-                Password = binding.Password,
-                AutoStart = binding.AutoStart.ToBoolean(),
-                ExitRetries = binding.ExitRetries.ToInt32(),
-                ExitCodes = Utils.ParseExitCodes(binding.ExitCodes),
-                WorkingDirectory = binding.WorkingDirectory,
-                Environment = Utils.ParseEnvironment(binding.Environment)
+            return new SuperviseDTO {
+                Name = data.Name,
+                Verb = data.Config.Verb,
+                Status = (Int32)data.Status,
+                Domain = data.Config.Domain,
+                Username = data.Config.Username,
+                Password = data.Config.Password,
+                RetryCount = data.RetryCount,
+                AutoStart = data.Config.AutoStart,
+                ExitRetries = data.Config.ExitRetries,
+                AutoRestart = data.Config.AutoRestart,
+                ExitCodes = data.Config.ExitCodes,
+                WorkingDirectory = data.Config.WorkingDirectory,
+                Environment = data.Config.Environment
             };
+
+        }
+
+        private SupervisedProcess MoveDTI(IRepositories repo, SuperviseDTI data) {
+
+            var sp = new SupervisedProcess();
+
+            sp.Name = data.Name;
+            sp.Config.Verb = data.Verb;
+            sp.Config.Domain = data.Domain;
+            sp.Config.Username = data.Username;
+            sp.Config.Password = data.Password;
+            sp.Config.AutoStart = data.AutoStart;
+            sp.Config.ExitRetries = data.ExitRetries;
+            sp.Config.AutoRestart = data.AutoRestart;
+            sp.Config.ExitCodes = data.ExitCodes;
+            sp.Config.WorkingDirectory = data.WorkingDirectory;
+            sp.Config.Environment = data.Environment;
+
+            return sp;
+
+        }
+
+        private SupervisedProcess MergeDTI(IRepositories repo, SupervisedProcess record, SuperviseDTI data) {
+
+            record.Config.Verb = (data.Verb != "")
+                ? data.Verb
+                : record.Config.Verb;
+
+            record.Name = (data.Name != "")
+                ? data.Name
+                : record.Name;
+
+            record.Config.Domain = (data.Domain != "")
+                ? data.Domain
+                : record.Config.Domain;
+
+            record.Config.Username = (data.Username != "")
+                ? data.Username
+                : record.Config.Username;
+
+            record.Config.Password = (data.Password != "")
+                ? data.Password
+                : record.Config.Password;
+
+            record.Config.AutoStart = (data.AutoStart != record.Config.AutoStart)
+                ? data.AutoStart
+                : record.Config.AutoStart;
+
+            record.Config.ExitRetries = (data.ExitRetries != record.Config.ExitRetries)
+                ? data.ExitRetries
+                : record.Config.ExitRetries;
+
+            record.Config.AutoRestart = (data.AutoRestart != record.Config.AutoRestart)
+                ? data.AutoRestart
+                : record.Config.AutoRestart;
+
+            record.Config.ExitCodes = (data.ExitCodes.Count() > 0)
+                ? data.ExitCodes
+                : record.Config.ExitCodes;
+
+            record.Config.WorkingDirectory = (data.WorkingDirectory != "")
+                ? data.WorkingDirectory
+                : record.Config.WorkingDirectory;
+
+            record.Config.Environment = (data.Environment.Count() > 0)
+                ? data.Environment
+                : record.Config.Environment;
+
+            return record;
+
+        }
+
+        private SupervisedProcess MoveBinding(SupervisePost binding) {
+
+            var sp = new SupervisedProcess();
+
+            sp.Name = binding.Name;
+            sp.Config.Verb = binding.Verb;
+            sp.Config.Domain = binding.Domain;
+            sp.Config.Username = binding.Username;
+            sp.Config.Password = binding.Password;
+            sp.Config.AutoStart = binding.AutoStart.ToBoolean();
+            sp.Config.ExitRetries = binding.ExitRetries.ToInt32();
+            sp.Config.ExitCodes = binding.ExitCodes.ToInt32List();
+            sp.Config.WorkingDirectory = binding.WorkingDirectory;
+            sp.Config.Environment = binding.Environment.ToKeyValuePairs();
+
+            return sp;
 
         }
 

@@ -15,7 +15,7 @@ namespace ServiceSupervisor.Services {
         SuperviseDTO Get(String name);
         SuperviseDTO Create(SupervisePost binding);
         SuperviseDTO Update(String name, SuperviseUpdate binding);
-        IPagedList<SuperviseDTO> Paged(Model.Services.Supervised.SupervisedPagedCriteria criteria);
+        IPagedList<SuperviseDTO> Paged(SupervisedPagedCriteria criteria);
 
     }
 
