@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 
+using XAS.Core;
 using XAS.Model;
 using XAS.Core.Logging;
 using XAS.Core.Processes;
@@ -9,7 +9,6 @@ using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
 
 using ServiceSupervisor.Model.Services;
-using XAS.Core;
 
 namespace ServiceSupervisor.Processors {
 
@@ -19,8 +18,6 @@ namespace ServiceSupervisor.Processors {
     /// 
     public class Supervisor {
 
-        private bool stopProcessing = false;
-
         private readonly ILogger log = null;
         private readonly IManager manager = null;
         private readonly Supervised service = null;
@@ -28,6 +25,7 @@ namespace ServiceSupervisor.Processors {
         private readonly IErrorHandler handler = null;
         private readonly ILoggerFactory logFactory = null;
 
+        private bool stopProcessing = false;
         private CancellationTokenSource cancelSource = null;
 
         /// <summary>
