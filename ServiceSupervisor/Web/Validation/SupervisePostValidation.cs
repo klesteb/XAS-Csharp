@@ -38,10 +38,6 @@ namespace ServiceSupervisor.Web.Validation {
                 .NotEmpty()
                 .MaximumLength(32);
 
-            RuleFor(p => p.AutoStart)
-                .NotEmpty()
-                .IsBoolean();
-
             RuleFor(p => p.ExitRetries)
                 .NotEmpty()
                 .IsInteger();

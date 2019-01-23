@@ -12,7 +12,6 @@ namespace ServiceSupervisorCommon.DataStructures {
         public String Username { get; set; }
         public String Password { get; set; }
         public Int32 RetryCount { get; set; }
-        public Boolean AutoStart { get; set; }
         public Int32 ExitRetries { get; set; }
         public Boolean AutoRestart { get; set; }
         public List<Int32> ExitCodes { get; set; }

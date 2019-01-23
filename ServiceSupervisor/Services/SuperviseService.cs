@@ -339,7 +339,6 @@ namespace ServiceSupervisor.Services {
             sp.Config.Domain = binding.Domain;
             sp.Config.Username = binding.Username;
             sp.Config.Password = binding.Password;
-            sp.Config.AutoStart = binding.AutoStart.ToBoolean();
             sp.Config.ExitRetries = binding.ExitRetries.ToInt32();
             sp.Config.ExitCodes = binding.ExitCodes.ToInt32List();
             sp.Config.WorkingDirectory = binding.WorkingDirectory;

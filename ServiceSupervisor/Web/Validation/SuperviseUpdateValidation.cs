@@ -32,9 +32,6 @@ namespace ServiceSupervisor.Web.Validation {
             RuleFor(p => p.Password)
                 .MaximumLength(32);
 
-            RuleFor(p => p.AutoStart)
-                .IsBoolean();
-
             RuleFor(p => p.ExitRetries)
                 .IsInteger();
 
