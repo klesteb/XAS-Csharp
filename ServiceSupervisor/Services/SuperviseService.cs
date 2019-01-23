@@ -198,6 +198,23 @@ namespace ServiceSupervisor.Services {
 
             bool stat = false;
 
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var job = service.Get(repo, name);
+
+                if (job != null) {
+
+                    if (job.Status == RunStatus.Stopped) {
+
+                        job.Spawn.Start();
+                        stat = true;
+
+                    }
+
+                }
+
+            }
+
             return stat;
 
         }
@@ -205,6 +222,23 @@ namespace ServiceSupervisor.Services {
         public Boolean Stop(String name) {
 
             bool stat = false;
+
+            using (var repo = manager.Repository as Model.Repositories) {
+
+                var job = service.Get(repo, name);
+
+                if (job != null) {
+
+                    if (job.Status != RunStatus.Stopped) {
+
+                        job.Spawn.Stop();
+                        stat = true;
+
+                    }
+
+                }
+
+            }
 
             return stat;
 
@@ -222,7 +256,6 @@ namespace ServiceSupervisor.Services {
                 Username = data.Config.Username,
                 Password = data.Config.Password,
                 RetryCount = data.RetryCount,
-                AutoStart = data.Config.AutoStart,
                 ExitRetries = data.Config.ExitRetries,
                 AutoRestart = data.Config.AutoRestart,
                 ExitCodes = data.Config.ExitCodes,
@@ -241,7 +274,6 @@ namespace ServiceSupervisor.Services {
             sp.Config.Domain = data.Domain;
             sp.Config.Username = data.Username;
             sp.Config.Password = data.Password;
-            sp.Config.AutoStart = data.AutoStart;
             sp.Config.ExitRetries = data.ExitRetries;
             sp.Config.AutoRestart = data.AutoRestart;
             sp.Config.ExitCodes = data.ExitCodes;
@@ -273,10 +305,6 @@ namespace ServiceSupervisor.Services {
             record.Config.Password = (data.Password != "")
                 ? data.Password
                 : record.Config.Password;
-
-            record.Config.AutoStart = (data.AutoStart != record.Config.AutoStart)
-                ? data.AutoStart
-                : record.Config.AutoStart;
 
             record.Config.ExitRetries = (data.ExitRetries != record.Config.ExitRetries)
                 ? data.ExitRetries

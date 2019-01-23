@@ -16,10 +16,12 @@ namespace ServiceSupervisor.Model.Schema {
         public Int32 RetryCount { get; set; }
         public RunStatus Status { get; set; }
         public SpawnInfo Config { get; set; }
+        public Boolean StopProcessing { get; set; }
 
         public SupervisedProcess() {
 
             RetryCount = 0;
+            StopProcessing = false;
             Config = new SpawnInfo();
             Status = RunStatus.Stopped;
 

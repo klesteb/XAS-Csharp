@@ -30,7 +30,7 @@ namespace ServiceSupervisor.Processors {
         /// <param name="config">An IConfiguration object.</param>
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
-        /// <param name="manager"></param>
+        /// <param name="manager">An IManager object.</param>
         /// 
         public Web(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
 

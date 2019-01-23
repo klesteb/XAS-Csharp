@@ -404,6 +404,12 @@ namespace XAS.Core.Processes {
 
                     }
 
+                    foreach (StartHandler item in OnStarted.GetInvocationList()) {
+
+                        OnStarted -= item;
+
+                    }
+
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

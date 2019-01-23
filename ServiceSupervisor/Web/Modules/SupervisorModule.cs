@@ -7,7 +7,6 @@ using Nancy.Security;
 using Nancy.Validation;
 using Nancy.ModelBinding;
 
-using XAS.Core;
 using XAS.Core.Logging;
 using XAS.Core.Exceptions;
 using XAS.Core.Configuration;
@@ -21,7 +20,7 @@ using ServiceSupervisor.Configuration.Extensions;
 namespace ServiceSupervisor.Web.Modules {
 
     /// <summary>
-    /// Web interface to supervisor.
+    /// Web interface to the supervisor.
     /// </summary>
     /// 
     public class SupervisorModule: NancyModule {
@@ -54,7 +53,7 @@ namespace ServiceSupervisor.Web.Modules {
         /// <param name="config">An IConfiguration object.</param>
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
-        /// <param name="service">An ISupervised object.</param>
+        /// <param name="service">An ISuperviseService object.</param>
         /// 
         public SupervisorModule(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, ISuperviseService service): base(root) {
 

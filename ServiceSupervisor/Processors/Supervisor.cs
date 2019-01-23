@@ -25,7 +25,6 @@ namespace ServiceSupervisor.Processors {
         private readonly IErrorHandler handler = null;
         private readonly ILoggerFactory logFactory = null;
 
-        private bool stopProcessing = false;
         private CancellationTokenSource cancelSource = null;
 
         /// <summary>
@@ -34,6 +33,7 @@ namespace ServiceSupervisor.Processors {
         /// <param name="config">An IConfiguration object.</param>
         /// <param name="handler">An IErrorHandler object.</param>
         /// <param name="logFactory">An ILoggerFactory object.</param>
+        /// <param name="manager">An IManager object.</param>
         /// 
         public Supervisor(IConfiguration config, IErrorHandler handler, ILoggerFactory logFactory, IManager manager) {
 
@@ -57,7 +57,6 @@ namespace ServiceSupervisor.Processors {
 
             log.Trace("Entering Start()");
 
-            stopProcessing = false;
             cancelSource = new CancellationTokenSource();
 
             using (var repo = manager.Repository as Model.Repositories) {
@@ -74,6 +73,7 @@ namespace ServiceSupervisor.Processors {
                     job.Spawn.OnStarted += StartedHandler;
 
                     job.Spawn.Start();
+                    job.StopProcessing = false;
                     job.Status = Model.Schema.RunStatus.Started;
 
                     service.Update(repo, job.Name, job);
@@ -94,7 +94,6 @@ namespace ServiceSupervisor.Processors {
 
             log.Trace("Entering Stop()");
 
-            stopProcessing = true;
             cancelSource.Cancel();
 
             using (var repo = manager.Repository as Model.Repositories) {
@@ -106,6 +105,7 @@ namespace ServiceSupervisor.Processors {
                     if (job.Status == Model.Schema.RunStatus.Running) {
 
                         job.Spawn.Dispose();
+                        job.StopProcessing = true;
                         job.Status = Model.Schema.RunStatus.Stopped;
 
                         service.Update(repo, job.Name, job);
@@ -174,7 +174,7 @@ namespace ServiceSupervisor.Processors {
 
                 if (job != null) {
 
-                    if (! stopProcessing && 
+                    if (! job.StopProcessing && 
                         job.Config.AutoRestart && 
                         (job.Config.ExitCodes.Contains(exitCode)) &&
                         (job.RetryCount <= job.Config.ExitRetries)) {
@@ -205,7 +205,7 @@ namespace ServiceSupervisor.Processors {
 
         private void StartedHandler(Int32 pid, String name) {
 
-            log.Trace("Entering StderrHandler()");
+            log.Trace("Entering StartedHandler()");
 
             using (var repo = manager.Repository as Model.Repositories) {
 
@@ -226,7 +226,7 @@ namespace ServiceSupervisor.Processors {
 
             }
 
-            log.Trace("Leaving StderrHandler()");
+            log.Trace("Leaving StartedHandler()");
 
         }
 
