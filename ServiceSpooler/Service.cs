@@ -18,7 +18,7 @@ using ServiceSpooler.Configuration.Extensions;
 
 namespace ServiceSpooler {
 
-    [WindowsService("XasSpoolerd",
+    [WindowsService("xas-spoolerd",
         DisplayName = "XAS Spooler",
         Description = "This manages spool files and directories for the XAS environment.",
         EventSource = "XasSpoolerd",

@@ -13,6 +13,7 @@ namespace ServiceSupervisor.Model.Schema {
         public Int32 Pid { get; set; }
         public String Name { get; set; }
         public Spawn Spawn { get; set; }
+        public Int32 StopDelay { get; set; }
         public Int32 RetryCount { get; set; }
         public RunStatus Status { get; set; }
         public SpawnInfo Config { get; set; }

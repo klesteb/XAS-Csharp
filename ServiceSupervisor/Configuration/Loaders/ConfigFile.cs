@@ -124,6 +124,10 @@ namespace ServiceSupervisor.Configuration.Loaders {
                                 config.UpdateKey(process, key.SupervisorRestartDelay(), value);
                                 break;
 
+                            case "stop-delay":
+                                config.UpdateKey(process, key.SupervisorStopDelay(), value);
+                                break;
+
                             case "exit-codes":
                                 config.UpdateKey(process, key.SupervisorExitCodes(), value);
                                 break;

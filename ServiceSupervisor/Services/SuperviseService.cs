@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.ComponentModel;
 using System.Collections.Generic;
 
+using XAS.Core;
 using XAS.Model;
 using XAS.Model.Paging;
 using XAS.Core.Logging;
@@ -206,7 +208,11 @@ namespace ServiceSupervisor.Services {
 
                     if (job.Status == RunStatus.Stopped) {
 
+                        job.StopProcessing = false;
+                        service.Update(repo, job.Name, job);
+
                         job.Spawn.Start();
+
                         stat = true;
 
                     }
@@ -231,8 +237,28 @@ namespace ServiceSupervisor.Services {
 
                     if (job.Status != RunStatus.Stopped) {
 
-                        job.Spawn.Stop();
                         stat = true;
+                        job.StopProcessing = true;
+                        service.Update(repo, job.Name, job);
+
+                        job.Spawn.Stop();
+
+                        for (int x = 0; x < job.RetryCount; x++) {
+
+                            if (job.Spawn.Stat()) {
+
+                                Thread.Sleep(job.StopDelay * 1000);
+                                job.Spawn.Stop();
+
+                            } else {
+
+                                goto fini;
+
+                            }
+
+                        }
+
+                        job.Spawn.Kill();
 
                     }
 
@@ -240,7 +266,7 @@ namespace ServiceSupervisor.Services {
 
             }
 
-            return stat;
+            fini: return stat;
 
         }
 

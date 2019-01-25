@@ -80,6 +80,10 @@ namespace ServiceSupervisor.Configuration.Extensions {
             return "RestartDelay";
         }
 
+        public static String SupervisorStopDelay(this Key junk) {
+            return "StopDelay";
+        }
+
         public static String SupervisorExitCodes(this Key junk) {
             return "ExitCodes";
         }

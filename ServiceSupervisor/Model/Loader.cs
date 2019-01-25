@@ -65,6 +65,10 @@ namespace ServiceSupervisor.Model {
 
                             record.Config.WorkingDirectory = config.GetValue(process, key.SupervisorWorkingDirectory(), workingDirectory);
 
+                        } else if (item == key.SupervisorStopDelay()) {
+
+                            record.StopDelay = config.GetValue(process, key.SupervisorStopDelay(), "5").ToInt32();
+
                         } else if (item == key.SupervisorEnvironment()) {
 
                             var env = config.GetValue(process, key.SupervisorEnvironment());
