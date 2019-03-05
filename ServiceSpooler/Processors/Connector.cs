@@ -203,7 +203,7 @@ namespace ServiceSpooler.Processors {
         }
 
         /// <summary>
-        /// Send a packet.
+        /// The event handler for OnDequeuePacket.
         /// </summary>
         /// <param name="packet">A Packet object.</param>
         /// 

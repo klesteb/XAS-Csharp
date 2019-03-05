@@ -225,6 +225,7 @@ namespace ServiceSpooler.Processors {
                 for (;;) {
 
                     ConnectionEvent.Wait(cancellation.Token);
+                    log.Debug("DequeuePacket() - after ConnectionEvent.Wait()");
                     dequeueEvent.Wait(cancellation.Token);
 
                     log.Debug("DequeuePacket() - processing");
