@@ -220,53 +220,37 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering DequeuePacket()");
             log.Debug("DequeuePacket() - connected, ready to process");
 
-            try {
+            for (;;) {
 
-                for (;;) {
+                try {
 
                     ConnectionEvent.Wait(cancellation.Token);
                     log.Debug("DequeuePacket() - after ConnectionEvent.Wait()");
+
                     dequeueEvent.Wait(cancellation.Token);
-
                     log.Debug("DequeuePacket() - processing");
-
-                    if (cancellation.IsCancellationRequested) {
-
-                        log.Debug("DequeuePacket() - cancellation requested");
-                        goto fini;
-
-                    }
 
                     Packet packet;
 
                     while (queued.TryDequeue(out packet)) {
 
-                        if (cancellation.IsCancellationRequested) {
-
-                            log.Debug("DequeuePacket() - cancellation requested");
-                            goto fini;
-
-                        }
-
                         OnDequeuePacket(packet);
 
                     }
 
-                    dequeueEvent.Reset();
+                } catch (OperationCanceledException) {
+
+                    log.Debug("DequeuePacket() - Ignored an OperationCanceledException");
+                    break;
+
+                } catch (Exception ex) {
+
+                    handler.Errors(ex);
+                    break;
 
                 }
 
-                fini:;
-
-            } catch (OperationCanceledException) {
-
-                // ignore, the waits were canceled.
-
-                log.Debug("DequeuePacket() - Ignored but a OperationCanceledException was thrown");
-
-            } catch (Exception ex) {
-
-                handler.Exceptions(ex);
+                dequeueEvent.Reset();
 
             }
 
