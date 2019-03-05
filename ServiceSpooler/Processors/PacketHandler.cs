@@ -218,14 +218,13 @@ namespace ServiceSpooler.Processors {
         public void DequeuePacket() {
 
             log.Trace("Entering DequeuePacket()");
-            log.Debug("DequeuePacket() - connected, ready to process");
 
             for (;;) {
 
                 try {
 
                     ConnectionEvent.Wait(cancellation.Token);
-                    log.Debug("DequeuePacket() - after ConnectionEvent.Wait()");
+                    log.Debug("DequeuePacket() - connected, ready to process");
 
                     dequeueEvent.Wait(cancellation.Token);
                     log.Debug("DequeuePacket() - processing");
@@ -238,6 +237,8 @@ namespace ServiceSpooler.Processors {
 
                     }
 
+                    dequeueEvent.Reset();
+
                 } catch (OperationCanceledException) {
 
                     log.Debug("DequeuePacket() - Ignored an OperationCanceledException");
@@ -245,12 +246,10 @@ namespace ServiceSpooler.Processors {
 
                 } catch (Exception ex) {
 
-                    handler.Errors(ex);
-                    break;
+                    log.Debug("DequeuePacket() - Ignored an Exception");
+                    handler.Exceptions(ex);
 
                 }
-
-                dequeueEvent.Reset();
 
             }
 
