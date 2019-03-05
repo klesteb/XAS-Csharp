@@ -238,6 +238,7 @@ namespace ServiceSpooler.Processors {
                     }
 
                     dequeueEvent.Reset();
+                    log.Debug("DequeuePacket() - done processing");
 
                 } catch (OperationCanceledException) {
 
@@ -246,8 +247,7 @@ namespace ServiceSpooler.Processors {
 
                 } catch (Exception ex) {
 
-                    log.Debug("DequeuePacket() - Ignored an Exception");
-                    handler.Exceptions(ex);
+                    log.Debug(String.Format("DequeuePacket() - Ignored an Exception: {0}", ex));
 
                 }
 
