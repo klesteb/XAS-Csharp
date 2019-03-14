@@ -78,11 +78,10 @@ namespace ServiceSpooler.Processors {
 
             if (! cancellation.IsCancellationRequested) {
 
-                ProcessOrphans(null, null);
-
                 monitorTimer = new System.Timers.Timer(monitorInterval * 1000);
                 monitorTimer.Elapsed += ProcessOrphans;
-                monitorTimer.Start();
+
+                ProcessOrphans(null, null);
 
             }
 
@@ -157,11 +156,10 @@ namespace ServiceSpooler.Processors {
 
             log.Trace("Entering ProcessOrphans()");
 
-            cancellation = new CancellationTokenSource();
+            try {
 
-            ConnectionEvent.Wait(cancellation.Token);
-
-            if (! cancellation.IsCancellationRequested) {
+                monitorTimer.Stop();
+                ConnectionEvent.Wait(cancellation.Token);
 
                 foreach (Watcher watcher in DirectoryWatchers.Values) {
 
@@ -174,6 +172,16 @@ namespace ServiceSpooler.Processors {
                 }
 
                 tasks.Clear();
+
+                monitorTimer.Start();
+
+            } catch (OperationCanceledException) {
+
+                log.Debug("ProcessOrphans() - Ignored an OperationCanceledException");
+
+            } catch (Exception ex) {
+
+                log.Debug(String.Format("ProcessOrphans() - Ignored an Exception: {0}", ex));
 
             }
 
@@ -191,20 +199,25 @@ namespace ServiceSpooler.Processors {
             log.Trace("Entering EnqueueOrphans()");
             log.Debug(String.Format("EnqueueOrphans() - processing {0}", watcher.directory));
 
-            var files = watcher.spool.Scan();
+            try {
 
-            log.Debug(String.Format("EnqueueOrphans() - found {0} files in {1}", files.Count(), watcher.directory));
+                var files = watcher.spool.Scan();
 
-            foreach (string file in files) {
+                log.Debug(String.Format("EnqueueOrphans() - found {0} files in {1}", files.Count(), watcher.directory));
 
-                if (cancellation.IsCancellationRequested) {
+                foreach (string file in files) {
 
-                    log.Debug("EnqueueOrphans() - cancellation requested");
-                    break;
+                    OnEnqueuePacket(file);
 
                 }
 
-                OnEnqueuePacket(file);
+            } catch (OperationCanceledException) {
+
+                log.Debug("EnqueueOrphans() - Ignored an OperationCanceledException");
+
+            } catch (Exception ex) {
+
+                log.Debug(String.Format("EnqueueOrphans() - Ignored an Exception: {0}", ex));
 
             }
 
